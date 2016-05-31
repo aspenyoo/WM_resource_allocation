@@ -11,9 +11,11 @@ a4 = 280:10:350;
 Sdistribution = [a1 a2 a3 a4];
 nS = length(Sdistribution);
 
+
 % parameters
-JbarVec = [5 2 1];%1./([2 6 10].^2);       % mean parameter of gamma distribution
-tau = 1;%.001;        % scale parameter of gamma distribution
+sigmaVec = [5 7 9];
+JbarVec = [5 2 1];%1./(sigmaVec.^2);%1./([2 6 10].^2);       % mean parameter of gamma distribution
+tau = 1;%0.008;        % scale parameter of gamma distribution
 beta = 1;%15;
 
 nCond = length(JbarVec); % number of conditions
@@ -27,7 +29,7 @@ nTrials = 100;
 nsamp = 100;
 SVec = Sdistribution(ceil(rand(nCond,nTrials).*nS));
 
-colors = aspencolors(nCond,'pastel');%[127 0 0; 247 69 0; 247 148 30]./255; %
+colors = ['r';'b';'k'];%aspencolors(nCond,'pastel');%[127 0 0; 247 69 0; 247 148 30]./255; %
 figure;
 error_sacc = nan(nCond,nTrials);
 D = nan(nCond,nTrials); Shat = nan(nCond,nTrials);
@@ -75,14 +77,6 @@ for icond = 1:nCond;
         EUpdf = EUpdf./sum(EUpdf); % normalize   
         EUcdf = cumsum(EUpdf);% make cdf
         
-%         figure;
-%         subplot(3,1,1)
-%         plot(x,func(x))
-%         subplot(3,1,2)
-%         plot(x,EUpdf)
-%         subplot(3,1,3)
-%         plot(x,EUcdf)
-        
         % sample from icdf
         samp = rand;
         idx = find(abs(EUcdf-samp) == min(abs(EUcdf-samp)));
@@ -90,22 +84,23 @@ for icond = 1:nCond;
 
     end
     
-%     figure
+    % PLOT STUFF!!
+    
+    % calculte regression and correlation
+    %     b = regress(D(icond,:)',[error_sacc(icond,:)' ones(nTrials,1)]);
+    
+    % plot scatterplot and line
     error_sacc(icond,:) = abs(SVec(icond,:) - Shat(icond,:));
     plot(error_sacc(icond,:),D(icond,:),'o','Color',colors(icond,:));hold on;
+    %     blah = [0 10];
+    %     plot(blah,b(1).*blah + b(2),colors(icond,:));
     
-    % calculate correlation
     [rho(icond), pval(icond)] = corr(error_sacc(icond,:)',D(icond,:)');
-    
-    %     pause;
-    
 end
 defaultplot
 xlabel('saccadic error');
 ylabel('disk size')
 
-
- 
 rho
 pval
 
@@ -134,7 +129,7 @@ end
 defaultplot
 title('saccadic error distributions')
 
-% ===== BINNED DISK SIZE AND ERROR SD PLOT =====
+% ===== BINNED DISK SIZE AND ERROR VAR PLOT =====
 nQuants = 4;
 
 figure;
@@ -153,7 +148,7 @@ for icond = 1:nCond;
        quantMat = dataMat(quantileEnds(iquant)+1:quantileEnds(iquant+1),:); 
        
        % calculate SD of saccade error for this quantile
-       sd_errorsacc(icond,iquant) = std(quantMat(:,2));
+       sd_errorsacc(icond,iquant) = std(quantMat(:,2)).^2;
        
        % median of disksizes
        med_disksize(icond,iquant) = median(quantMat(:,1));
@@ -169,7 +164,7 @@ xlabel('disk size')
 ylabel('SD of saccade errors')
 legend('0.6','0.3','0.1')
 
-% ===== MAIN EFFECT PLOTS =====
+% ===== MAIN EFFECT PLOTS (var) =====
 sd_disksize = nan(1,nCond);
 sd_error = nan(1,nCond);
 for icond = 1:nCond;
@@ -177,25 +172,25 @@ for icond = 1:nCond;
     sd_error(icond) = std(error_sacc(icond,:));
 end
 
-condNumVec = [0.1 0.3 0.6];
+% condNumVec = [0.6 0.3 0.1];
 
 % saccade error
 figure;
-plot(condNumVec,fliplr(sd_error),'k.','MarkerSize',14);
+plot(sd_error.^2,'k.','MarkerSize',14);
 defaultplot;
-xlim([0 0.7])
-ax = gca;
-ax.XTick = condNumVec;
+% xlim([0 0.7])
+% ax = gca;
+% ax.XTick = condNumVec;
 xlabel('priority')
 ylabel('SD of saccade errors')
 
 % disksize
 figure;
-plot(condNumVec,fliplr(sd_disksize),'k.','MarkerSize',14);
+plot(sd_disksize.^2,'k.','MarkerSize',14);
 defaultplot
-xlim([0 0.7])
-ax = gca;
-ax.XTick = condNumVec;
+% xlim([0 0.7])
+% ax = gca;
+% ax.XTick = condNumVec;
 xlabel('priority')
 ylabel('SD of disk sizes')
 
