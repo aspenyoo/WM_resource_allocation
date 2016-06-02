@@ -14,11 +14,16 @@ nS = length(Sdistribution);
 
 % parameters
 sigmaVec = [5 7 9];
+<<<<<<< HEAD
 JbarVec = [5 2 1];%1./(sigmaVec.^2);%1./([2 6 10].^2);       % mean parameter of gamma distribution
 tau = 1;%0.008;        % scale parameter of gamma distribution
+=======
+Jbar = 5;     % mean parameter of gamma distribution
+tauVec = [1 0.0001];%0.008;        % scale parameter of gamma distribution
+>>>>>>> parent of a0e1cb0... aim2 plot
 beta = 1;%15;
 
-nCond = length(JbarVec); % number of conditions
+nCond = length(tauVec); % number of conditions
 
 % reward function
 maxReward = 120;
@@ -29,14 +34,23 @@ nTrials = 100;
 nsamp = 100;
 SVec = Sdistribution(ceil(rand(nCond,nTrials).*nS));
 
+<<<<<<< HEAD
 colors = ['r';'b';'k'];%aspencolors(nCond,'pastel');%[127 0 0; 247 69 0; 247 148 30]./255; %
+=======
+colors = [0 0 0; 0.5*ones(1,3)];
+>>>>>>> parent of a0e1cb0... aim2 plot
 figure;
 error_sacc = nan(nCond,nTrials);
 D = nan(nCond,nTrials); Shat = nan(nCond,nTrials);
 rho = nan(1,nCond); pval = nan(1,nCond);
 for icond = 1:nCond;
     
+<<<<<<< HEAD
     Jbar = JbarVec(icond);
+=======
+    tau = tauVec(icond);
+%     Jbar = JbarVec(icond);
+>>>>>>> parent of a0e1cb0... aim2 plot
     
     % ===== get p(J|Jbar,tau) ======
     % make range small enough
@@ -158,6 +172,7 @@ for icond = 1:nCond;
    plot(med_disksize(icond,:),sd_errorsacc(icond,:),'o-','Color',colors(icond,:));
    hold on;
 end
+<<<<<<< HEAD
 
 defaultplot;
 xlabel('disk size')
@@ -195,3 +210,9 @@ xlabel('priority')
 ylabel('SD of disk sizes')
 
 
+=======
+defaultplot
+ylabel('error')
+xlabel('disk size')
+legend('variable precision','fixed precision')
+>>>>>>> parent of a0e1cb0... aim2 plot
