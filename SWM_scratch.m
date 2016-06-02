@@ -1,8 +1,8 @@
 %% understanding Jbar, tau, and sigma
 
-sigma = 9;
-Jbar = 1./(sigma.^2); %.04;
-tau = .01;
+sigma = 5;
+Jbar = .04;
+tau = .0001;
 
 nSamps = 1e5;
 samps = sqrt(1./gamrnd(Jbar/tau,tau,1,nSamps));
