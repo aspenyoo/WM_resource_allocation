@@ -17,11 +17,11 @@ nS = length(Sdistribution);
 
 % parameters
 sigmaVec = [5 7 9];
-Jbar = 5;     % mean parameter of gamma distribution
-tauVec = [1 0.0001];%0.008;        % scale parameter of gamma distribution
+JbarVec = [5 3 1];     % mean parameter of gamma distribution
+tau = 1;%[1 0.0001];%0.008;        % scale parameter of gamma distribution
 beta = 1;%15;
 
-nCond = length(tauVec); % number of conditions
+nCond = length(JbarVec); % number of conditions
 
 % reward function
 maxReward = 120;
@@ -32,15 +32,15 @@ nTrials = 100;
 nsamp = 100;
 SVec = Sdistribution(ceil(rand(nCond,nTrials).*nS));
 
-colors = [0 0 0; 0.5*ones(1,3)];
+colors =['r';'b';'k'];% [0 0 0; 0.5*ones(1,3)];
 figure;
 error_sacc = nan(nCond,nTrials);
 D = nan(nCond,nTrials); Shat = nan(nCond,nTrials);
 rho = nan(1,nCond); pval = nan(1,nCond);
 for icond = 1:nCond;
     
-    tau = tauVec(icond);
-%     Jbar = JbarVec(icond);
+%     tau = tauVec(icond);
+    Jbar = JbarVec(icond);
     
     % ===== get p(J|Jbar,tau) ======
     % make range small enough
@@ -139,3 +139,21 @@ defaultplot
 ylabel('error')
 xlabel('disk size')
 legend('variable precision','fixed precision')
+
+
+% ===== MAIN EFFECT PLOTS (var) =====
+figure;
+mean_disksize = nan(1,nCond); cd_disksize = mean_disksize;
+sd_error = nan(1,nCond);
+for icond = 1:nCond;
+    mean_disksize(icond) = mean(D(icond,:));
+    sd_disksize(icond) = std(D(icond,:));
+    sd_error(icond) = std(error_sacc(icond,:));
+end
+
+% disksize
+figure;
+errorbar(mean_disksize,sd_disksize,'Color','k','MarkerSize',14);
+defaultplot
+xlabel('priority')
+ylabel('mean disk sizes')
