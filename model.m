@@ -2,9 +2,6 @@
 % gneral uncertainty ranges from 1 to 4 ish (up to 5) in visual deg? (disk size?)
 % general error 1 to 4 ish (up to 12) in vis deg? (saccade error?)
 
-clear all
-close all
-clc
 
 % locations
 a1 = 10:10:80;
@@ -17,8 +14,13 @@ nS = length(Sdistribution);
 
 % parameters
 sigmaVec = [5 7 9];
+<<<<<<< HEAD
 JbarVec = [5 3 1];     % mean parameter of gamma distribution
 tau = 1;%[1 0.0001];%0.008;        % scale parameter of gamma distribution
+=======
+JbarVec = [5 2 1];%1./(sigmaVec.^2);%1./([2 6 10].^2);       % mean parameter of gamma distribution
+tau = 1;%0.008;        % scale parameter of gamma distribution
+>>>>>>> parent of 312181d... changes for fig 2.1
 beta = 1;%15;
 
 nCond = length(JbarVec); % number of conditions
@@ -32,14 +34,21 @@ nTrials = 100;
 nsamp = 100;
 SVec = Sdistribution(ceil(rand(nCond,nTrials).*nS));
 
+<<<<<<< HEAD
 colors =['r';'b';'k'];% [0 0 0; 0.5*ones(1,3)];
+=======
+colors = ['r';'b';'k'];%aspencolors(nCond,'pastel');%[127 0 0; 247 69 0; 247 148 30]./255; %
+>>>>>>> parent of 312181d... changes for fig 2.1
 figure;
 error_sacc = nan(nCond,nTrials);
 D = nan(nCond,nTrials); Shat = nan(nCond,nTrials);
 rho = nan(1,nCond); pval = nan(1,nCond);
 for icond = 1:nCond;
     
+<<<<<<< HEAD
 %     tau = tauVec(icond);
+=======
+>>>>>>> parent of 312181d... changes for fig 2.1
     Jbar = JbarVec(icond);
     
     % ===== get p(J|Jbar,tau) ======
@@ -90,9 +99,14 @@ for icond = 1:nCond;
     
     % PLOT STUFF!!
     
+    % calculte regression and correlation
+    %     b = regress(D(icond,:)',[error_sacc(icond,:)' ones(nTrials,1)]);
+    
     % plot scatterplot and line
     error_sacc(icond,:) = abs(SVec(icond,:) - Shat(icond,:));
     plot(error_sacc(icond,:),D(icond,:),'o','Color',colors(icond,:));hold on;
+    %     blah = [0 10];
+    %     plot(blah,b(1).*blah + b(2),colors(icond,:));
     
     [rho(icond), pval(icond)] = corr(error_sacc(icond,:)',D(icond,:)');
 end
@@ -103,11 +117,36 @@ ylabel('disk size')
 rho
 pval
 
+% ===== MARGINAL DISTRIBUTIONS ======
+nBins = 35;
+DMax = max(D(:));
+Drange = linspace(0,DMax,nBins);
+errorMax = 11;%max(error_sacc(:));
+errorrange = linspace(0,errorMax,nBins);
+
+% disk size
+figure; hold on;
+for icond = 1:nCond;
+    [cnts,cntrs] = hist(D(icond,:),Drange);
+    plot(cntrs,cnts,'-','Color',colors(icond,:));
+end
+defaultplot
+title('disk size distributions')
+
+% saccadic error
+figure; hold on;
+for icond = 1:nCond;
+    [cnts,cntrs] = hist(error_sacc(icond,:),errorrange);
+    plot(cntrs,cnts,'-','Color',colors(icond,:));
+end
+defaultplot
+title('saccadic error distributions')
+
 % ===== BINNED DISK SIZE AND ERROR VAR PLOT =====
 nQuants = 4;
 
 figure;
-sem_errorsacc = nan(nCond,nQuants); mean_errorsacc = sem_errorsacc;
+sd_errorsacc = nan(nCond,nQuants);
 med_disksize = nan(nCond,nQuants);
 for icond = 1:nCond;
    
@@ -121,23 +160,21 @@ for icond = 1:nCond;
        % get appropriate quantile from dataMat
        quantMat = dataMat(quantileEnds(iquant)+1:quantileEnds(iquant+1),:); 
        
-       % mean of sacc error for this quantile
-       mean_errorsacc(icond,iquant) = std(quantMat(:,2));
-       
        % calculate SD of saccade error for this quantile
-       sem_errorsacc(icond,iquant) = mean(quantMat(:,2))/sqrt(length(quantMat(:,2)));
+       sd_errorsacc(icond,iquant) = std(quantMat(:,2)).^2;
        
        % median of disksizes
        med_disksize(icond,iquant) = median(quantMat(:,1));
        
    end
    
-   errorbar(med_disksize(icond,:),mean_errorsacc(icond,:),sem_errorsacc(icond,:),'Color',colors(icond,:));
+   plot(med_disksize(icond,:),sd_errorsacc(icond,:),'o-','Color',colors(icond,:));
    hold on;
 end
-defaultplot
-ylabel('error')
+
+defaultplot;
 xlabel('disk size')
+<<<<<<< HEAD
 legend('variable precision','fixed precision')
 
 
@@ -147,13 +184,48 @@ mean_disksize = nan(1,nCond); cd_disksize = mean_disksize;
 sd_error = nan(1,nCond);
 for icond = 1:nCond;
     mean_disksize(icond) = mean(D(icond,:));
+=======
+ylabel('SD of saccade errors')
+legend('0.6','0.3','0.1')
+
+% ===== MAIN EFFECT PLOTS (var) =====
+sd_disksize = nan(1,nCond);
+sd_error = nan(1,nCond);
+for icond = 1:nCond;
+>>>>>>> parent of 312181d... changes for fig 2.1
     sd_disksize(icond) = std(D(icond,:));
     sd_error(icond) = std(error_sacc(icond,:));
 end
 
+<<<<<<< HEAD
 % disksize
 figure;
 errorbar(mean_disksize,sd_disksize,'Color','k','MarkerSize',14);
 defaultplot
 xlabel('priority')
 ylabel('mean disk sizes')
+=======
+% condNumVec = [0.6 0.3 0.1];
+
+% saccade error
+figure;
+plot(sd_error.^2,'k.','MarkerSize',14);
+defaultplot;
+% xlim([0 0.7])
+% ax = gca;
+% ax.XTick = condNumVec;
+xlabel('priority')
+ylabel('SD of saccade errors')
+
+% disksize
+figure;
+plot(sd_disksize.^2,'k.','MarkerSize',14);
+defaultplot
+% xlim([0 0.7])
+% ax = gca;
+% ax.XTick = condNumVec;
+xlabel('priority')
+ylabel('SD of disk sizes')
+
+
+>>>>>>> parent of 312181d... changes for fig 2.1
