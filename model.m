@@ -2,6 +2,9 @@
 % gneral uncertainty ranges from 1 to 4 ish (up to 5) in visual deg? (disk size?)
 % general error 1 to 4 ish (up to 12) in vis deg? (saccade error?)
 
+close all
+clear all
+clc
 
 % locations
 a1 = 10:10:80;
@@ -14,18 +17,8 @@ nS = length(Sdistribution);
 
 % parameters
 sigmaVec = [5 7 9];
-<<<<<<< HEAD
-<<<<<<< HEAD
-JbarVec = [5 2 1];%1./(sigmaVec.^2);%1./([2 6 10].^2);       % mean parameter of gamma distribution
-tau = 1;%0.008;        % scale parameter of gamma distribution
-=======
-Jbar = 5;     % mean parameter of gamma distribution
+Jbar = 4;     % mean parameter of gamma distribution
 tauVec = [1 0.0001];%0.008;        % scale parameter of gamma distribution
->>>>>>> parent of a0e1cb0... aim2 plot
-=======
-Jbar = 5;     % mean parameter of gamma distribution
-tauVec = [1 0.0001];%0.008;        % scale parameter of gamma distribution
->>>>>>> parent of a0e1cb0... aim2 plot
 beta = 1;%15;
 
 nCond = length(tauVec); % number of conditions
@@ -35,36 +28,20 @@ maxReward = 120;
 slope = 0.4;
 rewardFn = @(r)maxReward*exp(-slope*r);
 
-nTrials = 100;
+nTrials = 1000;
 nsamp = 100;
 SVec = Sdistribution(ceil(rand(nCond,nTrials).*nS));
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-colors = ['r';'b';'k'];%aspencolors(nCond,'pastel');%[127 0 0; 247 69 0; 247 148 30]./255; %
-=======
+
 colors = [0 0 0; 0.5*ones(1,3)];
->>>>>>> parent of a0e1cb0... aim2 plot
-=======
-colors = [0 0 0; 0.5*ones(1,3)];
->>>>>>> parent of a0e1cb0... aim2 plot
 figure;
 error_sacc = nan(nCond,nTrials);
 D = nan(nCond,nTrials); Shat = nan(nCond,nTrials);
 rho = nan(1,nCond); pval = nan(1,nCond);
 for icond = 1:nCond;
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-    Jbar = JbarVec(icond);
-=======
+
     tau = tauVec(icond);
-%     Jbar = JbarVec(icond);
->>>>>>> parent of a0e1cb0... aim2 plot
-=======
-    tau = tauVec(icond);
-%     Jbar = JbarVec(icond);
->>>>>>> parent of a0e1cb0... aim2 plot
     
     % ===== get p(J|Jbar,tau) ======
     % make range small enough
@@ -119,49 +96,29 @@ for icond = 1:nCond;
     
     % plot scatterplot and line
     error_sacc(icond,:) = abs(SVec(icond,:) - Shat(icond,:));
-    plot(error_sacc(icond,:),D(icond,:),'o','Color',colors(icond,:));hold on;
+    plot(D(icond,:),error_sacc(icond,:),'o','Color',colors(icond,:));hold on;
     %     blah = [0 10];
     %     plot(blah,b(1).*blah + b(2),colors(icond,:));
     
     [rho(icond), pval(icond)] = corr(error_sacc(icond,:)',D(icond,:)');
 end
 defaultplot
-xlabel('saccadic error');
-ylabel('disk size')
+ylabel('saccadic error');
+xlabel('disk size')
 
 rho
 pval
 
-% ===== MARGINAL DISTRIBUTIONS ======
-nBins = 35;
-DMax = max(D(:));
-Drange = linspace(0,DMax,nBins);
-errorMax = 11;%max(error_sacc(:));
-errorrange = linspace(0,errorMax,nBins);
+% plot data 
+figure;
+plot(D(1,:),error_sacc(1,:),'.','Color','k');hold on;
 
-% disk size
-figure; hold on;
-for icond = 1:nCond;
-    [cnts,cntrs] = hist(D(icond,:),Drange);
-    plot(cntrs,cnts,'-','Color',colors(icond,:));
-end
-defaultplot
-title('disk size distributions')
-
-% saccadic error
-figure; hold on;
-for icond = 1:nCond;
-    [cnts,cntrs] = hist(error_sacc(icond,:),errorrange);
-    plot(cntrs,cnts,'-','Color',colors(icond,:));
-end
-defaultplot
-title('saccadic error distributions')
 
 % ===== BINNED DISK SIZE AND ERROR VAR PLOT =====
 nQuants = 4;
 
 figure;
-sd_errorsacc = nan(nCond,nQuants);
+sem_errorsacc = nan(nCond,nQuants); mean_errorsacc = sem_errorsacc;
 med_disksize = nan(nCond,nQuants);
 for icond = 1:nCond;
    
@@ -175,64 +132,23 @@ for icond = 1:nCond;
        % get appropriate quantile from dataMat
        quantMat = dataMat(quantileEnds(iquant)+1:quantileEnds(iquant+1),:); 
        
+       % mean
+       mean_errorsacc(icond,iquant) = mean(quantMat(:,2));
+       
        % calculate SD of saccade error for this quantile
-       sd_errorsacc(icond,iquant) = std(quantMat(:,2)).^2;
+       sem_errorsacc(icond,iquant) = std(quantMat(:,2))/sqrt(length(quantMat(:,2)));
        
        % median of disksizes
        med_disksize(icond,iquant) = median(quantMat(:,1));
        
    end
    
-   plot(med_disksize(icond,:),sd_errorsacc(icond,:),'o-','Color',colors(icond,:));
+   errorbar(med_disksize(icond,:),mean_errorsacc(icond,:),sem_errorsacc(icond,:),'Color',colors(icond,:));
    hold on;
 end
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-defaultplot;
-xlabel('disk size')
-ylabel('SD of saccade errors')
-legend('0.6','0.3','0.1')
-
-% ===== MAIN EFFECT PLOTS (var) =====
-sd_disksize = nan(1,nCond);
-sd_error = nan(1,nCond);
-for icond = 1:nCond;
-    sd_disksize(icond) = std(D(icond,:));
-    sd_error(icond) = std(error_sacc(icond,:));
-end
-
-% condNumVec = [0.6 0.3 0.1];
-
-% saccade error
-figure;
-plot(sd_error.^2,'k.','MarkerSize',14);
-defaultplot;
-% xlim([0 0.7])
-% ax = gca;
-% ax.XTick = condNumVec;
-xlabel('priority')
-ylabel('SD of saccade errors')
-
-% disksize
-figure;
-plot(sd_disksize.^2,'k.','MarkerSize',14);
-defaultplot
-% xlim([0 0.7])
-% ax = gca;
-% ax.XTick = condNumVec;
-xlabel('priority')
-ylabel('SD of disk sizes')
 
 
-=======
-=======
->>>>>>> parent of a0e1cb0... aim2 plot
 defaultplot
 ylabel('error')
 xlabel('disk size')
 legend('variable precision','fixed precision')
-<<<<<<< HEAD
->>>>>>> parent of a0e1cb0... aim2 plot
-=======
->>>>>>> parent of a0e1cb0... aim2 plot
