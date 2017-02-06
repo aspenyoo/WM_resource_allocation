@@ -66,7 +66,7 @@ for icond = 1:nCond;
     p_SgivenX = @(r,sigma) (normcdf(r,0,sigma) - normcdf(-r,0,sigma));
 %     p_SDgivenXsigma = @(r,sigma) 1./(1+exp(-beta.*rewardFn(r).*p_bringInsidedisc(r,sigma)));
 %         p_SgivenX = @(r) sum(p_SDgivenXsigma(r,sigval).*p_sigma);
-    for itrial = 1:nTrials;
+    for itrial = 1:nTrials
         sigma = sigmaVec(itrial);
         
         

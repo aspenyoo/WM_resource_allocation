@@ -16,7 +16,7 @@ rewardFn = @(r)maxReward*exp(-slope*r/knobConstant);
 
 % calculate log likelihood
 nll_disksize = nan(1,nCond); nll_sacc = nan(1,nCond);
-for icond = 1:nCond;
+for icond = 1:nCond
     
     S = data{icond}(:,1)';              % stimulus location (polar angle)
     Shat = data{icond}(:,2)';           % subjects' saccaded to location (polar angle)
