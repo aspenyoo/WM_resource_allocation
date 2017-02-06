@@ -11,7 +11,7 @@ biasType = 'axis'; % quadrant (directional bias within each quadrant) or
 % from cardinal axes)
 subjid = '1';
 filepath = 'DATA';
-isplot = [0 1];
+isplot = [1 1];
 issave = [0 0];
 
 load([filepath '/subj' subjid '_ii_stats_targetvalue.mat']); % loading appropriate data

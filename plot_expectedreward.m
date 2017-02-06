@@ -4,8 +4,9 @@
 
 % reward function
 maxReward = 120;
-slope = 0.4;
-rewardFn = @(r)maxReward*exp(-slope*r);
+slope = 0.3;
+dva2deg = 1;%pi/18;
+rewardFn = @(r)maxReward*exp(-slope*r*dva2deg);
 
 % p(S|X)
 cushion = 15; % degrees next to cardinal axes in which targets are not presented
@@ -14,7 +15,7 @@ p_SgivenX = @(r,sigma)normcdf(r,0,sigma) - normcdf(-r,0,sigma);
 
 % max expected reward for this sample
 nSigma = 50;
-sigmaVec = linspace(0,20,nSigma);
+sigmaVec = linspace(0,10,nSigma);
 for isigma = 1:nSigma;
     sigma = sigmaVec(isigma);
     func = @(r) -rewardFn(r).*p_SgivenX(r,sigma);
@@ -25,20 +26,22 @@ end
 % plot optimal radius as a function of noise
 plot(sigmaVec,r,'k-')
 defaultplot
-ylabel('optimal radius, D* (dva)')
-xlabel('uncertainty')
-ax = gca;
-    ax.XTick = [0 10 20];
+ylabel('Optimal radius, R* (deg)')
+xlabel('Memory uncertainty')
+% ax = gca;
+%     ax.XTick = [0 5 10];
+%     ax.YTick = 0:3;
+%     ylim([0 2.5])
     
 % plot expected utility for given noise as a function of disk size
 figure;
-sigma = 6;
-rVec = linspace(0,25,100);
+sigma = 1;
+rVec = linspace(0,10,100);
 EU = rewardFn(rVec).*p_SgivenX(rVec,sigma);
 plot(rVec,EU,'k-')
 defaultplot;
-xlabel('disk size, D (dva)')
-ylabel('expected utility')
+xlabel('Circular radius (deg)')
+ylabel('Expected utility')
 
 
 %% =========== TWO DIMENSIONAL CASE ============
