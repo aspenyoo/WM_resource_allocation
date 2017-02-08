@@ -24,4 +24,3 @@ p_chooseR = p_chooseR./sum(p_chooseR);
 Exp_R = calc_EU(r)*p_chooseR(:);
 
 
-%%%

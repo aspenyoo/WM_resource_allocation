@@ -1,15 +1,20 @@
-function calc_EU(Jbar,tau,beta)
-% calculate expected utility for a given Jbar and tau
+function E_EU = calc_EU(Jbar,tau,beta)
+% CALC_EU calculates expected value of the expected utility for a given 
+% Jbar, tau, and beta. 
+%
+% aspen yoo -- 02.07.2016
 
-% input parameters
-Jbar = 4; 
-tau = 1;
-beta = 1;
+% % input parameters
+% Jbar = 15; 
+% tau = 1;
+% beta = 1;
 
 % for gamma distribution
-nsamp = 100;
-xx = linspace(1e-5,10,nsamp);
-yy = gampdf(xx,Jbar/tau,tau);
+JVec = loadvar('JVec');
+nJs = length(JVec);
+
+Jpdf = gampdf(JVec,Jbar/tau,tau);
+Jpdf = Jpdf./sum(Jpdf);
 
 % reward function
 maxReward = 120;
@@ -17,30 +22,18 @@ slope = 0.4;
 rewardFn = @(r)maxReward*exp(-slope*r);
 
 % radius stuff
-nsamps_r = 100;
-r = linspace(0,3,nsamps_r);
+nRs = 100;
+rVec = linspace(0,3,nRs); % ASPEN: make sure this range is reasonable
 
-Exp_R = nan(1,nsamp);
-for ixx = 1:nsamp;
-    J = xx(ixx);
-    sigma = sqrt(1/J);
+% EU(r,J) for each combination of r and J in rVec and jVec
+EU = bsxfun(@times, calc_p_Hit(rVec,JVec), rewardFn(rVec)');
 
-    % function for expected value R
-    calc_EU = @(r)calc_p_Hit(r,sigma).*rewardFn(r);
-    
-    % probability of choosing R.
-    p_chooseR = exp(beta.*calc_EU(r));
-    p_chooseR = p_chooseR./sum(p_chooseR);
-    
-    % calculate expected R
-    Exp_R(ixx) = calc_EU(r)*p_chooseR(:);
-end
+% p(r)
+p_chooseR = exp(beta.*EU);
+p_chooseR = bsxfun(@rdivide, p_chooseR, sum(p_chooseR)); % normalize across rVec
 
+% EU(J) = \int EU(r,J) p(r) dr
+EU_J = sum(EU.*p_chooseR);
 
-
-% Jbar_total = 10;
-% qVec = [0.1 0.3 0.6]; % from low to high
-% assert(sum(qVec) == 1)
-% 
-% JbarVec = qVec*Jbar_total;
-
+% EU(Jbar) = \int EU(J) p(J) dJ
+E_EU = Jpdf*EU_J';

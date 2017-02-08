@@ -14,14 +14,14 @@ nS = length(Sdistribution);
 
 % parameters
 JbarVec = [5 2 1];%1./([2 6 10].^2);       % mean parameter of gamma distribution
-tau = 1;%.001;        % scale parameter of gamma distribution
+tau = 1; %.001;        % scale parameter of gamma distribution
 nCond = length(JbarVec); % number of conditions
 beta = 1;
 
 % reward function
-maxReward = 120;
-slope = 0.4;
-rewardFn = @(r)maxReward*exp(-slope*r);
+maxReward = 120; 
+slope = 0.4; 
+rewardFn = @(r) maxReward*exp(-slope*r);
 
 nTrials = 1000;
 nsamp = 100;
