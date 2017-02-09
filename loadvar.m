@@ -11,8 +11,8 @@ for ivar = 1:nvars;
             varargout{ivar} = JVec;
         case 'rVec'
             % radius stuff
-            nRs = 200;
-            rVec = linspace(0,5,nRs); % ASPEN: make sure this range is reasonable
+            nRs = 500;
+            rVec = linspace(0,10,nRs);
             varargout{ivar} = rVec;
     end
 end

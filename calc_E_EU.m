@@ -14,15 +14,15 @@ beta = Theta(3);
 % loading in variables
 [JVec,rVec] = loadvar('JVec','rVec');
 
-% p(r|theta)
+% p(r|beta,J)
 p_r = calc_pdf_r(beta,JVec);
 
 % EU(J) = \int EU(r,J) p(r) dr
-EU_J = sum(calc_EU(rVec,JVec).*p_r);
+EU_J = qtrapz(calc_EU(rVec,JVec).*p_r);
 
 % for gamma distribution
 Jpdf = gampdf(JVec,Jbar/tau,tau);
-Jpdf = Jpdf./sum(Jpdf);
+Jpdf = Jpdf./qtrapz(Jpdf);
 
 % EU(Jbar) = \int EU(J) p(J) dJ
-E_EU = Jpdf*EU_J';
+E_EU = qtrapz(Jpdf.*EU_J);
