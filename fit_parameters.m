@@ -19,9 +19,8 @@ pub(logflag) = log(pub(logflag));
 
 for istartvals = 1:nStartVals;
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
-    startingval = plb + rand(1,3).*(pub - plb);
-    objfunc = @(x) calc_nLL(subjdata,x);
-    [x,fval] = bps(objfunc,startingval,lb,ub,plb,pub);
+    x0 = plb + rand(1,3).*(pub - plb);
+    [x,fval] = bps(@(x) calc_nLL(x,subjdata),x0,lb,ub,plb,pub);
     x(logflag) = exp(x(logflag));
     ML_parameters = [ML_parameters; x];
     nLLVec = [nLLVec fval];

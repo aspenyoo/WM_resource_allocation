@@ -1,4 +1,4 @@
-function nLL = calc_nLL(data, Theta)
+function nLL = calc_nLL(Theta,data)
 % CALC_NLL(JBAR_TOTAL,TAU,BETA)
 %
 % CALC_NLL: calculates negative log likelihood of parameter combination for
