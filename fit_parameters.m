@@ -1,4 +1,4 @@
-fit_parameters(subjnum,nStartVals)
+function fit_parameters(subjnum,nStartVals)
 if nargin < 2; nStartVals = 1; end
 
 load('cleandata.mat')
@@ -7,8 +7,6 @@ subjdata = data{subjnum};
 filepath = '/home/ay963/SWM/spatialWM/fits/';
 filename = [filepath 'fits_optimal_subj' num2str(subjnum) '.mat'];
 
-[A,b,Aeq,beq,nonlcon] = deal([]);
-options = optimset('Display','iter');
 lb = [1e-5 1e-5 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)
 ub = [50 50 10]; % ASPEN: refine
 plb = [1e-5 1e-3 1e-5];
