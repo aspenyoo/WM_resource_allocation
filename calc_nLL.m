@@ -17,8 +17,9 @@ function nLL = calc_nLL(data, Theta)
 logflag = logical([1 1 0]);
 Theta(logflag) = exp(Theta(logflag));
 Jbar_total = Theta(1);
-tau = (2);
-beta = (3);
+tau = Theta(2);
+beta = Theta(3);
+% lapse = Theta(4);
 
 % data stuff
 priorityVec = [0.6 0.3 0.1];
@@ -35,17 +36,17 @@ beq = 1;
 options = optimset('Display','none');
 lb = [1e-5 1e-5 1e-5];
 ub = [1 1 1];
-nStartVals = 10;
+nStartVals = 5; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
 pVec = nan(nStartVals,3);
 nEU = nan(1,nStartVals);
 for istartval = 1:nStartVals
     [pVec(istartval,:), nEU(istartval)] = fmincon(calc_ntotalEU,rand(1,3),A,b,Aeq,beq,lb,ub,nonlcon,options);
 end
 pVec = pVec(nEU == min(nEU),:);
+pVec = pVec(1,:); % in case multiple entries have the nEU == min(nEU)
 
-% loading JVec;
-[JVec,rVec] = loadvar('JVec','rVec');
-nJs = length(JVec);
+% loading rVec;
+[rVec] = loadvar('rVec');
 rVec = rVec(:); % vertical
 
 nLL = 0;
@@ -57,6 +58,8 @@ for ipriority = 1:nPriorities
     data_r = data{ipriority}(:,2);
     
     % p(J|Jbar,tau)
+    [JVec] = loadvar({'JVec',Jbar,tau});
+    nJs = length(JVec);
     Jpdf = gampdf(JVec,Jbar/tau,tau);
     Jpdf = Jpdf./qtrapz(Jpdf); % normalize
     
@@ -86,4 +89,5 @@ for ipriority = 1:nPriorities
     
     % nLL
     nLL = nLL -sum(log(p_Shat)) -sum(log(p_r));
+    %     nLL = nLL -sum(log((1-lapse).*p_Shat + lapse.*p_Shat_lapse)) -sum(log(p_r));
 end
