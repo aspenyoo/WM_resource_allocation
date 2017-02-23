@@ -8,9 +8,9 @@ filepath = '/home/ay963/spatialWM/fits/';
 filename = [filepath 'fits_optimal_subj' num2str(subjnum) '.mat'];
 
 lb = [1e-5 1e-5 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)
-ub = [50 50 10]; % ASPEN: refine
+ub = [50 50 5]; % ASPEN: refine
 plb = [1e-5 1e-3 1e-5];
-pub = [30 10 5]; % ASPEN: refine
+pub = [30 10 2]; % ASPEN: refine
 logflag = logical([1 1 0]);
 lb(logflag) = log(lb(logflag));
 ub(logflag) = log(ub(logflag));
