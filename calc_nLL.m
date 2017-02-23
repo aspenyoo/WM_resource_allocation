@@ -51,6 +51,7 @@ rVec = rVec(:); % vertical
 
 nLL = 0;
 for ipriority = 1:nPriorities
+    ipriority
     Jbar = Jbar_total*pVec(ipriority); % Jbar for current trial
     
     % get data
@@ -80,6 +81,7 @@ for ipriority = 1:nPriorities
     
     % p(r): probability of responding r given the parameters
     data_r = data_r(:)';  % make sure it is horizontal vector
+    size(data_r)
     firstidxs = bsxfun(@(x,y) x == x(find((x-y)<=0,1,'last')),rVec,data_r);
     lastidxs = bsxfun(@(x,y) x == x(find((x-y)>=0,1,'first')),rVec,data_r);
     
