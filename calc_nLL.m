@@ -1,49 +1,81 @@
-function nLL = calc_nLL(Theta,data)
+function nLL = calc_nLL(model,Theta,data)
 % CALC_NLL(JBAR_TOTAL,TAU,BETA)
 %
 % CALC_NLL: calculates negative log likelihood of parameter combination for
 % the optimal model
-
+% 
 % ================= INPUT VARIABLES ======================
+% MODEL: 1 (optimal) or 2 (not optimal)
+% 
+% THETA = vector of parameters. For model 1, [ Jbar_total tau beta]. 
+%   For model 2, [Jbar_total tau beta p_high p_med]
+%       JBAR_TOTAL: total amount of resources across priorities
+%       TAU: second parameter of gamma noise distribution
+% 
 % DATA: 1 x 3 cell each containing nTrials x 2 matrix. 
 %   struct organization: high, med, low priority trials
 %   1st column: distance between target and final saccade
 %   2nd column: radius of disc
 % 
-% JBAR_TOTAL: total amount of resources across priorities
-% TAU: second parameter of gamma noise distribution
+% ================= OUTPUT VARIABLES ================
+% NLL: -L(Theta|data,model)
+%
+% -----------------------
+%      Aspen H. Yoo
+%   aspen.yoo@nyu.edu
+
 
 % Theta = [5 1 1];
-logflag = logical([1 1 0]);
+switch model
+    case 1  % optimal model
+        logflag = logical([1 1 0]);
+    case 2 % not optimal model
+        logflag = logical([1 1 0 0 0]);
+        
+        % if the sum of the proportions allocated to high and medium
+        % priorities are greater than 1
+        if sum(Theta(4:5)) > 1
+            nLL = Inf;
+            return;
+        end
+end
 Theta(logflag) = exp(Theta(logflag));
 Jbar_total = Theta(1);
 tau = Theta(2);
 beta = Theta(3);
 % lapse = Theta(4);
 
+
 % data stuff
 priorityVec = [0.6 0.3 0.1];
 nPriorities = length(priorityVec);
 
-% calculate the optimal proportions given the parameters
-calc_ntotalEU = @(x) -(0.6*calc_E_EU([Jbar_total*x(1),tau,beta]) ...
-    + 0.3*calc_E_EU([Jbar_total*x(2),tau,beta])...
-    + 0.1*calc_E_EU([Jbar_total*x(3),tau,beta]));
-
-Aeq = [1 1 1];
-beq = 1;
-[A,b,nonlcon] = deal([]);
-options = optimset('Display','none');
-lb = [1e-5 1e-5 1e-5];
-ub = [1 1 1];
-nStartVals = 5; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
-pVec = nan(nStartVals,3);
-nEU = nan(1,nStartVals);
-for istartval = 1:nStartVals
-    [pVec(istartval,:), nEU(istartval)] = fmincon(calc_ntotalEU,rand(1,3),A,b,Aeq,beq,lb,ub,nonlcon,options);
+switch model
+    case 1 % optimal
+        
+        % calculate the optimal proportions given the parameters
+        calc_ntotalEU = @(x) -(0.6*calc_E_EU([Jbar_total*x(1),tau,beta]) ...
+            + 0.3*calc_E_EU([Jbar_total*x(2),tau,beta])...
+            + 0.1*calc_E_EU([Jbar_total*x(3),tau,beta]));
+        
+        Aeq = [1 1 1];
+        beq = 1;
+        [A,b,nonlcon] = deal([]);
+        options = optimset('Display','none');
+        lb = [1e-5 1e-5 1e-5];
+        ub = [1 1 1];
+        nStartVals = 5; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10.
+        pVec = nan(nStartVals,3);
+        nEU = nan(1,nStartVals);
+        for istartval = 1:nStartVals
+            [pVec(istartval,:), nEU(istartval)] = fmincon(calc_ntotalEU,rand(1,3),A,b,Aeq,beq,lb,ub,nonlcon,options);
+        end
+        pVec = pVec(nEU == min(nEU),:);
+        pVec = pVec(1,:); % in case multiple entries have the nEU == min(nEU)
+    
+    case 2 % not optimal
+        pVec = [Theta(4:5) 1-sum(Theta(4:5))];
 end
-pVec = pVec(nEU == min(nEU),:);
-pVec = pVec(1,:); % in case multiple entries have the nEU == min(nEU)
 
 % loading rVec;
 [rVec] = loadvar('rVec');
@@ -74,7 +106,6 @@ for ipriority = 1:nPriorities
     % p(Shat|S) = \int p(Shat|S,J) p(J) dJ
     p_Shat = qtrapz(bsxfun(@times,p_Shat,Jpdf),2);
     
-
     % get pdf of p(r|Jbar,tau,beta)
     pdf_r = calc_pdf_r(beta, JVec);
     pdf_r = bsxfunandsum(@times,pdf_r,Jpdf,2);

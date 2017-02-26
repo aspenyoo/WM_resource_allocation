@@ -2,6 +2,11 @@ function pdf_r = calc_pdf_r(beta, JVec)
 %
 % calculates the probilility density function of choosing r for a given beta and J (or vector
 % JVec)
+% 
+% 
+% -----------------------
+%      Aspen H. Yoo
+%   aspen.yoo@nyu.edu
 
 rVec = loadvar('rVec');
 
