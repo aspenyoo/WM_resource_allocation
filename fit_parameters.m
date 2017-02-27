@@ -15,8 +15,8 @@ if nargin < 3; nStartVals = 1; end
 load('cleandata.mat')
 subjdata = data{subjnum};
 
-filepath = 'fits/';
-% filepath = '/home/ay963/spatialWM/fits/';
+% filepath = 'fits/';
+filepath = '/home/ay963/spatialWM/fits/';
 filename = [filepath 'fits_model' num2str(model) '_subj' num2str(subjnum) '.mat'];
 
 lb = [1e-5 1e-5 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)

@@ -52,27 +52,7 @@ nPriorities = length(priorityVec);
 
 switch model
     case 1 % optimal
-        pVec = calculate_optimal_pVec(Theta);
-%         % calculate the optimal proportions given the parameters
-%         calc_ntotalEU = @(x) -(0.6*calc_E_EU([Jbar_total*x(1),tau,beta]) ...
-%             + 0.3*calc_E_EU([Jbar_total*x(2),tau,beta])...
-%             + 0.1*calc_E_EU([Jbar_total*x(3),tau,beta]));
-%         
-%         Aeq = [1 1 1];
-%         beq = 1;
-%         [A,b,nonlcon] = deal([]);
-%         options = optimset('Display','none');
-%         lb = [1e-5 1e-5 1e-5];
-%         ub = [1 1 1];
-%         nStartVals = 5; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10.
-%         pVec = nan(nStartVals,3);
-%         nEU = nan(1,nStartVals);
-%         for istartval = 1:nStartVals
-%             [pVec(istartval,:), nEU(istartval)] = fmincon(calc_ntotalEU,rand(1,3),A,b,Aeq,beq,lb,ub,nonlcon,options);
-%         end
-%         pVec = pVec(nEU == min(nEU),:);
-%         pVec = pVec(1,:); % in case multiple entries have the nEU == min(nEU)
-    
+        pVec = calc_optimal_pVec(Theta);    
     case 2 % not optimal
         pVec = [Theta(4:5) 1-sum(Theta(4:5))];
 end
@@ -94,6 +74,7 @@ for ipriority = 1:nPriorities
     nJs = length(JVec);
     Jpdf = gampdf(JVec,Jbar/tau,tau);
     Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+    if any(Jpdf > 1); nLL = Inf; return; end
     
     % p(Shat|S,J)
     nTrials = length(data_distance);

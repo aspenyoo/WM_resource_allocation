@@ -26,8 +26,7 @@ nPriorities = 3;
 
 switch model
     case 1
-        % calculate optimal proportions of resources given parameters
-        pVec = [0.6 0.3 0.3];
+        pVec = calc_optimal_pVec(Theta);
     case 2
         pVec = [Theta(4:5) 1-sum(Theta(4:5))];
 end
@@ -52,7 +51,7 @@ for ipriority = 1:nPriorities
     pdf_r = calc_pdf_r(beta, JVec); % length(rVec) x length(JVec)
     cdf_r = cumsum(pdf_r);
     samples = num2cell(rand(1,ntrials));
-    cdf_r = num2cell(cdf_r,1); % check direction is correct
+    cdf_r = num2cell(cdf_r,1);
     
     idxs = cell2mat(cellfun(@(x,y) find(x>=y,1,'first'),cdf_r,samples,'UniformOutput',false));
     data{ipriority}(:,2) = rVec(idxs);
