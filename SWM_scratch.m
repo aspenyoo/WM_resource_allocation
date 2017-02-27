@@ -73,3 +73,44 @@ end
 
 save('cleandata.mat','data')
 
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+%    LOOK AT FITTED PARAMETERS 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+clear all
+
+load('cleandata.mat')
+
+for isubj = [1 2 4:11];
+isubj
+
+% load fits
+filename = ['fits_optimal_subj' num2str(isubj) '.mat'];
+load(filename)
+
+bfp = ML_parameters(nLLVec == min(nLLVec),:);
+logflag = logical([1 1 0]);
+logbfp = bfp;
+logbfp(logflag) = log(logbfp(logflag));
+
+pVec = calculate_optimal_pVec(bfp)
+min(nLLVec)
+nLL = calc_nLL(logbfp,data{isubj})
+end
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % 
+%       GET A PLOT OF DATA AND MODEL 
+% % % % % % % % % % % % % % % % % % % % % % % % % % % 
+clear all
+load('cleandata.mat')
+nPriorities = 3;
+
+isubj = 1;
+subjdata = data{isubj};
+for ipriority = 1:nPriorities;
+    priority = priorityVec(ipriority);
+
+    
+end
+
+
