@@ -12,19 +12,20 @@ for ivar = 1:nvars;
 %             if exist('Jbar')
 
                 % lower bound
-                while gampdf(xmin,Jbar/tau,tau) > 1e-5;
-                    xmin = xmin - 1;
-                    if xmin == 1; 
-                        xmin = 1e-5;
+                while gampdf(xmin,Jbar/tau,tau) > 1e-4;
+                    if xmin <= 1; 
+                        xmin = 1e-10;
                         break
+                    else
+                        xmin = xmin - 1;
                     end
                 end
                 % upper bound
-                while gampdf(xmax,Jbar/tau,tau) > 1e-5;
-                    xmax = xmax + 1;
+                while gampdf(xmax,Jbar/tau,tau) > 1e-4;
+                    xmax = xmax + 0.1;
                 end
 %             end
-            JVec = linspace(1e-5,xmax,nJSamp);
+            JVec = linspace(xmin,xmax,nJSamp);
 %             JVec = linspace(1e-5,20,nJSamp); % ASPEN: make sure range is reasonable for parameter range
             varargout{ivar} = JVec;
         case 'rVec'

@@ -1,16 +1,13 @@
 %% understanding Jbar, tau, and sigma
 
-Jbar = 3.5452;
+Jbar = .3;
 tau = 2;
 
-nSamps = 1e5;
-samps = sqrt(1./gamrnd(Jbar/tau,tau,1,nSamps));
+[JVec] = loadvar({'JVec',Jbar,tau});
+Jpdf = gampdf(JVec,Jbar/tau,tau);
+% Jpdf = Jpdf./qtrapz(Jpdf); % normalize
 
-% hist(1./samps.^2)
-% hist(samps)
-
-figure; hist(samps)
-mean(samps)
+figure; plot(JVec,Jpdf,'k-'); defaultplot
 
 %% ==========================================================
 %             STUFF WITH ACTUAL DATA!
@@ -79,10 +76,16 @@ nSubj = length(subjVec);
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-model = 2;
+model = 1;
 nSubj = 11;
+switch model
+    case 1
+        nParams = 3;
+    case 2 
+        nParams = 5;
+end
 
-bfp = nan(nSubj,5);
+bfp = nan(nSubj,nParams);
 nLL = nan(1,nSubj);
 for isubj = 1:nSubj;
     load(['fits_model' num2str(model) '_subj' num2str(isubj) '.mat'])
@@ -92,6 +95,25 @@ end
 ML_parameters = bfp;
 nLLVec = nLL;
 save(['fits_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
+
+%% double chek NLL is good
+
+imodel = 1;
+
+load(['fits_model' num2str(imodel) '.mat'])
+load('cleandata.mat','data')
+bfp = ML_parameters;
+bfp(:,1:2) = log(bfp(:,1:2));
+
+nSubj = 11;
+nLLVec3 = nan(1,nSubj);
+for isubj = 1:nSubj;
+    isubj
+    
+    nLLVec3(isubj) = calc_nLL(imodel,bfp(isubj,:),data{isubj});
+end
+
+[nLLVec; nLLVec2; nLLVec3]
 
 %% model comparison
 
