@@ -45,14 +45,13 @@ tau = Theta(2);
 beta = Theta(3);
 % lapse = Theta(4);
 
-
 % data stuff
 priorityVec = [0.6 0.3 0.1];
 nPriorities = length(priorityVec);
 
 switch model
     case 1 % optimal
-        pVec = calc_optimal_pVec(Theta);    
+        pVec = calc_optimal_pVec(Theta);   
     case 2 % not optimal
         pVec = [Theta(4:5) 1-sum(Theta(4:5))];
 end
@@ -64,6 +63,9 @@ rVec = rVec(:); % vertical
 nLL = 0;
 for ipriority = 1:nPriorities
     Jbar = Jbar_total*pVec(ipriority); % Jbar for current trial
+    
+    % clear data used in previous priorities
+    clear idx1 idx2 data_r_reshaped
     
     % get data
     data_distance = data{ipriority}(:,1);
@@ -81,25 +83,50 @@ for ipriority = 1:nPriorities
     Sigma = zeros(1,2,nJs*nTrials);
     Sigma(1,:,:) = sort(repmat(sqrt(1./JVec(:)),nTrials,2),'descend')'; % in descending order to keep J ascending
     p_Shat = mvnpdf(repmat([data_distance(:) zeros(nTrials,1)],nJs,1),0,Sigma);
-    p_Shat = reshape(p_Shat,nTrials,nJs);
+    p_Shat = reshape(p_Shat,nTrials,nJs)'; % nJs x nTrials
     
-    % p(Shat|S) = \int p(Shat|S,J) p(J) dJ
-    p_Shat = qtrapz(bsxfun(@times,p_Shat,Jpdf),2);
+    % p(rVec|J,beta) (a range of r to get entire probability dist)
+    pdf_r = calc_pdf_r(beta, JVec); % rVec x JVec
     
-    % get pdf of p(r|Jbar,tau,beta)
-    pdf_r = calc_pdf_r(beta, JVec);
-    pdf_r = bsxfunandsum(@times,pdf_r,Jpdf,2);
-    
-    % p(r): probability of responding r given the parameters
-    data_r = data_r(:)';  % make sure it is horizontal vector
+    % calculate p(r|J,beta) (get indices of which r in rVec is closest to actual r)
+    data_r = data_r(:)';  % horizontal vector
     firstidxs = bsxfun(@(x,y) x == x(find((x-y)<=0,1,'last')),rVec,data_r);
     lastidxs = bsxfun(@(x,y) x == x(find((x-y)>=0,1,'first')),rVec,data_r);
+    idx1(:,1,:) = firstidxs;
+    idx2(:,1,:) = lastidxs;
+    
+    xdiff = diff(rVec(1:2));
+    ydiff = sum(bsxfun(@times,pdf_r,idx2)) - sum(bsxfun(@times,pdf_r,idx1)); % 1 x JVec x nTrials
+    slope = ydiff./xdiff; % 1 x JVec x nTrials
     
     % linearly interpolate
-    slope = (sum(bsxfun(@times,pdf_r,lastidxs)) - sum(bsxfun(@times,pdf_r,firstidxs)))./diff(rVec(1:2));
-    p_r = slope.*(data_r - sum(bsxfun(@times,rVec,firstidxs))) + sum(bsxfun(@times,pdf_r,firstidxs));
+    data_r_reshaped(1,:,:) = data_r;
+    p_r = squeeze(slope.*bsxfun(@minus,data_r_reshaped,sum(bsxfun(@times,rVec,idx1))) + sum(bsxfun(@times,pdf_r,idx1))); % JVec x nTrials
     
-    % nLL
-    nLL = nLL -sum(log(p_Shat)) -sum(log(p_r));
-    %     nLL = nLL -sum(log((1-lapse).*p_Shat + lapse.*p_Shat_lapse)) -sum(log(p_r));
+    % \int p(Shat|S,J) p(r|J) p(J) dJ
+    pTrials = sum(bsxfun(@times,p_Shat.*p_r,Jpdf')); % 1 x nTrials
+    nLL = nLL - sum(log(pTrials));
+    
+    
+    
+    
+%     % p(Shat|S) = \int p(Shat|S,J) p(J) dJ
+%     p_Shat = qtrapz(bsxfun(@times,p_Shat,Jpdf),2);
+%     
+%     % get pdf of p(r|J,beta)
+%     pdf_r = calc_pdf_r(beta, JVec); % rVec x JVec
+%     pdf_r = bsxfunandsum(@times,pdf_r,Jpdf,2); % rVec x 1
+%     
+%     % p(r): probability of responding r given the parameters
+%     data_r = data_r(:)';  % make sure it is horizontal vector
+%     firstidxs = bsxfun(@(x,y) x == x(find((x-y)<=0,1,'last')),rVec,data_r);
+%     lastidxs = bsxfun(@(x,y) x == x(find((x-y)>=0,1,'first')),rVec,data_r);
+%     
+%     % linearly interpolate
+%     slope = (sum(bsxfun(@times,pdf_r,lastidxs)) - sum(bsxfun(@times,pdf_r,firstidxs)))./diff(rVec(1:2));
+%     p_r = slope.*(data_r - sum(bsxfun(@times,rVec,firstidxs))) + sum(bsxfun(@times,pdf_r,firstidxs));
+%     
+%     % nLL
+%     nLL = nLL -sum(log(p_Shat)) -sum(log(p_r));
+%     %     nLL = nLL -sum(log((1-lapse).*p_Shat + lapse.*p_Shat_lapse)) -sum(log(p_r));
 end

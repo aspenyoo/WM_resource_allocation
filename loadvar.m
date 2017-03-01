@@ -6,7 +6,7 @@ for ivar = 1:nvars;
     if iscell(var); Jbar = var{2}; tau = var{3}; var = var{1}; end
     switch var
         case 'JVec'
-            nJSamp = 500;
+            nJSamp = 100;
             xmin = Jbar;
             xmax = Jbar;
 %             if exist('Jbar')

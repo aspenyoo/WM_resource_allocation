@@ -21,8 +21,8 @@ filename = [filepath 'fits_model' num2str(model) '_subj' num2str(subjnum) '.mat'
 
 lb = [1e-5 1e-5 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)
 ub = [50 50 5]; % ASPEN: refine
-plb = [1e-5 1e-3 1e-5];
-pub = [30 10 2]; % ASPEN: refinelogflag = logical([1 1 0]);
+plb = [0.5 1e-3 1e-5];
+pub = [20 10 2]; % ASPEN: refinelogflag = logical([1 1 0]);
 logflag = logical([1 1 0]);
 if model == 2
     lb = [lb 0 0];
@@ -37,7 +37,7 @@ ub(logflag) = log(ub(logflag));
 plb(logflag) = log(plb(logflag));
 pub(logflag) = log(pub(logflag));
 
-optimMethod = 'fmincon';
+optimMethod = 'bps';
 if strcmp(optimMethod,'fmincon')
         [A,b,Aeq,beq,nonlcon] = deal([]);
 %         options = optimset('Display','iter');
