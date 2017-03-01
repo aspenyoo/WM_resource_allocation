@@ -100,8 +100,8 @@ for ipriority = 1:nPriorities
     slope = ydiff./xdiff; % 1 x JVec x nTrials
     
     % linearly interpolate
-    data_r_reshaped(1,:,:) = data_r;
-    p_r = squeeze(slope.*bsxfun(@minus,data_r_reshaped,sum(bsxfun(@times,rVec,idx1))) + sum(bsxfun(@times,pdf_r,idx1))); % JVec x nTrials
+    data_r_reshaped(1,:,:) = data_r; % 1 x 1 x nTrials
+    p_r = squeeze(bsxfun(@times,slope,bsxfun(@minus,data_r_reshaped,sum(bsxfun(@times,rVec,idx1)))) + sum(bsxfun(@times,pdf_r,idx1))); % JVec x nTrials
     
     % \int p(Shat|S,J) p(r|J) p(J) dJ
     pTrials = sum(bsxfun(@times,p_Shat.*p_r,Jpdf')); % 1 x nTrials
