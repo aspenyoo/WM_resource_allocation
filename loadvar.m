@@ -6,7 +6,7 @@ for ivar = 1:nvars;
     if iscell(var); Jbar = var{2}; tau = var{3}; var = var{1}; end
     switch var
         case 'JVec'
-            nJSamp = 100;
+            nJSamp = 500;
             xmin = Jbar;
             xmax = Jbar;
 %             if exist('Jbar')
@@ -20,9 +20,16 @@ for ivar = 1:nvars;
                         xmin = xmin - 1;
                     end
                 end
+                increment = 1;
                 % upper bound
                 while gampdf(xmax,Jbar/tau,tau) > 1e-4;
-                    xmax = xmax + 0.1;
+                    xmax = xmax + increment;
+                end
+                % decrease by smaller increments to make it more fine
+                % grained
+                increment = 0.1*increment;
+                while gampdf(xmax,Jbar/tau,tau) < 1e-4;
+                    xmax = xmax - increment;
                 end
 %             end
             JVec = linspace(xmin,xmax,nJSamp);
