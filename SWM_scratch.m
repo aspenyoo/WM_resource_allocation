@@ -52,7 +52,7 @@ priorityVec = sort(unique(data_priority),'descend'); % priority condition
 nPriorities = length(priorityVec);
 titleVec = {'high','med','low'};
 subjVec = unique(data_subj);
-nSubj = length(subjVec);
+nSimSubj = length(subjVec);
 
 % data = cell(1,nSubj);
 % for isubj = 1:nSubj
@@ -77,7 +77,7 @@ nSubj = length(subjVec);
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
 model = 1;
-nSubj = 11;
+nSimSubj = 11;
 switch model
     case 1
         nParams = 3;
@@ -85,9 +85,9 @@ switch model
         nParams = 5;
 end
 
-bfp = nan(nSubj,nParams);
-nLL = nan(1,nSubj);
-for isubj = 1:nSubj;
+bfp = nan(nSimSubj,nParams);
+nLL = nan(1,nSimSubj);
+for isubj = 1:nSimSubj;
     load(['fits_model' num2str(model) '_subj' num2str(isubj) '.mat'])
     bfp(isubj,:) = ML_parameters(nLLVec == min(nLLVec),:);
     nLL(isubj) = min(nLLVec);
@@ -99,10 +99,10 @@ save(['fits_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
 %% optimal pVec for model 1
 
 load(['fits_model' num2str(model) '.mat'])
-nSubj = 11;
+nSimSubj = 11;
 
-pMat = nan(nSubj,3);
-for isubj = 1:nSubj
+pMat = nan(nSimSubj,3);
+for isubj = 1:nSimSubj
     
     pMat(isubj,:) = calc_optimal_pVec(ML_parameters(isubj,:));
 end
@@ -118,9 +118,9 @@ load('cleandata.mat','data')
 bfp = ML_parameters;
 bfp(:,1:2) = log(bfp(:,1:2));
 
-nSubj = 11;
-nLLVec2 = nan(1,nSubj);
-for isubj = 1:nSubj;
+nSimSubj = 11;
+nLLVec2 = nan(1,nSimSubj);
+for isubj = 1:nSimSubj;
     isubj
     
     nLLVec2(isubj) = calc_nLL(imodel,bfp(isubj,:),data{isubj});
@@ -266,14 +266,14 @@ clear all
 nPriorities = 3;
 model = 1;
 nTrials = 1e5*ones(1,3); % how many trials to simulate per priority
-nSubj = 11;
+nSimSubj = 11;
 load('cleandata.mat','data')
 
 % get ML parameter estimate for isubj
 load(['fits_model' num2str(model) '.mat'])
 
-simdata = cell(1,nSubj);
-for isubj = 1:nSubj
+simdata = cell(1,nSimSubj);
+for isubj = 1:nSimSubj
     isubj
     Theta = ML_parameters(isubj,:);
     simdata{isubj} = simulate_data(model,Theta,nTrials);
@@ -400,3 +400,33 @@ plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},s
     [],[],'k')
 
 end
+
+%% % % % % % % % % % % % % % % % % % % % % % % 
+%           SIMULATE DATA
+% % % % % % % % % % % % % % % % % % % % % % % 
+
+clear all
+model = 2;
+nSimSubj = 10;
+
+switch model
+    case 1 
+        logflag = logical([1 1 0]);
+    case 2
+        logflag = logical([1 1 0 0 0]);
+end
+
+load(['fits_model' num2str(model) '.mat'])
+ML_parameter(logflag) = log(ML_parameters(logflag));
+MU = mean(ML_parameters);
+SIGMA = cov(ML_parameters);
+
+simtheta = mvnrnd(MU,SIGMA,nSimSubj);
+simtheta(:,logflag) = exp(simtheta(:,logflag));
+
+nTrials = [250 120 70]; % mean number of trials across actual participants
+for isubj = 1:nSimSubj;
+    isubj
+    simdata{isubj} = simulate_data(model,simtheta(isubj,:),nTrials);
+end
+save(['simdata_model' num2str(model) '.mat'],'simdata','simtheta')

@@ -1,5 +1,6 @@
-function fit_parameters(model,subjnum,nStartVals)
+function fit_parameters(model,subjnum,nStartVals,testmodel)
 if nargin < 3; nStartVals = 1; end
+if nargin < 4; testmodel = model; end % for model recovery
 %
 %
 % ================= INPUT VARIABLES ==================
@@ -11,13 +12,18 @@ if nargin < 3; nStartVals = 1; end
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
-
-load('cleandata.mat')
-subjdata = data{subjnum};
-
 % filepath = 'fits/';
 filepath = '/home/ay963/spatialWM/fits/';
-filename = [filepath 'fits_model' num2str(model) '_subj' num2str(subjnum) '.mat'];
+
+if subjnum <= 11;
+    load('cleandata.mat')
+    subjdata = data{subjnum};
+    filename = [filepath 'fits_model' num2str(model) '_subj' num2str(subjnum) '.mat'];
+else
+    load(['simdata_model' num2str(testmodel) '.mat'],'simdata')
+    subjdata = simdata{subjnum - 11};
+    filename = [filepath 'paramrecov_model' num2str(model) '_subj' num2str(subjnum-11) '.mat'];
+end
 
 lb = [1e-5 1e-5 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)
 ub = [50 50 5]; % ASPEN: refine
