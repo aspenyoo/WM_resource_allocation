@@ -30,6 +30,10 @@ for ivar = 1:nvars;
                 increment = 0.1*increment;
                 while gampdf(xmax,Jbar/tau,tau) < 1e-4;
                     xmax = xmax - increment;
+                    if xmax <= 0.1;
+                        xmax = 0.05;
+                        break
+                    end
                 end
 %             end
             JVec = linspace(xmin,xmax,nJSamp);

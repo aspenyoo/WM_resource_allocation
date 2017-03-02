@@ -76,7 +76,7 @@ nSimSubj = length(subjVec);
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-model = 1;
+model = 2;
 nSimSubj = 11;
 switch model
     case 1

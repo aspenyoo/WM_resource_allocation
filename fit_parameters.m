@@ -25,6 +25,8 @@ else
     filename = [filepath 'paramrecov_model' num2str(model) '_subj' num2str(subjnum-11) '.mat'];
 end
 
+rng(0);
+
 lb = [1e-5 1e-5 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)
 ub = [50 50 5]; % ASPEN: refine
 plb = [0.5 1e-3 1e-5];

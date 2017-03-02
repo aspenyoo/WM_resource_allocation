@@ -44,6 +44,7 @@ Jbar_total = Theta(1);
 tau = Theta(2);
 beta = Theta(3);
 % lapse = Theta(4);
+Theta
 
 % data stuff
 priorityVec = [0.6 0.3 0.1];
