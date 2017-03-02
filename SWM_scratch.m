@@ -96,6 +96,19 @@ ML_parameters = bfp;
 nLLVec = nLL;
 save(['fits_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
 
+%% optimal pVec for model 1
+
+load(['fits_model' num2str(model) '.mat'])
+nSubj = 11;
+
+pMat = nan(nSubj,3);
+for isubj = 1:nSubj
+    
+    pMat(isubj,:) = calc_optimal_pVec(ML_parameters(isubj,:));
+end
+
+pMat
+
 %% double chek NLL is good
 
 imodel = 1;
@@ -106,19 +119,19 @@ bfp = ML_parameters;
 bfp(:,1:2) = log(bfp(:,1:2));
 
 nSubj = 11;
-nLLVec3 = nan(1,nSubj);
+nLLVec2 = nan(1,nSubj);
 for isubj = 1:nSubj;
     isubj
     
-    nLLVec3(isubj) = calc_nLL(imodel,bfp(isubj,:),data{isubj});
+    nLLVec2(isubj) = calc_nLL(imodel,bfp(isubj,:),data{isubj});
 end
 
-[nLLVec; nLLVec2; nLLVec3]
+[nLLVec; nLLVec2]
 
 %% model comparison
 
 nParamVec = nan(1,2);
-for imodel = 1:2;
+for imodel = 1:2
     load(['fits_model' num2str(imodel) '.mat'])
     nLL.(['model' num2str(imodel)]) = nLLVec;
     nParamVec(imodel) = size(ML_parameters,2);
@@ -260,7 +273,8 @@ load('cleandata.mat','data')
 load(['fits_model' num2str(model) '.mat'])
 
 simdata = cell(1,nSubj);
-for isubj = 1:nSubj;
+for isubj = 1:nSubj
+    isubj
     Theta = ML_parameters(isubj,:);
     simdata{isubj} = simulate_data(model,Theta,nTrials);
 end
@@ -268,7 +282,7 @@ end
 %% histograms per subjects
 xlims = linspace(0,10,11);
 
-for isubj = 1:11;
+for isubj = 1:11
     figure;
     for ipriority = 1:nPriorities
         
@@ -313,7 +327,7 @@ meansimdiscsize = cellfun(@mean,simdiscsize,'UniformOutput',false);
 semsimdiscsize = cellfun(@(x) std(x)./sqrt(size(x,1)),simdiscsize,'UniformOutput',false);
 
 figure
-for ipriority = 1:nPriorities;
+for ipriority = 1:nPriorities
     
     % error
     subplot(3,3,3*ipriority-2)
@@ -339,7 +353,7 @@ end
 %% quantile correlation plot per subject
 
 nQuants = 6;
-for isubj = 1:11;
+for isubj = 1:11
     figure;
     for ipriority = 1:nPriorities
         currdata = data{isubj}{ipriority}(:,1);
@@ -355,7 +369,7 @@ for isubj = 1:11;
             
             meanquantsimerror{ipriority}(isubj,iquant) = mean(currsimdata(simquantVec(iquant)+1:simquantVec(iquant+1)));
             meanquantsimdiscsize{ipriority}(isubj,iquant) = mean(simdata{isubj}{ipriority}(simidx(simquantVec(iquant)+1:simquantVec(iquant+1)),2));
-        end
+            ends
         
         subplot(3,1,ipriority)
         plot(meanquanterror{ipriority}(isubj,:),meanquantdiscsize{ipriority}(isubj,:),'k');
@@ -375,9 +389,9 @@ meanmeanquantsimerror = cellfun(@mean,meanquantsimerror,'UniformOutput',false);
 meanmeanquantsimdiscsize = cellfun(@mean,meanquantsimdiscsize,'UniformOutput',false);
 semmeanquantsimdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantsimdiscsize,'UniformOutput',false);
 
-figure;
+% figure;
 colorMat = {'k','r','b'};
-for ipriority = 1:nPriorities;
+for ipriority = 1:nPriorities
         subplot(3,3,3*ipriority)
     hold on
     plot_summaryfit(meanmeanquantsimerror{ipriority},[],[],meanmeanquantsimdiscsize{ipriority},...
