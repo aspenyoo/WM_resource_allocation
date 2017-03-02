@@ -264,7 +264,7 @@ title('disc size (dva)')
 clear all
 
 nPriorities = 3;
-model = 1;
+model = 2;
 nTrials = 1e5*ones(1,3); % how many trials to simulate per priority
 nSimSubj = 11;
 load('cleandata.mat','data')
@@ -369,13 +369,12 @@ for isubj = 1:11
             
             meanquantsimerror{ipriority}(isubj,iquant) = mean(currsimdata(simquantVec(iquant)+1:simquantVec(iquant+1)));
             meanquantsimdiscsize{ipriority}(isubj,iquant) = mean(simdata{isubj}{ipriority}(simidx(simquantVec(iquant)+1:simquantVec(iquant+1)),2));
-            ends
+        end
         
         subplot(3,1,ipriority)
         plot(meanquanterror{ipriority}(isubj,:),meanquantdiscsize{ipriority}(isubj,:),'k');
         hold on;
         plot(meanquantsimerror{ipriority}(isubj,:),meanquantsimdiscsize{ipriority}(isubj,:),'Color',aspencolors('booger'));
-
     end
     pause;
 end
