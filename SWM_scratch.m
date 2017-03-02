@@ -409,23 +409,25 @@ clear all
 model = 2;
 nSimSubj = 10;
 
-switch model
-    case 1 
-        logflag = logical([1 1 0]);
-    case 2
-        logflag = logical([1 1 0 0 0]);
-end
+% switch model
+%     case 1 
+%         logflag = logical([1 1 0]);
+%     case 2
+%         logflag = logical([1 1 0 0 0]);
+% end
 
 load(['fits_model' num2str(model) '.mat'])
-ML_parameter(logflag) = log(ML_parameters(logflag));
+% ML_parameters(logflag) = log(ML_parameters(logflag));
 MU = mean(ML_parameters);
 SIGMA = cov(ML_parameters);
 
 simtheta = mvnrnd(MU,SIGMA,nSimSubj);
-simtheta(:,logflag) = exp(simtheta(:,logflag));
+simtheta = abs(simtheta); % hacky way to parameters are positive
+
+% simtheta(:,logflag) = exp(simtheta(:,logflag));
 
 nTrials = [250 120 70]; % mean number of trials across actual participants
-for isubj = 1:nSimSubj;
+for isubj = 1:nSimSubj
     isubj
     simdata{isubj} = simulate_data(model,simtheta(isubj,:),nTrials);
 end

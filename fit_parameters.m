@@ -15,7 +15,7 @@ if nargin < 4; testmodel = model; end % for model recovery
 % filepath = 'fits/';
 filepath = '/home/ay963/spatialWM/fits/';
 
-if subjnum <= 11;
+if subjnum <= 11
     load('cleandata.mat')
     subjdata = data{subjnum};
     filename = [filepath 'fits_model' num2str(model) '_subj' num2str(subjnum) '.mat'];
@@ -51,7 +51,7 @@ if strcmp(optimMethod,'fmincon')
 %         options = optimset('Display','iter');
         if model == 2
             A = [1 1];
-            b = [1];
+            b = 1;
         end
 end
 
