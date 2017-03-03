@@ -12,8 +12,8 @@ if nargin < 4; testmodel = model; end % for model recovery
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
-% filepath = 'fits/';
-filepath = '/home/ay963/spatialWM/fits/';
+filepath = 'fits/';
+% filepath = '/home/ay963/spatialWM/fits/';
 
 if subjnum <= 11
     load('cleandata.mat')

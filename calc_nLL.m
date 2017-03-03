@@ -76,7 +76,7 @@ for ipriority = 1:nPriorities
     nJs = length(JVec);
     Jpdf = gampdf(JVec,Jbar/tau,tau);
     Jpdf = Jpdf./qtrapz(Jpdf); % normalize
-    if any(Jpdf > 1); nLL = Inf; return; end
+%     if any(Jpdf > 1); nLL = Inf; return; end
     
     % p(Shat|S,J)
     nTrials = length(data_distance);

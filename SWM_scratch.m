@@ -1,9 +1,10 @@
 %% understanding Jbar, tau, and sigma
 
-Jbar = .3;
-tau = 2;
+Jbar = 1.9275;
+tau = 1.5;
 
 [JVec] = loadvar({'JVec',Jbar,tau});
+% JVec = linspace(1,2,100);
 Jpdf = gampdf(JVec,Jbar/tau,tau);
 % Jpdf = Jpdf./qtrapz(Jpdf); % normalize
 
@@ -52,7 +53,7 @@ priorityVec = sort(unique(data_priority),'descend'); % priority condition
 nPriorities = length(priorityVec);
 titleVec = {'high','med','low'};
 subjVec = unique(data_subj);
-nSimSubj = length(subjVec);
+nSubj = length(subjVec);
 
 % data = cell(1,nSubj);
 % for isubj = 1:nSubj
@@ -77,7 +78,7 @@ nSimSubj = length(subjVec);
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
 model = 2;
-nSimSubj = 11;
+nSubj = 10;
 switch model
     case 1
         nParams = 3;
@@ -85,24 +86,43 @@ switch model
         nParams = 5;
 end
 
-bfp = nan(nSimSubj,nParams);
-nLL = nan(1,nSimSubj);
-for isubj = 1:nSimSubj;
-    load(['fits_model' num2str(model) '_subj' num2str(isubj) '.mat'])
+bfp = nan(nSubj,nParams);
+nLL = nan(1,nSubj);
+for isubj = 1:nSubj;
+    load(['paramrecov_model' num2str(model) '_subj' num2str(isubj) '.mat'])
     bfp(isubj,:) = ML_parameters(nLLVec == min(nLLVec),:);
     nLL(isubj) = min(nLLVec);
 end
 ML_parameters = bfp;
 nLLVec = nLL;
-save(['fits_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
+save(['paramrecov_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
+
+%% parameter recovery plot
+
+clear all
+model = 2;
+
+load(['paramrecov_model' num2str(model) '.mat'])
+bfp = ML_parameters;
+
+load(['simdata_model' num2str(model) '.mat'])
+nParams = size(bfp,2);
+
+for iparam = 1:nParams;
+    subplot(2,3,iparam);
+    plot(bfp(:,iparam),simtheta(:,iparam),'ko'); hold on; 
+    plot([min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],...
+        [min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],'k-')
+end
+
 
 %% optimal pVec for model 1
 
 load(['fits_model' num2str(model) '.mat'])
-nSimSubj = 11;
+nSubj = 11;
 
-pMat = nan(nSimSubj,3);
-for isubj = 1:nSimSubj
+pMat = nan(nSubj,3);
+for isubj = 1:nSubj
     
     pMat(isubj,:) = calc_optimal_pVec(ML_parameters(isubj,:));
 end
@@ -118,9 +138,9 @@ load('cleandata.mat','data')
 bfp = ML_parameters;
 bfp(:,1:2) = log(bfp(:,1:2));
 
-nSimSubj = 11;
-nLLVec2 = nan(1,nSimSubj);
-for isubj = 1:nSimSubj;
+nSubj = 11;
+nLLVec2 = nan(1,nSubj);
+for isubj = 1:nSubj;
     isubj
     
     nLLVec2(isubj) = calc_nLL(imodel,bfp(isubj,:),data{isubj});
@@ -266,14 +286,14 @@ clear all
 nPriorities = 3;
 model = 2;
 nTrials = 1e5*ones(1,3); % how many trials to simulate per priority
-nSimSubj = 11;
+nSubj = 11;
 load('cleandata.mat','data')
 
 % get ML parameter estimate for isubj
 load(['fits_model' num2str(model) '.mat'])
 
-simdata = cell(1,nSimSubj);
-for isubj = 1:nSimSubj
+simdata = cell(1,nSubj);
+for isubj = 1:nSubj
     isubj
     Theta = ML_parameters(isubj,:);
     simdata{isubj} = simulate_data(model,Theta,nTrials);
@@ -406,7 +426,7 @@ end
 
 clear all
 model = 2;
-nSimSubj = 10;
+nSubj = 10;
 
 % switch model
 %     case 1 
@@ -420,13 +440,13 @@ load(['fits_model' num2str(model) '.mat'])
 MU = mean(ML_parameters);
 SIGMA = cov(ML_parameters);
 
-simtheta = mvnrnd(MU,SIGMA,nSimSubj);
+simtheta = mvnrnd(MU,SIGMA,nSubj);
 simtheta = abs(simtheta); % hacky way to parameters are positive
 
 % simtheta(:,logflag) = exp(simtheta(:,logflag));
 
 nTrials = [250 120 70]; % mean number of trials across actual participants
-for isubj = 1:nSimSubj
+for isubj = 1:nSubj
     isubj
     simdata{isubj} = simulate_data(model,simtheta(isubj,:),nTrials);
 end
