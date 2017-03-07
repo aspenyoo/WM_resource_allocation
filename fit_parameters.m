@@ -28,8 +28,8 @@ end
 rng(0);
 % rng(str2double([num2str(model) num2str(subjnum)]));
 
-lb = [1e-5 1e-5 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)
-ub = [50 50 5];
+lb = [1e-5 1e-2 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)
+ub = [50 10 5];
 plb = [0.5 0.01 0.5];
 pub = [20 5 1.5];
 logflag = logical([1 1 0]);
