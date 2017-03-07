@@ -1,14 +1,23 @@
 %% understanding Jbar, tau, and sigma
 
-Jbar = 1.9275;
+Jbar = 3;
 tau = 1.5;
+beta = 0.01;
 
 [JVec] = loadvar({'JVec',Jbar,tau});
 % JVec = linspace(1,2,100);
 Jpdf = gampdf(JVec,Jbar/tau,tau);
 % Jpdf = Jpdf./qtrapz(Jpdf); % normalize
 
-figure; plot(JVec,Jpdf,'k-'); defaultplot
+p_r = calc_pdf_r(beta,Jbar);
+
+figure; 
+subplot(2,1,1)
+plot(JVec,Jpdf,'k-'); defaultplot
+subplot(2,1,2)
+plot(p_r,'k-'); defaultplot
+
+
 
 %% ==========================================================
 %             STUFF WITH ACTUAL DATA!
@@ -78,7 +87,14 @@ nSubj = length(subjVec);
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
 model = 2;
-nSubj = 10;
+nSubj = 11;
+fakedata = 0;
+if (fakedata)
+    pretxt = 'paramrecov';
+else
+    pretxt = 'fits';
+end
+
 switch model
     case 1
         nParams = 3;
@@ -88,14 +104,14 @@ end
 
 bfp = nan(nSubj,nParams);
 nLL = nan(1,nSubj);
-for isubj = 1:nSubj;
-    load(['paramrecov_model' num2str(model) '_subj' num2str(isubj) '.mat'])
+for isubj = 1:nSubj
+    load([pretxt '_model' num2str(model) '_subj' num2str(isubj) '.mat'])
     bfp(isubj,:) = ML_parameters(nLLVec == min(nLLVec),:);
     nLL(isubj) = min(nLLVec);
 end
 ML_parameters = bfp;
 nLLVec = nLL;
-save(['paramrecov_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
+save([pretxt '_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
 
 %% parameter recovery plot
 
@@ -108,7 +124,7 @@ bfp = ML_parameters;
 load(['simdata_model' num2str(model) '.mat'])
 nParams = size(bfp,2);
 
-for iparam = 1:nParams;
+for iparam = 1:nParams
     subplot(2,3,iparam);
     plot(bfp(:,iparam),simtheta(:,iparam),'ko'); hold on; 
     plot([min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],...
