@@ -86,9 +86,9 @@ nSubj = length(subjVec);
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-model = 1;
-nSubj = 10;
-fakedata = 1;
+model = 2;
+nSubj = 11;
+fakedata = 0;
 if (fakedata)
     pretxt = 'paramrecov';
 else
@@ -107,7 +107,8 @@ nLL = nan(1,nSubj);
 for isubj = 1:nSubj
     isubj
     load([pretxt '_model' num2str(model) '_subj' num2str(isubj) '.mat'])
-    bfp(isubj,:) = ML_parameters(nLLVec == min(nLLVec),:);
+    blah = ML_parameters(nLLVec == min(nLLVec),:);
+    bfp(isubj,:) = blah(1,:);
     nLL(isubj) = min(nLLVec);
 end
 ML_parameters = bfp;
@@ -117,7 +118,7 @@ save([pretxt '_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
 %% parameter recovery plot
 
 clear all
-model = 2;
+model = 1;
 
 load(['paramrecov_model' num2str(model) '.mat'])
 bfp = ML_parameters;
@@ -187,6 +188,8 @@ end
 [nLLVec; nLLVec2]
 
 %% model comparison
+
+clear all
 
 nParamVec = nan(1,2);
 for imodel = 1:2
