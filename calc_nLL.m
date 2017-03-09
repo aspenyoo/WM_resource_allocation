@@ -54,6 +54,10 @@ switch model
         pVec = calc_optimal_pVec(Theta);
     case 2 % not optimal
         pVec = [Theta(4:5) 1-sum(Theta(4:5))];
+        if pVec(3) <=0
+            nLL = Inf;
+            return
+        end
 end
 
 % loading rVec;

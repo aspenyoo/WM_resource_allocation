@@ -86,9 +86,9 @@ nSubj = length(subjVec);
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-model = 2;
-nSubj = 11;
-fakedata = 0;
+model = 1;
+nSubj = 10;
+fakedata = 1;
 if (fakedata)
     pretxt = 'paramrecov';
 else
@@ -105,6 +105,7 @@ end
 bfp = nan(nSubj,nParams);
 nLL = nan(1,nSubj);
 for isubj = 1:nSubj
+    isubj
     load([pretxt '_model' num2str(model) '_subj' num2str(isubj) '.mat'])
     bfp(isubj,:) = ML_parameters(nLLVec == min(nLLVec),:);
     nLL(isubj) = min(nLLVec);
@@ -131,6 +132,27 @@ for iparam = 1:nParams
         [min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],'k-')
 end
 
+%% double chek NLL is good for parameter recovery
+
+clear all
+
+imodel = 1;
+
+load(['simdata_model' num2str(imodel) '.mat'])
+load(['paramrecov_model' num2str(imodel) '.mat'])
+bfp = ML_parameters;
+bfp(:,1:2) = log(bfp(:,1:2));
+
+nSubj = 10;
+[nLLVec2, nLLVec3] = deal(nan(1,nSubj));
+for isubj = 1:nSubj
+    isubj
+    
+    nLLVec2(isubj) = calc_nLL(imodel,bfp(isubj,:),simdata{isubj});
+    nLLVec3(isubj) = calc_nLL(imodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
+end
+
+[nLLVec; nLLVec2; nLLVec3]
 
 %% optimal pVec for model 1
 
@@ -156,7 +178,7 @@ bfp(:,1:2) = log(bfp(:,1:2));
 
 nSubj = 11;
 nLLVec2 = nan(1,nSubj);
-for isubj = 1:nSubj;
+for isubj = 1:nSubj
     isubj
     
     nLLVec2(isubj) = calc_nLL(imodel,bfp(isubj,:),data{isubj});
