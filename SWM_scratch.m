@@ -86,7 +86,7 @@ nSubj = length(subjVec);
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-model = 2;
+imodel = 2;
 nSubj = 10;
 fakedata = 1;
 if (fakedata)
@@ -95,7 +95,7 @@ else
     pretxt = 'fits';
 end
 
-switch model
+switch imodel
     case 1
         nParams = 3;
     case 2 
@@ -106,24 +106,24 @@ bfp = nan(nSubj,nParams);
 nLL = nan(1,nSubj);
 for isubj = 1:nSubj
     isubj
-    load([pretxt '_model' num2str(model) '_subj' num2str(isubj) '.mat'])
+    load([pretxt '_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
     blah = ML_parameters(nLLVec == min(nLLVec),:);
     bfp(isubj,:) = blah(1,:);
     nLL(isubj) = min(nLLVec);
 end
 ML_parameters = bfp;
 nLLVec = nLL;
-save([pretxt '_model' num2str(model) '.mat'],'ML_parameters','nLLVec')
+save([pretxt '_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
 
 %% parameter recovery plot
 
 clear all
-model = 1;
+imodel = 2;
 
-load(['paramrecov_model' num2str(model) '.mat'])
+load(['paramrecov_model' num2str(imodel) '.mat'])
 bfp = ML_parameters;
 
-load(['simdata_model' num2str(model) '.mat'])
+load(['simdata_model' num2str(imodel) '.mat'])
 nParams = size(bfp,2);
 
 for iparam = 1:nParams
@@ -159,7 +159,7 @@ end
 
 clear all
 imodel = 1;
-isubj = 6;
+isubj = 8;
 
 load(['simdata_model' num2str(imodel) '.mat'])
 load(['paramrecov_model' num2str(imodel) '.mat'])
@@ -170,14 +170,14 @@ JbartotalVec = linspace(log(thetas(1,1).*0.5),log(thetas(2,1)*2),11);
 tauVec = linspace(max(log([ 1e-5 thetas(1,2).*0.5])),max(log([1e-5 thetas(2,2)*2])),11);
 % betaVec = linspace(thetas(3).*0.5,thetas(3)*1.5,11);
 
-beta = simtheta(isubj,3);
+otherparams = simtheta(isubj,3:end);
 for iJ = 1:11
     Jbartotal = JbartotalVec(iJ)
     
     for itau = 1:11
         tau = tauVec(itau);
         
-        nLLMat(iJ,itau) = calc_nLL(imodel,[Jbartotal tau beta],simdata{isubj});
+        nLLMat(iJ,itau) = calc_nLL(imodel,[Jbartotal tau otherparams],simdata{isubj});
     end
 end
 
@@ -204,7 +204,10 @@ xlabel('tau'); ylabel('Jbar_{total}')
 
 %% optimal pVec for model 1
 
-load(['fits_model' num2str(model) '.mat'])
+clear all
+imodel = 1;
+
+load(['fits_model' num2str(imodel) '.mat'])
 nSubj = 11;
 
 pMat = nan(nSubj,3);
@@ -215,6 +218,17 @@ end
 
 pMat
 
+%% pVec for model1
+
+clear all
+imodel = 2;
+load(['fits_model' num2str(imodel) '.mat'])
+nSubj = 11;
+
+pMat = ML_parameters(:,4:5);
+pMat(:,3) = 1-sum(pMat,2)
+
+plot(pMat)
 %% double chek NLL is good
 
 imodel = 1;
@@ -280,12 +294,12 @@ ylabel('\Delta AIC (favoring optimal model)')
 close all
 
 nPriorities = 3;
-model = 1;
+imodel = 1;
 isubj = 1; % fitted data isubj = actual data isubj - 3
 load('cleandata.mat','data')
 
 % get ML parameter estimate for isubj
-load(['fits_model' num2str(model) '.mat'])
+load(['fits_model' num2str(imodel) '.mat'])
 Theta = ML_parameters(isubj,:); 
 
 nTrials = nan(1,3);
@@ -293,7 +307,7 @@ for ipriority = 1:nPriorities
     nTrials(ipriority) = size(data{isubj}{ipriority},1);
 end
 
-simdata = simulate_data(model,Theta,nTrials);
+simdata = simulate_data(imodel,Theta,nTrials);
 %% 1. plot disc size as a function of euclidean error
 
 % plot simulated data on top of real data
@@ -372,19 +386,19 @@ title('disc size (dva)')
 clear all
 
 nPriorities = 3;
-model = 2;
+imodel = 2;
 nTrials = 1e5*ones(1,3); % how many trials to simulate per priority
 nSubj = 11;
 load('cleandata.mat','data')
 
 % get ML parameter estimate for isubj
-load(['fits_model' num2str(model) '.mat'])
+load(['fits_model' num2str(imodel) '.mat'])
 
 simdata = cell(1,nSubj);
 for isubj = 1:nSubj
     isubj
     Theta = ML_parameters(isubj,:);
-    simdata{isubj} = simulate_data(model,Theta,nTrials);
+    simdata{isubj} = simulate_data(imodel,Theta,nTrials);
 end
 
 %% histograms per subjects
@@ -513,7 +527,7 @@ end
 % % % % % % % % % % % % % % % % % % % % % % % 
 
 clear all
-model = 2;
+imodel = 1;
 nSubj = 10;
 
 % switch model
@@ -523,19 +537,19 @@ nSubj = 10;
 %         logflag = logical([1 1 0 0 0]);
 % end
 
-load(['fits_model' num2str(model) '.mat'])
+load(['fits_model' num2str(imodel) '.mat'])
 % ML_parameters(logflag) = log(ML_parameters(logflag));
 MU = mean(ML_parameters);
 SIGMA = cov(ML_parameters);
 
 simtheta = mvnrnd(MU,SIGMA,nSubj);
-simtheta = abs(simtheta); % hacky way to parameters are positive
+simtheta = abs(simtheta); % hacky way to enforce positive parameter values
 
 % simtheta(:,logflag) = exp(simtheta(:,logflag));
 
 nTrials = [250 120 70]; % mean number of trials across actual participants
 for isubj = 1:nSubj
     isubj
-    simdata{isubj} = simulate_data(model,simtheta(isubj,:),nTrials);
+    simdata{isubj} = simulate_data(imodel,simtheta(isubj,:),nTrials);
 end
-save(['simdata_model' num2str(model) '.mat'],'simdata','simtheta')
+save(['simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
