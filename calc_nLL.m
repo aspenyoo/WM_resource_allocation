@@ -43,6 +43,8 @@ Jbar_total = Theta(1);
 tau = Theta(2);
 beta = Theta(3);
 
+Theta
+
 % data stuff
 priorityVec = [0.6 0.3 0.1];
 nPriorities = length(priorityVec);
@@ -94,7 +96,7 @@ for ipriority = 1:nPriorities
     % calculate p(r|J,beta) (get indices of which r in rVec is closest to actual r)
     data_r = data_r(:)';  % horizontal vector
     firstidxs = bsxfun(@(x,y) x == x(find((x-y)<=0,1,'last')),rVec,data_r);
-    lastidxs = bsxfun(@(x,y) x == x(find((x-y)>=0,1,'first')),rVec,data_r);
+    lastidxs = bsxfun(@(x,y) x == x(find((x-y)>0,1,'first')),rVec,data_r);
     idx1(:,1,:) = firstidxs;
     idx2(:,1,:) = lastidxs;
     
@@ -108,7 +110,7 @@ for ipriority = 1:nPriorities
     
     % \int p(Shat|S,J) p(r|J) p(J) dJ
     pTrials = sum(bsxfun(@times,p_Shat.*p_r,Jpdf')); % 1 x nTrials
-    nLL = nLL - sum(log(pTrials));
+    nLL = nLL - sum(log(pTrials))
     
     
     

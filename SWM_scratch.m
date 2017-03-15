@@ -548,7 +548,7 @@ simtheta = abs(simtheta); % hacky way to enforce positive parameter values
 % simtheta(:,logflag) = exp(simtheta(:,logflag));
 
 nTrials = [250 120 70]; % mean number of trials across actual participants
-for isubj = 1:nSubj
+for isubj = 10
     isubj
     simdata{isubj} = simulate_data(imodel,simtheta(isubj,:),nTrials);
 end
