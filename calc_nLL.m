@@ -25,15 +25,14 @@ function nLL = calc_nLL(model,Theta,data)
 %   aspen.yoo@nyu.edu
 
 
-% Theta = [5 1 1];
+% exponentiating appropriate parameters
 switch model
     case 1  % optimal model
         logflag = logical([1 1 0]);
     case 2 % not optimal model
         logflag = logical([1 1 0 0 0]);
         
-        % if the sum of the proportions allocated to high and medium
-        % priorities are greater than 1
+        % the proportion of resource allocation cannot exceed 1
         if sum(Theta(4:5)) > 1
             nLL = Inf;
             return;
@@ -43,7 +42,6 @@ Theta(logflag) = exp(Theta(logflag));
 Jbar_total = Theta(1);
 tau = Theta(2);
 beta = Theta(3);
-% lapse = Theta(4);
 
 % data stuff
 priorityVec = [0.6 0.3 0.1];
@@ -51,41 +49,42 @@ nPriorities = length(priorityVec);
 
 switch model
     case 1 % optimal
+        % calculate the proportions that maximize expected utility
         pVec = calc_optimal_pVec(Theta);
     case 2 % not optimal
         pVec = [Theta(4:5) 1-sum(Theta(4:5))];
-        if pVec(3) <=0
+        if pVec(3) <= 0 % proportion allocated to lowest priority must be positive
             nLL = Inf;
             return
         end
 end
 
-% loading rVec;
+% loading vector of disc radii
 [rVec] = loadvar('rVec');
 rVec = rVec(:); % vertical
 
 nLL = 0;
 for ipriority = 1:nPriorities
-    Jbar = Jbar_total*pVec(ipriority); % Jbar for current trial
+    Jbar = Jbar_total*pVec(ipriority); % Jbar for current priority condition
     
     % clear data used in previous priorities
     clear idx1 idx2 data_r_reshaped
     
-    % get data
+    % get subject data
     data_distance = data{ipriority}(:,1);
     data_r = data{ipriority}(:,2);
     
     % p(J|Jbar,tau)
-    [JVec] = loadvar({'JVec',Jbar,tau});
+    [JVec] = loadvar({'JVec',Jbar,tau}); % values of J
     nJs = length(JVec);
-    Jpdf = gampdf(JVec,Jbar/tau,tau);
+    Jpdf = gampdf(JVec,Jbar/tau,tau); % probability of that J value
     Jpdf = Jpdf./qtrapz(Jpdf); % normalize
-%     if any(Jpdf > 1); nLL = Inf; return; end
+%     if any(Jpdf > 1); Jpdf = Jpdf./sum(Jpdf); return; end % weird shit happens at extremely low taus, where the probability of the lowest value is >1.
     
     % p(Shat|S,J)
     nTrials = length(data_distance);
     Sigma = zeros(1,2,nJs*nTrials);
-    Sigma(1,:,:) = sort(repmat(sqrt(1./JVec(:)),nTrials,2),'descend')'; % in descending order to keep J ascending
+    Sigma(1,:,:) = sort(repmat(sqrt(1./JVec(:)),nTrials,2),'descend')'; % sigmas in descending order --> J in ascending order
     p_Shat = mvnpdf(repmat([data_distance(:) zeros(nTrials,1)],nJs,1),0,Sigma);
     p_Shat = reshape(p_Shat,nTrials,nJs)'; % nJs x nTrials
     

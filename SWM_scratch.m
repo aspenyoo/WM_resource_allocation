@@ -87,8 +87,8 @@ nSubj = length(subjVec);
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
 model = 2;
-nSubj = 11;
-fakedata = 0;
+nSubj = 10;
+fakedata = 1;
 if (fakedata)
     pretxt = 'paramrecov';
 else
@@ -145,15 +145,62 @@ bfp = ML_parameters;
 bfp(:,1:2) = log(bfp(:,1:2));
 
 nSubj = 10;
-[nLLVec2, nLLVec3] = deal(nan(1,nSubj));
+% [nLLVec2, nLLVec3] = deal(nan(1,nSubj));
 for isubj = 1:nSubj
     isubj
     
-    nLLVec2(isubj) = calc_nLL(imodel,bfp(isubj,:),simdata{isubj});
-    nLLVec3(isubj) = calc_nLL(imodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
+    nLLVec4(isubj) = calc_nLL(imodel,bfp(isubj,:),simdata{isubj});
+%     nLLVec3(isubj) = calc_nLL(imodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
 end
 
-[nLLVec; nLLVec2; nLLVec3]
+[nLLVec; nLLVec2; nLLVec3; nLLVec4]
+
+%% make nLL landscape
+
+clear all
+imodel = 1;
+isubj = 6;
+
+load(['simdata_model' num2str(imodel) '.mat'])
+load(['paramrecov_model' num2str(imodel) '.mat'])
+
+thetas = sort([simtheta(isubj,:); ML_parameters(isubj,:)]);
+
+JbartotalVec = linspace(log(thetas(1,1).*0.5),log(thetas(2,1)*2),11);
+tauVec = linspace(max(log([ 1e-5 thetas(1,2).*0.5])),max(log([1e-5 thetas(2,2)*2])),11);
+% betaVec = linspace(thetas(3).*0.5,thetas(3)*1.5,11);
+
+beta = simtheta(isubj,3);
+for iJ = 1:11
+    Jbartotal = JbartotalVec(iJ)
+    
+    for itau = 1:11
+        tau = tauVec(itau);
+        
+        nLLMat(iJ,itau) = calc_nLL(imodel,[Jbartotal tau beta],simdata{isubj});
+    end
+end
+
+figure;
+imagesc(tauVec,JbartotalVec,nLLMat);
+hold on;
+plot(log(simtheta(isubj,2)),log(simtheta(isubj,1)),'r*')
+plot(log(ML_parameters(isubj,2)),log(ML_parameters(isubj,1)),'go')
+defaultplot
+xlabel('tau'); ylabel('Jbar_{total}')
+
+% logflag = 1:2;
+% plb = [0.5 0.01 0.5];
+% pub = [20 5 1.5];
+% if model == 2
+%     plb = [plb 0.3 0];
+%     pub = [pub 0.7 0.3];
+% end
+% lb(logflag) = log(lb(logflag));
+% ub(logflag) = log(ub(logflag));
+% plb(logflag) = log(plb(logflag));
+% pub(logflag) = log(pub(logflag));
+    
 
 %% optimal pVec for model 1
 
