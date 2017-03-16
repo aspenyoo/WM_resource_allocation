@@ -41,6 +41,7 @@ for ipriority = 1:nPriorities
     data{ipriority} = nan(ntrials,2);
     
     JVec = gamrnd(Jbar/tau,tau,[1 ntrials]); % precision on each trial
+    JVec(JVec < 1e-10) = 1e-10;
     
     % generating Shat
     Sigma(1,:,:) = repmat(sqrt(1./JVec(:)),1,2)'; % get diagonals of covariance matrix

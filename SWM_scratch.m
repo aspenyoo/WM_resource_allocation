@@ -387,14 +387,18 @@ title('disc size (dva)')
 clear all
 
 nPriorities = 3;
-imodel = 2;
-nTrials = 1e5*ones(1,3); % how many trials to simulate per priority
+imodel = 1;
+nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
 nSubj = 11;
 load('cleandata.mat','data')
 
 % get ML parameter estimate for isubj
 load(['fits_model' num2str(imodel) '.mat'])
 
+loadpreddata = 0;
+if (loadpreddata)
+    load(['modelpred_model' num2str(imodel) '.mat'],'preddata')
+else
 preddata = cell(1,nSubj);
 for isubj = 1:nSubj
     isubj
@@ -403,6 +407,7 @@ for isubj = 1:nSubj
 end
 
 save(['modelpred_model' num2str(imodel) '.mat'],'preddata')
+end
 %% histograms per subjects
 xlims = linspace(0,10,11);
 
@@ -508,7 +513,7 @@ end
 meanmeanquanterror = cellfun(@mean,meanquanterror,'UniformOutput',false);
 meanmeanquantdiscsize = cellfun(@mean,meanquantdiscsize,'UniformOutput',false);
 semmeanquantdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantdiscsize,'UniformOutput',false);
-meanmeanquantsimerror = cellfun(@mean,meanquantsimerror,'UniformOutput',false);
+meanmeanquantsimerror = cellfun(@nanmean,meanquantsimerror,'UniformOutput',false);
 meanmeanquantsimdiscsize = cellfun(@mean,meanquantsimdiscsize,'UniformOutput',false);
 semmeanquantsimdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantsimdiscsize,'UniformOutput',false);
 
