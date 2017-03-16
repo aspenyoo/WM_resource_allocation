@@ -86,9 +86,9 @@ nSubj = length(subjVec);
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-imodel = 2;
-nSubj = 11;
-fakedata = 0;
+imodel = 1;
+nSubj = 10;
+fakedata = 1;
 if (fakedata)
     pretxt = 'paramrecov';
 else
@@ -118,7 +118,7 @@ save([pretxt '_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
 %% parameter recovery plot
 
 clear all
-imodel = 2;
+imodel = 1;
 
 load(['paramrecov_model' num2str(imodel) '.mat'])
 bfp = ML_parameters;
@@ -150,16 +150,16 @@ for isubj = 1:nSubj
     isubj
     
     nLLVec4(isubj) = calc_nLL(imodel,bfp(isubj,:),simdata{isubj});
-%     nLLVec3(isubj) = calc_nLL(imodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
+    nLLVec3(isubj) = calc_nLL(imodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
 end
 
-[nLLVec; nLLVec2; nLLVec3; nLLVec4]
+[nLLVec; nLLVec3; nLLVec4]
 
 %% make nLL landscape
 
 clear all
 imodel = 1;
-isubj = 8;
+isubj = 5;
 
 load(['simdata_model' num2str(imodel) '.mat'])
 load(['paramrecov_model' num2str(imodel) '.mat'])

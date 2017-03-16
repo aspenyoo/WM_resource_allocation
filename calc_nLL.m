@@ -43,7 +43,6 @@ Jbar_total = Theta(1);
 tau = Theta(2);
 beta = Theta(3);
 
-Theta
 
 % data stuff
 priorityVec = [0.6 0.3 0.1];
@@ -110,7 +109,7 @@ for ipriority = 1:nPriorities
     
     % \int p(Shat|S,J) p(r|J) p(J) dJ
     pTrials = sum(bsxfun(@times,p_Shat.*p_r,Jpdf')); % 1 x nTrials
-    nLL = nLL - sum(log(pTrials))
+    nLL = nLL - sum(log(pTrials));
     
     
     
