@@ -87,8 +87,8 @@ nSubj = length(subjVec);
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
 imodel = 1;
-nSubj = 10;
-fakedata = 1;
+nSubj = 11;
+fakedata = 0;
 if (fakedata)
     pretxt = 'paramrecov';
 else
@@ -386,7 +386,7 @@ title('disc size (dva)')
 clear all
 
 nPriorities = 3;
-imodel = 2;
+imodel = 1;
 nTrials = 1e5*ones(1,3); % how many trials to simulate per priority
 nSubj = 11;
 load('cleandata.mat','data')
@@ -394,11 +394,11 @@ load('cleandata.mat','data')
 % get ML parameter estimate for isubj
 load(['fits_model' num2str(imodel) '.mat'])
 
-simdata = cell(1,nSubj);
+preddata = cell(1,nSubj);
 for isubj = 1:nSubj
     isubj
     Theta = ML_parameters(isubj,:);
-    simdata{isubj} = simulate_data(imodel,Theta,nTrials);
+    preddata{isubj} = simulate_data(imodel,Theta,nTrials);
 end
 
 %% histograms per subjects
@@ -410,7 +410,7 @@ for isubj = 1:11
         
         % histogram of euclidean error
         datacounts = hist(data{isubj}{ipriority}(:,1),xlims);
-        simdatacounts = hist(simdata{isubj}{ipriority}(:,1),xlims);
+        simdatacounts = hist(preddata{isubj}{ipriority}(:,1),xlims);
         error{ipriority}(isubj,:) = datacounts./sum(datacounts);
         simerror{ipriority}(isubj,:) = simdatacounts./sum(simdatacounts);
         
@@ -423,7 +423,7 @@ for isubj = 1:11
         
         % histogram of disc size
         datacounts = hist(data{isubj}{ipriority}(:,2),xlims);
-        simdatacounts = hist(simdata{isubj}{ipriority}(:,2),xlims);
+        simdatacounts = hist(preddata{isubj}{ipriority}(:,2),xlims);
         discsize{ipriority}(isubj,:) = datacounts./sum(datacounts);
         simdiscsize{ipriority}(isubj,:)  = simdatacounts./sum(simdatacounts);
         
@@ -482,7 +482,7 @@ for isubj = 1:11
         [currdata,idx] = sort(currdata);
         quantVec = round(linspace(0,length(currdata),nQuants+1));
         
-        currsimdata = simdata{isubj}{ipriority}(:,1);
+        currsimdata = preddata{isubj}{ipriority}(:,1);
         [currsimdata,simidx] = sort(currsimdata);
         simquantVec = round(linspace(0,length(currsimdata),nQuants+1));
         for iquant = 1:nQuants
@@ -490,7 +490,7 @@ for isubj = 1:11
             meanquantdiscsize{ipriority}(isubj,iquant) = mean(data{isubj}{ipriority}(idx(quantVec(iquant)+1:quantVec(iquant+1)),2));
             
             meanquantsimerror{ipriority}(isubj,iquant) = mean(currsimdata(simquantVec(iquant)+1:simquantVec(iquant+1)));
-            meanquantsimdiscsize{ipriority}(isubj,iquant) = mean(simdata{isubj}{ipriority}(simidx(simquantVec(iquant)+1:simquantVec(iquant+1)),2));
+            meanquantsimdiscsize{ipriority}(isubj,iquant) = mean(preddata{isubj}{ipriority}(simidx(simquantVec(iquant)+1:simquantVec(iquant+1)),2));
         end
         
         subplot(3,1,ipriority)

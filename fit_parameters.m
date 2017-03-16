@@ -25,8 +25,8 @@ else
     filename = [filepath 'paramrecov_model' num2str(model) '_subj' num2str(subjnum-11) '.mat'];
 end
 
-% rng(0);
-rng(str2double([num2str(model) num2str(subjnum)]));
+rng(0);
+% rng(str2double([num2str(model) num2str(subjnum)]));
 
 lb = [1e-5 1e-3 1e-5]; % Jbar_total, tau, beta, lapse (ASPEN FIGURE OUT LAPSE STUFF)
 ub = [50 10 5];
@@ -46,7 +46,7 @@ ub(logflag) = log(ub(logflag));
 plb(logflag) = log(plb(logflag));
 pub(logflag) = log(pub(logflag));
 
-optimMethod = 'fmincon';
+optimMethod = 'bps';
 if strcmp(optimMethod,'fmincon')
         [A,b,Aeq,beq,nonlcon] = deal([]);
         options = optimset('Display','iter');
