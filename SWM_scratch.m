@@ -87,8 +87,8 @@ nSubj = length(subjVec);
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
 imodel = 1;
-nSubj = 11;
-fakedata = 0;
+nSubj = 10;
+fakedata = 1;
 if (fakedata)
     pretxt = 'paramrecov';
 else
@@ -105,7 +105,7 @@ end
 bfp = nan(nSubj,nParams);
 nLL = nan(1,nSubj);
 for isubj = 1:nSubj
-    isubj
+    isubj;
     load([pretxt '_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
     blah = ML_parameters(nLLVec == min(nLLVec),:);
     bfp(isubj,:) = blah(1,:);
@@ -118,7 +118,7 @@ save([pretxt '_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
 %% parameter recovery plot
 
 clear all
-imodel = 1;
+imodel = 2;
 
 load(['paramrecov_model' num2str(imodel) '.mat'])
 bfp = ML_parameters;
@@ -131,6 +131,7 @@ for iparam = 1:nParams
     plot(bfp(:,iparam),simtheta(:,iparam),'ko'); hold on; 
     plot([min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],...
         [min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],'k-')
+    defaultplot
 end
 
 %% double chek NLL is good for parameter recovery
@@ -216,7 +217,7 @@ for isubj = 1:nSubj
     pMat(isubj,:) = calc_optimal_pVec(ML_parameters(isubj,:));
 end
 
-pMat
+plot(pMat)
 
 %% pVec for model1
 
@@ -386,7 +387,7 @@ title('disc size (dva)')
 clear all
 
 nPriorities = 3;
-imodel = 1;
+imodel = 2;
 nTrials = 1e5*ones(1,3); % how many trials to simulate per priority
 nSubj = 11;
 load('cleandata.mat','data')
@@ -401,6 +402,7 @@ for isubj = 1:nSubj
     preddata{isubj} = simulate_data(imodel,Theta,nTrials);
 end
 
+save(['modelpred_model' num2str(imodel) '.mat'],'preddata')
 %% histograms per subjects
 xlims = linspace(0,10,11);
 
