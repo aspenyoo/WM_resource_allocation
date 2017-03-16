@@ -87,8 +87,8 @@ nSubj = length(subjVec);
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
 imodel = 2;
-nSubj = 10;
-fakedata = 1;
+nSubj = 11;
+fakedata = 0;
 if (fakedata)
     pretxt = 'paramrecov';
 else
