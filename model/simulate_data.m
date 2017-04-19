@@ -1,9 +1,10 @@
-function data = simulate_data(model,Theta,nTrials)
+function data = simulate_data(model,expnumber,Theta,nTrials)
 % SIMULATE_DATA simulates data for the optimal observer in the [0.6 0.3
 %   0.1] priority task.
 % 
 % ===================== INPUT VARIABLES ========================
 % THETA: 1 x 3 vector of parameters [Jbar_total, tau, beta]
+% EXPNUMBER: 1 (no disc). 2 (with disc). 
 % NTRIALS: 1 x 3 vector of number of trials for each priority value [0.6
 %   0.3 0.1]
 % 
@@ -19,16 +20,20 @@ function data = simulate_data(model,Theta,nTrials)
 
 Jbar_total = Theta(1);
 tau = Theta(2);
-beta = Theta(3);
+if (expnumber == 2)
+    beta = Theta(3); 
+    rVec = loadvar('rVec');
+end
 
-rVec = loadvar('rVec');
 nPriorities = 3;
 
 switch model
     case 1
         pVec = calc_optimal_pVec(Theta);
     case 2
-        pVec = [Theta(4:5) 1-sum(Theta(4:5))];
+        pVec = [Theta(end-1:end) 1-sum(Theta(end-1:end))];
+    case 3
+        pVec = [0.6 0.3 0.1];
 end
 
 % make data
@@ -38,7 +43,7 @@ for ipriority = 1:nPriorities
     
     Jbar = Jbar_total*pVec(ipriority); % mean precision
     ntrials = nTrials(ipriority); % number of trials
-    data{ipriority} = nan(ntrials,2);
+    data{ipriority} = nan(ntrials,expnumber);
     
     JVec = gamrnd(Jbar/tau,tau,[1 ntrials]); % precision on each trial
     JVec(JVec < 1e-10) = 1e-10;
@@ -48,12 +53,14 @@ for ipriority = 1:nPriorities
     errros = mvnrnd([0 0],Sigma); % generating data
     data{ipriority}(:,1) = sqrt(sum(errros.^2,2));
     
-    % generating disc size
-    pdf_r = calc_pdf_r(beta, JVec); % length(rVec) x length(JVec)
-    cdf_r = cumsum(pdf_r);
-    samples = num2cell(rand(1,ntrials));
-    cdf_r = num2cell(cdf_r,1);
-    
-    idxs = cell2mat(cellfun(@(x,y) find(x>=y,1,'first'),cdf_r,samples,'UniformOutput',false));
-    data{ipriority}(:,2) = rVec(idxs);
+    if (expnumber == 2)
+        % generating disc size
+        pdf_r = calc_pdf_r(beta, JVec); % length(rVec) x length(JVec)
+        cdf_r = cumsum(pdf_r);
+        samples = num2cell(rand(1,ntrials));
+        cdf_r = num2cell(cdf_r,1);
+        
+        idxs = cell2mat(cellfun(@(x,y) find(x>=y,1,'first'),cdf_r,samples,'UniformOutput',false));
+        data{ipriority}(:,2) = rVec(idxs);
+    end
 end
