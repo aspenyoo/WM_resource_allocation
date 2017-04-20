@@ -514,7 +514,7 @@ load([filename 'fits_model' num2str(imodel) '.mat'])
 
 loadpreddata = 1;
 if (loadpreddata)
-    load(['modelpred_exp' num2str(expnumber) '_model' num2str(imodel) '.mat'],'preddata')
+    load([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) '.mat'],'preddata')
 else
     preddata = cell(1,nSubj);
     for isubj = 1:nSubj
@@ -523,7 +523,7 @@ else
         preddata{isubj} = simulate_data(imodel,expnumber,Theta,nTrials);
     end
     
-    save(['modelpred_model' num2str(imodel) '.mat'],'preddata')
+    save([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) '.mat'],'preddata')
 end
 %% histograms per subjects
 xlims = linspace(0,10,11);
@@ -576,17 +576,18 @@ meansimdiscsize = cellfun(@mean,simdiscsize,'UniformOutput',false);
 semsimdiscsize = cellfun(@(x) std(x)./sqrt(size(x,1)),simdiscsize,'UniformOutput',false);
 end
 
-figure
+figure;
+colorMat = {'r','b','k'};
 for ipriority = 1:nPriorities
     
     % error
     if (expnumber == 2)
-    subplot(3,3,3*ipriority-2)
+    subplot(3,3,ipriority)
     else
         subplot(1,3,ipriority)
     end
     fill([xlims fliplr(xlims)],[meansimerror{ipriority}-semsimerror{ipriority}...
-        fliplr(meansimerror{ipriority}+semsimerror{ipriority})],aspencolors('booger'),'EdgeColor','none');
+        fliplr(meansimerror{ipriority}+semsimerror{ipriority})],colorMat{ipriority},'EdgeColor','none','FaceAlpha',0.4);
     hold on;
     errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color','k');
     defaultplot
@@ -595,9 +596,9 @@ for ipriority = 1:nPriorities
     
     if (expnumber == 2)
         % discsize
-        subplot(3,3,3*ipriority-1)
+        subplot(3,3,3+ipriority)
         fill([xlims fliplr(xlims)],[meansimdiscsize{ipriority}-semsimdiscsize{ipriority}...
-            fliplr(meansimdiscsize{ipriority}+semsimdiscsize{ipriority})],aspencolors('booger'),'EdgeColor','none');
+            fliplr(meansimdiscsize{ipriority}+semsimdiscsize{ipriority})],colorMat{ipriority},'EdgeColor','none','FaceAlpha',0.4);
         hold on;
         errorbar(xlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color','k');
         defaultplot
@@ -645,12 +646,12 @@ meanmeanquantsimdiscsize = cellfun(@mean,meanquantsimdiscsize,'UniformOutput',fa
 semmeanquantsimdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantsimdiscsize,'UniformOutput',false);
 
 % figure;
-colorMat = {'k','r','b'};
+colorMat = {'r','b','k'};
 for ipriority = 1:nPriorities
-        subplot(3,3,3*ipriority)
+        subplot(3,3,6+ipriority)
     hold on
     plot_summaryfit(meanmeanquantsimerror{ipriority},[],[],meanmeanquantsimdiscsize{ipriority},...
-    semmeanquantsimdiscsize{ipriority},[],aspencolors('booger'))
+    semmeanquantsimdiscsize{ipriority},[],colorMat{ipriority})
 plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},semmeanquantdiscsize{ipriority},...
     [],[],'k')
 
