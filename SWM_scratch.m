@@ -17,7 +17,14 @@ plot(JVec,Jpdf,'k-'); defaultplot;hold on
 subplot(2,1,2)
 plot(1./sqrt(JVec),Jpdf,'k-'); defaultplot; hold on
 
+%% mixture of two guassians
+xx = linspace(-4,6, 100);
+gauss1 = normpdf(xx);
+gauss2 = normpdf(xx,4,2);
 
+plot(xx,gauss1); hold on
+plot(xx,gauss2)
+plot(xx,gauss1+gauss2)
 
 %% ==========================================================
 %             STUFF WITH ACTUAL DATA!
