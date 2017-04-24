@@ -44,7 +44,7 @@ end
 Theta(logflag) = exp(Theta(logflag));
 Jbar_total = Theta(1);
 tau = Theta(2);
-if (expnumber == 2); beta = Theta(3); end
+if (expnumber == 2); alpha = Theta(3); beta = Theta(4); end
 
 
 % data stuff
@@ -98,7 +98,7 @@ for ipriority = 1:nPriorities
         data_r = data{ipriority}(:,2);
         
         % p(rVec|J,beta) (a range of r to get entire probability dist)
-        pdf_r = calc_pdf_r(beta, JVec); % rVec x JVec
+        pdf_r = calc_pdf_r(beta, JVec, alpha); % rVec x JVec
         
         % calculate p(r|J,beta) (get indices of which r in rVec is closest to actual r)
         data_r = data_r(:)';  % horizontal vector

@@ -2,16 +2,17 @@ function pVec = calc_optimal_pVec(Theta)
 
 Jbar_total = Theta(1);
 tau = Theta(2);
-beta = Theta(3);
+alpha = Theta(3);
+beta = Theta(4);
 
 % data stuff
 priorityVec = [0.6 0.3 0.1];
 nPriorities = length(priorityVec);
 
 % calculate the optimal proportions given the parameters
-calc_ntotalEU = @(x) -(0.6*calc_E_EU([Jbar_total*x(1),tau,beta]) ...
-    + 0.3*calc_E_EU([Jbar_total*x(2),tau,beta])...
-    + 0.1*calc_E_EU([Jbar_total*x(3),tau,beta]));
+calc_ntotalEU = @(x) -(0.6*calc_E_EU([Jbar_total*x(1),tau,alpha,beta]) ...
+    + 0.3*calc_E_EU([Jbar_total*x(2),tau,alpha,beta])...
+    + 0.1*calc_E_EU([Jbar_total*x(3),tau,alpha,beta]));
 
 Aeq = [1 1 1];
 beq = 1;
@@ -19,7 +20,7 @@ beq = 1;
 options = optimset('Display','none');
 lb = [1e-5 1e-5 1e-5];
 ub = [1 1 1];
-nStartVals = 10; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
+nStartVals = 5; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
 pVec = nan(nStartVals,3);
 nEU = nan(1,nStartVals);
 for istartval = 1:nStartVals

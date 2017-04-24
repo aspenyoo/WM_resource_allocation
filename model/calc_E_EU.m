@@ -9,16 +9,17 @@ function E_EU = calc_E_EU(Theta)
 
 Jbar = Theta(1);
 tau = Theta(2);
-beta = Theta(3);
+alpha = Theta(3);
+beta = Theta(4);
 
 % loading in variables
 [JVec,rVec] = loadvar({'JVec',Jbar,tau},'rVec');
 
 % p(r|beta,J)
-p_r = calc_pdf_r(beta,JVec);
+p_r = calc_pdf_r(beta,JVec,alpha);
 
 % EU(J) = \int EU(r,J) p(r) dr
-EU_J = qtrapz(calc_EU(rVec,JVec).*p_r);
+EU_J = qtrapz(calc_EU(rVec,JVec,alpha).*p_r);
 
 % for gamma distribution
 Jpdf = gampdf(JVec,Jbar/tau,tau);

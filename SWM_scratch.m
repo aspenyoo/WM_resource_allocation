@@ -91,10 +91,10 @@ save('cleandata_nodisc.mat','data')
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-imodel = 2;
-nSubj = 10;
-fakedata = 1;
-expnumber = 1;
+imodel = 3;
+nSubj = 11;
+fakedata = 0;
+expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 if (fakedata)
@@ -241,7 +241,7 @@ nSubj = 11;
 
 pMat = nan(nSubj,3);
 for isubj = 1:nSubj
-    
+    isubj
     pMat(isubj,:) = calc_optimal_pVec(ML_parameters(isubj,:));
 end
 
@@ -352,10 +352,11 @@ end
 
 clear all
 expnumber = 1;
+nModels = 2;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 nParamVec = nan(1,2);
-for imodel = 2:3
+for imodel = (4-nModels):3
     load([filepath 'fits_model' num2str(imodel) '.mat'])
     nLL.(['model' num2str(imodel)]) = nLLVec;
     nParamVec(imodel) = size(ML_parameters,2);
@@ -365,19 +366,35 @@ end
 modcompidx = 3;
 nSubj = length(nLLVec);
 comparison = structfun(@(x) x-AIC.(['model' num2str(modcompidx)]),AIC,'UniformOutput',false);
-comparison = comparison.model2;
+if nModels == 3;
+comparison = [comparison.model1' comparison.model2'];
+else
+    comparison = comparison.model2;
+end
 meancomp = mean(comparison);
-semcomp = std(comparison)/sqrt(length(comparison));
 
 figure;
-fill([0 nSubj+1 nSubj+1 0],[meancomp-semcomp meancomp-semcomp meancomp+semcomp meancomp+semcomp],...
-    0.7*ones(1,3),'EdgeColor','none'); 
-hold on;
-bar(comparison,'k')
+if nModels == 3;
+    semcomp = std(comparison)/sqrt(size(comparison,1));
+    for imodel = 1:(nModels-1)
+        fill([imodel-0.475 imodel+0.475 imodel+0.475 imodel-0.475],[meancomp(imodel)-semcomp(imodel) meancomp(imodel)-semcomp(imodel)...
+            meancomp(imodel)+semcomp(imodel) meancomp(imodel)+semcomp(imodel)],...
+            0.7*ones(1,3),'EdgeColor','none'); hold on;
+        set(gca,'XTick',[],'XTick',[1 2],'XTickLabel',{'optimal','free param'})
+    end
+else
+    semcomp = std(comparison)/sqrt(length(comparison));
+    fill([0 nSubj+1 nSubj+1 0],[meancomp-semcomp meancomp-semcomp...
+            meancomp+semcomp meancomp+semcomp],...
+            0.7*ones(1,3),'EdgeColor','none'); hold on;
+        set(gca,'XTick',[],'XTickLabel',[])
+end
+
+bar(comparison','k')
 
 defaultplot
-set(gca,'XTick',[],'XTickLabel',[])
-ylabel(['\Delta AIC (favoring model ' num2str(modcompidx) ')'])
+
+ylabel(['\Delta AIC (favoring fixed model)'])
 
 
 %% % % % % % % % % % % % % % % % % % % % % % %
@@ -396,7 +413,7 @@ ylabel(['\Delta AIC (favoring model ' num2str(modcompidx) ')'])
 
 close all
 
-expnumber = 1;
+expnumber = 2;
 nPriorities = 3;
 imodel = 3;
 isubj = 1; % fitted data isubj = actual data isubj - 3
@@ -496,7 +513,7 @@ title('disc size (dva)')
 % 4. plot disc size as a function of euclidean error
 clear all
 
-expnumber = 1;
+expnumber = 2;
 nPriorities = 3;
 imodel = 3;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
@@ -512,7 +529,7 @@ filename = ['fits/exp' num2str(expnumber) '/'];
 % get ML parameter estimate for isubj
 load([filename 'fits_model' num2str(imodel) '.mat'])
 
-loadpreddata = 1;
+loadpreddata = 0;
 if (loadpreddata)
     load([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) '.mat'],'preddata')
 else
