@@ -98,7 +98,7 @@ save('cleandata_nodisc.mat','data')
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-imodel = 2;
+imodel = 3;
 nSubj = 11;
 fakedata = 0;
 expnumber = 2;
@@ -521,8 +521,9 @@ title('disc size (dva)')
 clear all
 
 expnumber = 2;
+imodel = 3;
+
 nPriorities = 3;
-imodel = 2;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
 if (expnumber == 1)
     load('cleandata_nodisc.mat','data')
@@ -686,8 +687,8 @@ end
 % % % % % % % % % % % % % % % % % % % % % % % 
 
 clear all
-expnumber = 1;
-imodel = 3;
+expnumber = 2;
+imodel = 2;
 nSubj = 10;
 
 % switch model
