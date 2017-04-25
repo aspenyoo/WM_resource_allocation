@@ -98,7 +98,7 @@ save('cleandata_nodisc.mat','data')
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-imodel = 3;
+imodel = 2;
 nSubj = 11;
 fakedata = 0;
 expnumber = 2;
@@ -112,11 +112,11 @@ end
 
 switch imodel
     case {1,3}
-        nParams = 3;
+        nParams = 4;
     case 2 
-        nParams = 5;
+        nParams = 6;
 end
-if (expnumber == 1); nParams = nParams - 1; end
+if (expnumber == 1); nParams = nParams - 2; end
 
 bfp = nan(nSubj,nParams);
 nLL = nan(1,nSubj);
@@ -522,7 +522,7 @@ clear all
 
 expnumber = 2;
 nPriorities = 3;
-imodel = 3;
+imodel = 2;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
 if (expnumber == 1)
     load('cleandata_nodisc.mat','data')

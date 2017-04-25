@@ -21,7 +21,8 @@ function data = simulate_data(model,expnumber,Theta,nTrials)
 Jbar_total = Theta(1);
 tau = Theta(2);
 if (expnumber == 2)
-    beta = Theta(3); 
+    alpha = Theta(3);
+    beta = Theta(4); 
     rVec = loadvar('rVec');
 end
 
@@ -55,7 +56,7 @@ for ipriority = 1:nPriorities
     
     if (expnumber == 2)
         % generating disc size
-        pdf_r = calc_pdf_r(beta, JVec); % length(rVec) x length(JVec)
+        pdf_r = calc_pdf_r(beta, JVec, alpha); % length(rVec) x length(JVec)
         cdf_r = cumsum(pdf_r);
         samples = num2cell(rand(1,ntrials));
         cdf_r = num2cell(cdf_r,1);
