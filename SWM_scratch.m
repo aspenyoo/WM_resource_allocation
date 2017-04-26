@@ -97,10 +97,11 @@ save('cleandata_nodisc.mat','data')
 %% % % % % % % % % % % % % % % % % % % % % % % %
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
+clear all
 
-imodel = 2;
-nSubj = 10;
-fakedata = 1;
+imodel = 1;
+nSubj = 11;
+fakedata = 0;
 expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
