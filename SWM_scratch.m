@@ -100,13 +100,18 @@ save('cleandata_nodisc.mat','data')
 clear all
 
 imodel = 1;
+testmodel = model;
 nSubj = 11;
-fakedata = 0;
+fakedata = 1;
 expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 if (fakedata)
-    pretxt = 'paramrecov';
+    if imodel == testmodel
+        pretxt = 'paramrecov';
+    else
+        pretxt = 'modelrecov';
+    end
 else
     pretxt = 'fits';
 end
@@ -128,9 +133,14 @@ for isubj = 1:nSubj
     bfp(isubj,:) = blah(1,:);
     nLL(isubj) = min(nLLVec);
 end
+
 ML_parameters = bfp;
 nLLVec = nLL;
-save([filepath pretxt '_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
+if strcmp(pretxt,'modelrecov')
+    save([filepath pretxt '_truemodel' num2str(imodel) '_testmodel' num2str(testmodel) '.mat'],'ML_parameters','nLLVec')
+else
+    save([filepath pretxt '_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
+end
 
 %% parameter recovery plot
 
@@ -689,8 +699,8 @@ end
 % % % % % % % % % % % % % % % % % % % % % % % 
 
 clear all
-expnumber = 2;
-imodel = 2;
+expnumber = 1;
+imodel = 3;
 nSubj = 10;
 
 % switch model
@@ -717,3 +727,40 @@ for isubj = 1:10
     simdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
 end
 save([filename 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+%               MODEL RECOVERY
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+clear all
+
+% things to change
+expnumber = 2;
+modelVec = [2 3];
+
+% things not to change
+nSubj = 10;
+filepath = ['fits/exp' num2str(expnumber) '/'];
+nModels = length(modelVec);
+
+nLLMat = nan(nModels,nModels,nSubj);
+nParamMat = nan(nModels);
+for itruemodel = 1:nModels;
+    truemodel = modelVec(itruemodel);
+    
+    for itestmodels = 1:nModels;
+        testmodel = modelVec(itestmodel);
+        
+        if strcmp(testmodel,truemodel)
+            filename = [filepath 'paramrecov_model' num2str(testmodel) '.mat'];
+        else
+            filename = [filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'];
+        end
+        load(filename)
+
+        nLLMat(itruemodel,itestmodel,:) = nLLVec;
+        nParamMat(itruemodel,itestmodel) = size(ML_parameters,2);
+        
+        
+    end
+end
