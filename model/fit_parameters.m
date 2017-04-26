@@ -1,6 +1,6 @@
-function fit_parameters(model,subjnum,nStartVals,testmodel,expnumber)
+function fit_parameters(testmodel,subjnum,nStartVals,truemodel,expnumber)
 if nargin < 3; nStartVals = 1; end
-if nargin < 4; testmodel = model; end % for model recovery
+if nargin < 4; truemodel = testmodel; end % for model recovery
 if nargin < 5; expnumber = 2; end
 
 %
@@ -36,12 +36,17 @@ end
 if (subjnum <= nSubj)
     load(['cleandata' suffix '.mat'])
     subjdata = data{subjnum};
-    filename = [filepath 'fits_model' num2str(model) '_subj' num2str(subjnum) '.mat'];
+    filename = [filepath 'fits_model' num2str(testmodel) '_subj' num2str(subjnum) '.mat'];
 else
-    load([filepath 'simdata_model' num2str(testmodel) '.mat'],'simdata')
+    load([filepath 'simdata_model' num2str(truemodel) '.mat'],'simdata')
     subjdata = simdata{subjnum - nSubj};
-    filename = [filepath 'paramrecov_model' num2str(model) '_subj' num2str(subjnum-nSubj) '.mat'];
+    if strcmp(truemodel,testmodel); % if same model
+    filename = [filepath 'paramrecov_model' num2str(testmodel) '_subj' num2str(subjnum-nSubj) '.mat'];
+    else
+        filename = [filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '_subj' num2str(subjnum-nSubj) '.mat'];
+    end
 end
+
 
 rng(0);
 % rng(str2double([num2str(model) num2str(subjnum)]));
@@ -58,7 +63,7 @@ if expnumber == 2 % alpha beta
     pub = [pub 2 1.5];
     logflag = [logflag 0 0];
 end
-if model == 2 % p_high p_med
+if testmodel == 2 % p_high p_med
     lb = [lb 0 0];
     ub = [ub 1 1];
     plb = [plb 0.3 0];
@@ -78,7 +83,7 @@ for istartvals = 1:nStartVals
 %     x0 = simtheta(subjnum-11,:);
 %     x0(1:2) = log(x0(1:2));
     x0 = plb + rand(1,nParams).*(pub - plb);
-    fun = @(x) calc_nLL(model,x,subjdata);
+    fun = @(x) calc_nLL(testmodel,x,subjdata);
     [x,fval] = bps(fun,x0,lb,ub,plb,pub);
 
     x(logflag) = exp(x(logflag));
