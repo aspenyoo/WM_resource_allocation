@@ -98,9 +98,9 @@ save('cleandata_nodisc.mat','data')
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 
-imodel = 3;
-nSubj = 11;
-fakedata = 0;
+imodel = 2;
+nSubj = 10;
+fakedata = 1;
 expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
@@ -134,8 +134,8 @@ save([filepath pretxt '_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
 %% parameter recovery plot
 
 clear all
-expnumber = 1;
-imodel = 3;
+expnumber = 2;
+imodel = 2;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'paramrecov_model' num2str(imodel) '.mat'])
@@ -149,6 +149,7 @@ for iparam = 1:nParams
     plot(bfp(:,iparam),simtheta(:,iparam),'ko'); hold on; 
     plot([min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],...
         [min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],'k-')
+    xlabel('estimated'); ylabel('actual')
     defaultplot
 end
 
