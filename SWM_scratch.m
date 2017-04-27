@@ -100,10 +100,10 @@ save('cleandata_nodisc.mat','data')
 clear all
 
 imodel = 2;
-testmodel = imodel;
+testmodel = 3;
 nSubj = 10;
 fakedata = 1;
-expnumber = 2;
+expnumber = 1;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 if (fakedata)
@@ -169,27 +169,57 @@ for iparam = 1:nParams
     defaultplot
 end
 
-%% double chek NLL is good for parameter recovery
+%% double chek NLL is good for parameter/model recovery
 
 clear all
 
-imodel = 1;
+truemodel = 3;
+expnumber = 2;
 
-load(['simdata_model' num2str(imodel) '.mat'])
-load(['paramrecov_model' num2str(imodel) '.mat'])
-bfp = ML_parameters;
-bfp(:,1:2) = log(bfp(:,1:2));
+testmodelVec = [2 3];
+nModels = length(testmodelVec);
+
+% load true model stuff
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'simdata_model' num2str(truemodel) '.mat'])
+
 
 nSubj = 10;
-% [nLLVec2, nLLVec3] = deal(nan(1,nSubj));
+nLLCell = cell(1,nModels);
+% calculate true nLL
 for isubj = 1:nSubj
-    isubj
-    
-    nLLVec4(isubj) = calc_nLL(imodel,bfp(isubj,:),simdata{isubj});
-    nLLVec3(isubj) = calc_nLL(imodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
+    nLLCell{1}(isubj) = calc_nLL(truemodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
 end
 
-[nLLVec; nLLVec3; nLLVec4]
+for itestmodel = 1:nModels;
+    itestmodel
+    testmodel = testmodelVec(itestmodel);
+    
+    % load relevant dataset
+    if (testmodel == truemodel)
+        load([filepath 'paramrecov_model' num2str(testmodel) '.mat'])
+    else
+        load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'])
+    end
+    for isubj = 1:nSubj
+        % calculate nLL
+        nLLCell{itestmodel+1}(isubj) = calc_nLL(testmodel,[log(ML_parameters(isubj,1:2)) ML_parameters(isubj,3:end)],simdata{isubj});
+    end
+    
+    
+end
+
+[nLLCell{1}; nLLCell{2}; nLLCell{3}]
+
+%% nLL as a function of numerical integration samples
+sampVec = [100 200 500 1000 10000 15000];
+isubj = 4;
+for isamp = 1:(length(sampVec)-1)
+    isamp
+    nLLVec(isamp) = calc_nLL(testmodel,[log(ML_parameters(isubj,1:2)) ML_parameters(isubj,3:end)],simdata{isubj},sampVec(isamp));
+end
+figure;
+plot(log(sampVec),nLLVec)
 
 %% make nLL landscape
 
@@ -699,6 +729,15 @@ plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},s
 
 end
 
+%%
+for isubj = 1:11
+    for ipriority = 1:3
+    blah(isubj,ipriority) = size(data{isubj}{ipriority},1);
+end
+end
+blah
+bleh = bsxfun(@rdivide,blah(:,1), blah)
+mean(bleh)
 %% % % % % % % % % % % % % % % % % % % % % % % 
 %           SIMULATE DATA
 % % % % % % % % % % % % % % % % % % % % % % % 
@@ -740,7 +779,7 @@ save([filename 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 clear all
 
 % things to change
-expnumber = 2;
+expnumber = 1;
 modelVec = [2 3];
 
 % things not to change
