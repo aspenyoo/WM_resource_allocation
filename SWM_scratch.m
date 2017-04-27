@@ -99,9 +99,9 @@ save('cleandata_nodisc.mat','data')
 % % % % % % % % % % % % % % % % % % % % % % % % 
 clear all
 
-imodel = 1;
-testmodel = model;
-nSubj = 11;
+imodel = 2;
+testmodel = imodel;
+nSubj = 10;
 fakedata = 1;
 expnumber = 2;
 
@@ -116,7 +116,7 @@ else
     pretxt = 'fits';
 end
 
-switch imodel
+switch testmodel
     case {1,3}
         nParams = 4;
     case 2 
@@ -127,8 +127,13 @@ if (expnumber == 1); nParams = nParams - 2; end
 bfp = nan(nSubj,nParams);
 nLL = nan(1,nSubj);
 for isubj = 1:nSubj
-    isubj;
-    load([filepath pretxt '_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
+    isubj
+    if strcmp(pretxt,'modelrecov')
+        load([filepath pretxt '_truemodel' num2str(imodel) '_testmodel' num2str(testmodel) '_subj' num2str(isubj) '.mat'],'ML_parameters','nLLVec')
+    else
+        load([filepath pretxt '_model' num2str(imodel) '_subj' num2str(isubj) '.mat'],'ML_parameters','nLLVec')
+    end
+%     load([filepath pretxt '_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
     blah = ML_parameters(nLLVec == min(nLLVec),:);
     bfp(isubj,:) = blah(1,:);
     nLL(isubj) = min(nLLVec);
@@ -146,7 +151,7 @@ end
 
 clear all
 expnumber = 2;
-imodel = 2;
+imodel = 3;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'paramrecov_model' num2str(imodel) '.mat'])
@@ -742,25 +747,36 @@ modelVec = [2 3];
 nSubj = 10;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 nModels = length(modelVec);
+nTrials = sum([250 120 70]);
 
-nLLMat = nan(nModels,nModels,nSubj);
-nParamMat = nan(nModels);
+nLLMat = cell(1,nModels);
+nParamMat = cell(1,nModels);
 for itruemodel = 1:nModels;
     truemodel = modelVec(itruemodel);
     
-    for itestmodels = 1:nModels;
+    nLLMat{itruemodel} = nan(nModels,nSubj);
+    nParamMat{itruemodel} = nan(nModels,1);
+    for itestmodel = 1:nModels;
         testmodel = modelVec(itestmodel);
         
-        if strcmp(testmodel,truemodel)
+        if (testmodel == truemodel)
             filename = [filepath 'paramrecov_model' num2str(testmodel) '.mat'];
         else
             filename = [filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'];
         end
         load(filename)
 
-        nLLMat(itruemodel,itestmodel,:) = nLLVec;
-        nParamMat(itruemodel,itestmodel) = size(ML_parameters,2);
-        
-        
+        nLLMat{itruemodel}(itestmodel,:) = nLLVec;
+        nParamMat{itruemodel}(itestmodel) = size(ML_parameters,2);
+
     end
 end
+
+AICMat = cellfun(@(x,y) bsxfun(@plus,2*x,2*y),nLLMat,nParamMat,'UniformOutput',false);
+AICcMat = cellfun(@(x,y) bsxfun(@plus,x,(2.*y.*(y+1))./(nTrials-y-1)),AICMat,nParamMat,'UniformOutput',false);
+BICMat = cellfun(@(x,y) bsxfun(@plus,2*x,y.*(log(nTrials) - log(2*pi))),nLLMat,nParamMat,'UniformOutput',false);
+
+% which one wins
+[M,I] = cellfun(@(x) min(x),AICMat,'UniformOutput',false);
+[M,I] = cellfun(@(x) min(x),AICcMat,'UniformOutput',false);
+[M,I] = cellfun(@(x) min(x),BICMat,'UniformOutput',false);
