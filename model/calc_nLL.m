@@ -46,7 +46,6 @@ Jbar_total = Theta(1);
 tau = Theta(2);
 if (expnumber == 2); alpha = Theta(3); beta = Theta(4); end
 
-
 % data stuff
 priorityVec = [0.6 0.3 0.1];
 nPriorities = length(priorityVec);
@@ -66,18 +65,20 @@ switch model
 end
 
 % loading vector of disc radii
-[rVec] = loadvar('rVec');
-rVec = rVec(:); % vertical
+[rVec] = loadvar('rVec'); % size: (1 x nrs), where nrs = 500
+rVec = rVec(:); % size: (500 x 1)
 
 nLL = 0;
 for ipriority = 1:nPriorities
     Jbar = Jbar_total*pVec(ipriority); % Jbar for current priority condition
     
-    % clear data used in previous priorities
+    % clear varaibles used in previous priorities (that would fuck the code
+    % up if not cleared)
     clear idx1 idx2 data_r_reshaped
     
     % get subject data
     data_distance = data{ipriority}(:,1);
+    nTrials = length(data_distance);
     
     % p(J|Jbar,tau)
     [JVec] = loadvar({'JVec',Jbar,tau}); % values of J
@@ -87,27 +88,26 @@ for ipriority = 1:nPriorities
 %     if any(Jpdf > 1); Jpdf = Jpdf./sum(Jpdf); return; end % weird shit happens at extremely low taus, where the probability of the lowest value is >1.
     
     % p(Shat|S,J)
-    nTrials = length(data_distance);
     Sigma = zeros(1,2,nJs*nTrials);
-    Sigma(1,:,:) = sort(repmat(sqrt(1./JVec(:)),nTrials,2),'descend')'; % sigmas in descending order --> J in ascending order
+    Sigma(1,:,:) = sort(repmat(sqrt(1./JVec(:)),nTrials,2),'descend')'; % SDs of diagonal matrix. sigmas in descending order --> J in ascending order
     p_Shat = mvnpdf(repmat([data_distance(:) zeros(nTrials,1)],nJs,1),0,Sigma);
     p_Shat = reshape(p_Shat,nTrials,nJs)'; % nJs x nTrials
     
-    % ===== if there is disc size data =====
+    % ====== Exp 2: with disc size data ======
     if (expnumber == 2)
         data_r = data{ipriority}(:,2);
         
         % p(rVec|J,beta) (a range of r to get entire probability dist)
-        pdf_r = calc_pdf_r(beta, JVec, alpha); % rVec x JVec
+        pdf_r = calc_pdf_r(beta, JVec, alpha); % size: (nrs x nJs)
         
         % calculate p(r|J,beta) (get indices of which r in rVec is closest to actual r)
-        data_r = data_r(:)';  % horizontal vector
-        firstidxs = bsxfun(@(x,y) x == x(find((x-y)<=0,1,'last')),rVec,data_r);
+        data_r = data_r(:)';  % size: (1 x nTrials) 
+        firstidxs = bsxfun(@(x,y) x == x(find((x-y)<=0,1,'last')),rVec,data_r); % size: (nrs x nTrials)
         lastidxs = bsxfun(@(x,y) x == x(find((x-y)>0,1,'first')),rVec,data_r);
-        idx1(:,1,:) = firstidxs;
-        idx2(:,1,:) = lastidxs;
+        idx1(:,1,:) = firstidxs; % size: (nrs x 1 x nTrials)
+        idx2(:,1,:) = lastidxs; % size: (nrs x 1 x nTrials)
         
-        xdiff = diff(rVec(1:2));
+        xdiff = diff(rVec(1:2)); % size: scalar
         ydiff = sum(bsxfun(@times,pdf_r,idx2)) - sum(bsxfun(@times,pdf_r,idx1)); % 1 x JVec x nTrials
         slope = ydiff./xdiff; % 1 x JVec x nTrials
         
