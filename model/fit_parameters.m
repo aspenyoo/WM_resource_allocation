@@ -85,9 +85,9 @@ pub(logflag) = log(pub(logflag));
 for istartvals = 1:nStartVals
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
 
-    %     x0 = plb + rand(1,nParams).*(pub - plb);
-    load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '.mat'],'ML_parameters')
-    x0 = ML_parameters(subjnum,:);
+        x0 = plb + rand(1,nParams).*(pub - plb);
+%     load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '.mat'],'ML_parameters')
+%     x0 = ML_parameters(subjnum,:);
     
     fun = @(x) calc_nLL(testmodel,x,subjdata);
     
