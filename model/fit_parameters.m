@@ -40,7 +40,7 @@ if (subjnum <= nSubj)
 else
     load([filepath 'simdata_model' num2str(truemodel) '.mat'],'simdata')
     subjdata = simdata{subjnum - nSubj};
-    if strcmp(truemodel,testmodel); % if same model
+    if strcmp(truemodel,testmodel) % if same model
     filename = [filepath 'paramrecov_model' num2str(testmodel) '_subj' num2str(subjnum-nSubj) '.mat'];
     else
         filename = [filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '_subj' num2str(subjnum-nSubj) '.mat'];
@@ -69,6 +69,9 @@ if testmodel == 2 % p_high p_med
     plb = [plb 0.3 0];
     pub = [pub 0.7 0.3];
     logflag = [logflag 0 0];
+%     A = zeros(1,length(logflag));
+%     A(end-1:end) = 1;
+%     b = 1;
 end
 logflag = logical(logflag);
 nParams = length(logflag);
@@ -77,14 +80,19 @@ ub(logflag) = log(ub(logflag));
 plb(logflag) = log(plb(logflag));
 pub(logflag) = log(pub(logflag));
 
+% [Aeq,beq,lb,ub,nonlcon] = deal([]);
+% options = optimset('Display','iter');
 for istartvals = 1:nStartVals
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
-%     load(['simdata_model' num2str(model) '.mat'],'simtheta')
-%     x0 = simtheta(subjnum-11,:);
-%     x0(1:2) = log(x0(1:2));
-    x0 = plb + rand(1,nParams).*(pub - plb);
+
+    %     x0 = plb + rand(1,nParams).*(pub - plb);
+    load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '.mat'],'ML_parameters')
+    x0 = ML_parameters(subjnum,:);
+    
     fun = @(x) calc_nLL(testmodel,x,subjdata);
+    
     [x,fval] = bps(fun,x0,lb,ub,plb,pub);
+%     [x,fval] = fmincon(fun,x0,A,b,Aeq,beq,lb,ub,nonlcon,options);
 
     x(logflag) = exp(x(logflag));
     ML_parameters = [ML_parameters; x];

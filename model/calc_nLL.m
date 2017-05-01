@@ -1,4 +1,4 @@
-function nLL = calc_nLL(model,Theta,data)
+function nLL = calc_nLL(model,Theta,data,ngrids)
 % CALC_NLL(JBAR_TOTAL,TAU,BETA)
 %
 % CALC_NLL: calculates negative log likelihood of parameter combination for
@@ -34,12 +34,6 @@ switch model
     case 2 % not optimal model
         logflag = logical([1 1 0 0]);
         if (expnumber == 2); logflag = logical([logflag 0]); end
-        
-        % the proportion of resource allocation cannot exceed 1
-        if sum(Theta(end-1:end)) > 1
-            nLL = Inf;
-            return;
-        end
 end
 Theta(logflag) = exp(Theta(logflag));
 Jbar_total = Theta(1);
@@ -54,18 +48,19 @@ switch model
     case 1 % optimal
         % calculate the proportions that maximize expected utility
         pVec = calc_optimal_pVec(Theta);
-    case 2 % not optimal
-        pVec = [Theta(end-1:end) 1-sum(Theta(end-1:end))];
-        if pVec(3) <= 0 % proportion allocated to lowest priority must be positive
-            nLL = Inf;
-            return
+    case 2 % not optimal 
+        if sum(Theta(end-1:end))>1 % reflect over pHigh + pMed = 1 line
+            pVec = [1-Theta(end) 1-Theta(end-1)];
+            pVec = [pVec 1-sum(pVec)];
+        else
+            pVec = [Theta(end-1:end) 1-sum(Theta(end-1:end))];
         end
     case 3 % fixed
         pVec = [0.6 0.3 0.1];
 end
 
 % loading vector of disc radii
-[rVec] = loadvar('rVec'); % size: (1 x nrs), where nrs = 500
+[rVec] = loadvar('rVec',ngrids); % size: (1 x nrs), where nrs = 500
 rVec = rVec(:); % size: (500 x 1)
 
 nLL = 0;
@@ -81,7 +76,7 @@ for ipriority = 1:nPriorities
     nTrials = length(data_distance);
     
     % p(J|Jbar,tau)
-    [JVec] = loadvar({'JVec',Jbar,tau}); % values of J
+    [JVec] = loadvar('JVec',{Jbar,tau}); % values of J
     nJs = length(JVec);
     Jpdf = gampdf(JVec,Jbar/tau,tau); % probability of that J value
     Jpdf = Jpdf./qtrapz(Jpdf); % normalize
@@ -98,22 +93,36 @@ for ipriority = 1:nPriorities
         data_r = data{ipriority}(:,2);
         
         % p(rVec|J,beta) (a range of r to get entire probability dist)
-        pdf_r = calc_pdf_r(beta, JVec, alpha); % size: (nrs x nJs)
+        pdf_r = calc_pdf_r(beta, JVec, alpha,ngrids); % size: (nrs x nJs)
         
-        % calculate p(r|J,beta) (get indices of which r in rVec is closest to actual r)
-        data_r = data_r(:)';  % size: (1 x nTrials) 
-        firstidxs = bsxfun(@(x,y) x == x(find((x-y)<=0,1,'last')),rVec,data_r); % size: (nrs x nTrials)
-        lastidxs = bsxfun(@(x,y) x == x(find((x-y)>0,1,'first')),rVec,data_r);
-        idx1(:,1,:) = firstidxs; % size: (nrs x 1 x nTrials)
-        idx2(:,1,:) = lastidxs; % size: (nrs x 1 x nTrials)
+
+        xdiff = diff(rVec(1:2));
+        p_r = nan(nJs,nTrials);
+        for iJ = 1:nJs
+            pdff = pdf_r(:,iJ);
+            for itrial = 1:nTrials
+                r = data_r(itrial);
+                idx1 = find((rVec- r) <= 0,1,'last');
+                idx2 = find((rVec- r) > 0,1,'first');
+                
+                p_r(iJ,itrial) = (pdff(idx2)-pdff(idx1))/xdiff.*(r-rVec(idx1)) + pdff(idx1);
+            end
+        end
         
-        xdiff = diff(rVec(1:2)); % size: scalar
-        ydiff = sum(bsxfun(@times,pdf_r,idx2)) - sum(bsxfun(@times,pdf_r,idx1)); % 1 x JVec x nTrials
-        slope = ydiff./xdiff; % 1 x JVec x nTrials
-        
-        % linearly interpolate
-        data_r_reshaped(1,:,:) = data_r; % 1 x 1 x nTrials
-        p_r = squeeze(bsxfun(@times,slope,bsxfun(@minus,data_r_reshaped,sum(bsxfun(@times,rVec,idx1)))) + sum(bsxfun(@times,pdf_r,idx1))); % JVec x nTrials
+%         % calculate p(r|J,beta) (get indices of which r in rVec is closest to actual r)
+%         data_r = data_r(:)';  % size: (1 x nTrials) 
+%         firstidxs = bsxfun(@(x,y) x == x(find((x-y)<=0,1,'last')),rVec,data_r); % size: (nrs x nTrials)
+%         lastidxs = bsxfun(@(x,y) x == x(find((x-y)>0,1,'first')),rVec,data_r);
+%         idx1(:,1,:) = firstidxs; % size: (nrs x 1 x nTrials)
+%         idx2(:,1,:) = lastidxs; % size: (nrs x 1 x nTrials)
+%         
+%         xdiff = diff(rVec(1:2)); % size: scalar
+%         ydiff = sum(bsxfun(@times,pdf_r,idx2)) - sum(bsxfun(@times,pdf_r,idx1)); % 1 x JVec x nTrials
+%         slope = ydiff./xdiff; % 1 x JVec x nTrials
+%         
+%         % linearly interpolate
+%         data_r_reshaped(1,:,:) = data_r; % 1 x 1 x nTrials
+%         p_r = squeeze(bsxfun(@times,slope,bsxfun(@minus,data_r_reshaped,sum(bsxfun(@times,rVec,idx1)))) + sum(bsxfun(@times,pdf_r,idx1))); % JVec x nTrials
     end
     
     if (expnumber == 2) % if there is disc size data

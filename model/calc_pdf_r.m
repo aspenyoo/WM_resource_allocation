@@ -1,4 +1,4 @@
-function pdf_r = calc_pdf_r(beta, JVec, alpha)
+function pdf_r = calc_pdf_r(beta, JVec, alpha,ngrids)
 %
 % calculates the probilility density function of choosing r for a given beta and J (or vector
 % JVec)
@@ -8,7 +8,7 @@ function pdf_r = calc_pdf_r(beta, JVec, alpha)
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
-rVec = loadvar('rVec');
+rVec = loadvar('rVec',ngrids);
 
 % EU(r,J) for each combination of r and J in rVec and jVec
 EU = bsxfun(@times, calc_p_Hit(rVec,JVec), rewardFn(rVec,alpha)'); % SIZE: (rVec x JVec) = (rVec x JVec) x (rVec x 1)

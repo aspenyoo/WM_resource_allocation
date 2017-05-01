@@ -1,30 +1,104 @@
 %% understanding Jbar, tau, and sigma
 
-Jbar = 10;
-tau = .01;
+Jbar = 1;
+tau = .1;
 beta = 0.01;
 
 [JVec] = loadvar({'JVec',Jbar,tau});
 % JVec = linspace(1,2,100);
 Jpdf = gampdf(JVec,Jbar/tau,tau);
-% Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+Jpdf = Jpdf./qtrapz(Jpdf); % normalize
 
-p_r = calc_pdf_r(beta,Jbar);
 
 % figure; 
-subplot(2,1,1)
+subplot(3,1,1)
 plot(JVec,Jpdf,'k-'); defaultplot;hold on
-subplot(2,1,2)
+subplot(3,1,2)
+plot(JVec./Jbar,Jpdf,'k-'); defaultplot;hold on
+subplot(3,1,3)
 plot(1./sqrt(JVec),Jpdf,'k-'); defaultplot; hold on
 
-%% mixture of two guassians
-xx = linspace(-4,6, 100);
-gauss1 = normpdf(xx);
-gauss2 = normpdf(xx,4,2);
+%% look at typical max for J/Jbar gamma distribution
 
-plot(xx,gauss1); hold on
-plot(xx,gauss2)
-plot(xx,gauss1+gauss2)
+expnumber = 2;
+imodel = 1;
+
+load(['fits/exp' num2str(expnumber) '/fits_model' num2str(imodel) '.mat'])
+
+switch expnumber
+    case 1
+        nSubj = 14;
+    case 2
+        nSubj = 11;
+end
+
+JVecMax = nan(nSubj,3);
+for isubj = 1:nSubj
+    isubj
+    
+    Theta = ML_parameters(isubj,:);
+    
+    switch imodel
+        case 1 % optimal
+            % calculate the proportions that maximize expected utility
+            pVec = calc_optimal_pVec(Theta);
+        case 2 % not optimal
+            if sum(Theta(end-1:end))>1 % reflect over pHigh + pMed = 1 line
+                pVec = [1-Theta(end) 1-Theta(end-1)];
+                pVec = [pVec 1-sum(pVec)];
+            else
+                pVec = [Theta(end-1:end) 1-sum(Theta(end-1:end))];
+            end
+        case 3 % fixed
+            pVec = [0.6 0.3 0.1];
+    end
+    
+    tau = Theta(2);
+    JVec = linspace(0,10,100);
+    for iJbar = 1:3
+        Jbar = Theta(1)*pVec(iJbar);
+%         [JVec] = loadvar({'JVec',Jbar,tau});
+        
+%         Jpdf = gampdf(JVec,Jbar/tau,tau);
+        Jpdf = gampdf(JVec*Jbar,Jbar/tau,tau);
+        Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+        
+        %         JVecMax(isubj,iJbar) = JVec(end)/Jbar;
+        
+        plot(JVec,Jpdf,'k-'); defaultplot;
+        pause;
+        %         plot(JVec./Jbar,Jpdf,'k-'); defaultplot;
+        %         pause;
+    end
+end
+
+% JVecMax
+
+%% look at previous nLL with new JVec
+clear all
+
+expnumber = 2;
+imodel = 2;
+
+switch expnumber
+    case 1
+        nSubj = 14;
+        load('cleandata_nodisc.mat')
+    case 2
+        nSubj = 11;
+        load('cleandata.mat')
+end
+
+load(['fits/exp' num2str(expnumber) '/fits_model' num2str(imodel) '.mat'])
+
+for isubj = 1:nSubj
+    theta = ML_parameters(isubj,:);
+    theta(1:2) = log(theta(1:2));
+    
+    nLL(isubj) = calc_nLL(imodel,theta,data{isubj});
+end
+
+[nLLVec' nLL']
 
 %% ==========================================================
 %             STUFF WITH ACTUAL DATA!
@@ -729,7 +803,8 @@ plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},s
 
 end
 
-%%
+%% looking at nTrials 
+
 for isubj = 1:11
     for ipriority = 1:3
     blah(isubj,ipriority) = size(data{isubj}{ipriority},1);
@@ -754,8 +829,8 @@ nSubj = 10;
 %         logflag = logical([1 1 0 0 0]);
 % end
 
-filename = ['fits/exp' num2str(expnumber) '/'];
-load([filename 'fits_model' num2str(imodel) '.mat'])
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'fits_model' num2str(imodel) '.mat'])
 % ML_parameters(logflag) = log(ML_parameters(logflag));
 MU = mean(ML_parameters);
 SIGMA = cov(ML_parameters);
@@ -770,7 +845,7 @@ for isubj = 1:10
     isubj
     simdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
 end
-save([filename 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
+save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 %               MODEL RECOVERY
@@ -790,12 +865,12 @@ nTrials = sum([250 120 70]);
 
 nLLMat = cell(1,nModels);
 nParamMat = cell(1,nModels);
-for itruemodel = 1:nModels;
+for itruemodel = 1:nModelss
     truemodel = modelVec(itruemodel);
     
     nLLMat{itruemodel} = nan(nModels,nSubj);
     nParamMat{itruemodel} = nan(nModels,1);
-    for itestmodel = 1:nModels;
+    for itestmodel = 1:nModels
         testmodel = modelVec(itestmodel);
         
         if (testmodel == truemodel)
@@ -819,3 +894,142 @@ BICMat = cellfun(@(x,y) bsxfun(@plus,2*x,y.*(log(nTrials) - log(2*pi))),nLLMat,n
 [M,I] = cellfun(@(x) min(x),AICMat,'UniformOutput',false);
 [M,I] = cellfun(@(x) min(x),AICcMat,'UniformOutput',false);
 [M,I] = cellfun(@(x) min(x),BICMat,'UniformOutput',false);
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%           RANDOM THINGS
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+clear all
+expnumber = 2;
+model = 3;
+
+if (expnumber == 2)
+    load('cleandata.mat')
+else
+    load('cleandata_nodisc.mat')
+end
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'fits_model' num2str(model) '.mat'])
+
+%% fit parameter 
+
+fit_parameters(testmodel,subjnum,nStartVals,truemodel,expnumber)
+
+%% look at LL as a function of one parameter
+
+isubj = 6;
+
+
+bfp = ML_parameters(isubj,:);
+propVec = [.5 .7 .9 1 1.1 1.3 1.5];
+nProps = length(propVec);
+
+figure;
+for iparam = 1:6
+    iparam
+    
+    nLL = nan(1,nProps);
+    for iprop = 1:nProps
+        
+        testtheta = bfp;
+        testtheta(iparam) = bfp(iparam)*propVec(iprop);
+        testtheta(1:2) = log(testtheta(1:2));
+        
+        nLL(iprop) = calc_nLL(model,testtheta,data{isubj});
+    end
+    
+    subplot(2,3,iparam)
+    plot(propVec,nLL,'k-');
+    defaultplot;
+    title(num2str(iparam))
+end
+
+ 
+%% looking at LL calculation as a function of number of grids for gamma distribution
+
+iparam = 1;
+isubj = 1;
+
+gridVec = linspace(100,1000,100);
+nGrids = length(gridVec);
+
+MLtheta = 0;
+if (MLtheta)
+theta = ML_parameters(isubj,:);
+propVec = [1];
+nProps = length(propVec);
+else
+    MU = mean(ML_parameters);
+    SIGMA = cov(ML_parameters);
+    theta = abs(mvnrnd(MU,SIGMA));
+end
+
+tic;
+nLLMat = nan(nProps,nGrids);
+for iprop = 1:nProps
+    
+    testtheta = theta;
+    testtheta(iparam) = theta(iparam)*propVec(iprop);
+    testtheta(1:2) = log(testtheta(1:2));
+    
+    for igrid = 1:nGrids
+        if ~mod(igrid,10)
+            disp(nLLMat(iprop,igrid-1))
+        end
+        
+        nLLMat(iprop,igrid) = calc_nLL(model,testtheta,data{isubj},gridVec(igrid));
+    end
+end
+toc;
+figure;
+plot(gridVec,nLLMat);
+defaultplot
+xlabel('number of grids'); ylabel('negative log-likelihood')
+if (MLtheta)
+title(['ML \theta for subject ' num2str(isubj)])
+else
+    title(['\theta = ' num2str(theta)])
+end
+% imagesc(nLLMat)
+
+% dim = [0.2 0.5 0.3 0.3];
+% str = {'Straight Line Plot','from 1 to 10'};
+% annotation('textbox',dim,'String',str,'FitBoxToText','on');
+
+%% looking at LL calculation as a function of number of grids for gamma distribution
+
+
+isubj = 1;
+
+gridVec = linspace(100,1000,100);
+nGrids = length(gridVec);
+
+MLtheta = 1;
+if (MLtheta)
+    theta = ML_parameters(isubj,:);
+else
+    MU = mean(ML_parameters);
+    SIGMA = cov(ML_parameters);
+    theta = abs(mvnrnd(MU,SIGMA));
+end
+
+nLLMat = nan(1,nGrids);
+testtheta = theta;
+testtheta(1:2) = log(testtheta(1:2));
+for igrid = 1:nGrids
+    if ~mod(igrid,10)
+        disp(nLLMat(iprop,igrid-1))
+    end
+    
+    nLLMat(iprop,igrid) = calc_nLL(model,testtheta,data{isubj},gridVec(igrid));
+end
+
+figure;
+plot(gridVec,nLLMat);
+defaultplot
+xlabel('number of grids'); ylabel('negative log-likelihood')
+if (MLtheta)
+title(['ML \theta for subject ' num2str(isubj)])
+else
+    title(['\theta = ' num2str(theta)])
+end
