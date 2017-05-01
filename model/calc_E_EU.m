@@ -19,11 +19,11 @@ beta = Theta(4);
 p_r = calc_pdf_r(beta,JVec,alpha);
 
 % EU(J) = \int EU(r,J) p(r) dr
-EU_J = qtrapz(calc_EU(rVec,JVec,alpha).*p_r);
+EU_J = sum(calc_EU(rVec,JVec,alpha).*p_r);
 
 % for gamma distribution
 Jpdf = gampdf(JVec,Jbar/tau,tau);
-Jpdf = Jpdf./qtrapz(Jpdf);
+Jpdf = Jpdf./sum(Jpdf);
 
 % EU(Jbar) = \int EU(J) p(J) dJ
-E_EU = qtrapz(Jpdf.*EU_J);
+E_EU = sum(Jpdf.*EU_J);

@@ -15,4 +15,4 @@ EU = bsxfun(@times, calc_p_Hit(rVec,JVec), rewardFn(rVec,alpha)'); % SIZE: (rVec
 
 % p(r)
 pdf_r = exp(beta.*EU); % size: (rVec x JVec)
-pdf_r = bsxfun(@rdivide, pdf_r, qtrapz(pdf_r)); % normalize across rVec. size: (rVec x JVec) = (rVec x JVec) x (1 x JVec)
+pdf_r = bsxfun(@rdivide, pdf_r, sum(pdf_r)); % normalize across rVec. size: (rVec x JVec) = (rVec x JVec) x (1 x JVec)

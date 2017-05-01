@@ -1,4 +1,5 @@
 function nLL = calc_nLL(model,Theta,data,ngrids)
+if nargin < 4; ngrids = 500; end
 % CALC_NLL(JBAR_TOTAL,TAU,BETA)
 %
 % CALC_NLL: calculates negative log likelihood of parameter combination for
@@ -79,7 +80,7 @@ for ipriority = 1:nPriorities
     [JVec] = loadvar('JVec',{Jbar,tau}); % values of J
     nJs = length(JVec);
     Jpdf = gampdf(JVec,Jbar/tau,tau); % probability of that J value
-    Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+    Jpdf = Jpdf./sum(Jpdf); % normalize
 %     if any(Jpdf > 1); Jpdf = Jpdf./sum(Jpdf); return; end % weird shit happens at extremely low taus, where the probability of the lowest value is >1.
     
     % p(Shat|S,J)

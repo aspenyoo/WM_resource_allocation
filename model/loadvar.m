@@ -9,7 +9,7 @@ for ivar = 1:nvars
             tau = varargin{2*ivar}{2};
             nJSamp = 500;
             
-            JVec = linspace(0,10*Jbar,nJSamp);
+            JVec = linspace(1e-10,10*Jbar,nJSamp);
             
 %             nJSamp = 100;
 %             xmin = Jbar;
