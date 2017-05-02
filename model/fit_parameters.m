@@ -65,12 +65,12 @@ if expnumber == 2 % alpha beta
     logflag = [logflag 0 0];
 end
 if testmodel == 2 % p_high p_med
-    lb = [lb 0 0];
+    lb = [lb 1e-10 1e-10];
     ub = [ub 1 1];
-    plb = [plb 0.3 0];
+    plb = [plb 0.3 1e-10];
     pub = [pub 0.7 0.3];
     logflag = [logflag 0 0];
-    nonbcon = @(x) sum(x(end-1:end)) > 1;
+    nonbcon = @(x) sum(x(:,end-1:end),2) > 1;
 else
     nonbcon = [];
 end
