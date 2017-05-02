@@ -1,4 +1,4 @@
-function pdf_r = calc_pdf_r(beta, JVec, alpha,ngrids)
+function pdf_r = calc_pdf_r(beta, JVec, alpha)
 %
 % calculates the probilility density function of choosing r for a given beta and J (or vector
 % JVec)
@@ -8,7 +8,7 @@ function pdf_r = calc_pdf_r(beta, JVec, alpha,ngrids)
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
-rVec = loadvar('rVec',ngrids);
+rVec = loadvar('rVec');
 deltar = diff(rVec(1:2)); % the size of the bin. this is so that the pdf is not a function ngrids
 
 % EU(r,J) for each combination of r and J in rVec and jVec

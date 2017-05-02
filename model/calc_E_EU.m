@@ -13,7 +13,7 @@ alpha = Theta(3);
 beta = Theta(4);
 
 % loading in variables
-[JVec,rVec] = loadvar({'JVec',Jbar,tau},'rVec');
+[JVec,rVec] = loadvar('JVec',{Jbar,tau},'rVec');
 
 % p(r|beta,J)
 p_r = calc_pdf_r(beta,JVec,alpha);

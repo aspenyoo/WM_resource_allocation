@@ -1,5 +1,5 @@
 function varargout = loadvar(varargin)
-nvars = length(varargin)/2;
+nvars = ceil(length(varargin)/2);
 varargout = cell(1,nvars);
 for ivar = 1:nvars
     var = varargin{2*ivar-1};
@@ -45,9 +45,9 @@ for ivar = 1:nvars
 % %             JVec = linspace(1e-5,20,nJSamp); % ASPEN: make sure range is reasonable for parameter range
             varargout{ivar} = JVec;
         case 'rVec'
-            nRs = varargin{2*ivar};
+%             nRs = varargin{2*ivar};
             % radius stuff
-%             nRs = 500;
+            nRs = 500;
             rVec = linspace(0,10,nRs);
             varargout{ivar} = rVec;
     end

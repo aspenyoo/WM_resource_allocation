@@ -1,5 +1,4 @@
-function nLL = calc_nLL(model,Theta,data,ngrids)
-if nargin < 4; ngrids = 500; end
+function nLL = calc_nLL(model,Theta,data)
 % CALC_NLL(JBAR_TOTAL,TAU,BETA)
 %
 % CALC_NLL: calculates negative log likelihood of parameter combination for
@@ -61,7 +60,7 @@ switch model
 end
 
 % loading vector of disc radii
-[rVec] = loadvar('rVec',ngrids); % size: (1 x nrs), where nrs = 500
+[rVec] = loadvar('rVec'); % size: (1 x nrs), where nrs = 500
 rVec = rVec(:); % size: (500 x 1)
 
 nLL = 0;
@@ -94,7 +93,7 @@ for ipriority = 1:nPriorities
         data_r = data{ipriority}(:,2);
         
         % p(rVec|J,beta) (a range of r to get entire probability dist)
-        pdf_r = calc_pdf_r(beta, JVec, alpha,ngrids); % size: (nrs x nJs)
+        pdf_r = calc_pdf_r(beta, JVec, alpha); % size: (nrs x nJs)
         
 
         xdiff = diff(rVec(1:2));

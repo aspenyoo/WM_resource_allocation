@@ -2,6 +2,7 @@ function fit_parameters(testmodel,subjnum,nStartVals,truemodel,expnumber)
 if nargin < 3; nStartVals = 1; end
 if nargin < 4; truemodel = testmodel; end % for model recovery
 if nargin < 5; expnumber = 2; end
+if isempty(truemodel); truemodel = testmodel; end
 
 %
 %
