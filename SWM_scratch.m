@@ -175,9 +175,9 @@ clear all
 
 imodel = 3;
 testmodel = 3;
-nSubj = 10;
-fakedata = 1;
-expnumber = 2;
+nSubj = 14;
+fakedata = 0;
+expnumber = 1;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 if (fakedata)
