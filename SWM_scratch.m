@@ -175,9 +175,9 @@ clear all
 
 imodel = 3;
 testmodel = 3;
-nSubj = 14;
+nSubj = 11;
 fakedata = 0;
-expnumber = 1;
+expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 if (fakedata)
@@ -220,8 +220,8 @@ end
 %% parameter recovery plot
 
 clear all
-expnumber = 2;
-imodel = 3;
+expnumber = 1;
+imodel = 2;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
@@ -811,7 +811,7 @@ mean(bleh)
 % % % % % % % % % % % % % % % % % % % % % % % 
 
 clear all
-expnumber = 1;
+expnumber = 2;
 imodel = 3;
 nSubj = 10;
 
@@ -847,7 +847,7 @@ save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 clear all
 
 % things to change
-expnumber = 2;
+expnumber = 1;
 modelVec = [2 3];
 
 % things not to change
