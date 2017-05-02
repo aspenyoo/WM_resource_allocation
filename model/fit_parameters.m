@@ -49,7 +49,7 @@ else
 end
 
 
-rng(0);
+% rng(0);
 % rng(str2double([num2str(model) num2str(subjnum)]));
 
 lb = [1e-5 1e-3]; % Jbar_total, tau
