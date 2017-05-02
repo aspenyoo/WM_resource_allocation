@@ -50,12 +50,12 @@ switch model
         % calculate the proportions that maximize expected utility
         pVec = calc_optimal_pVec(Theta);
     case 2 % not optimal 
-        if sum(Theta(end-1:end))>1 % reflect over pHigh + pMed = 1 line
-            pVec = [1-Theta(end) 1-Theta(end-1)];
-            pVec = [pVec 1-sum(pVec)];
-        else
+%         if sum(Theta(end-1:end))>1 % reflect over pHigh + pMed = 1 line
+%             pVec = [1-Theta(end) 1-Theta(end-1)];
+%             pVec = [pVec 1-sum(pVec)];
+%         else
             pVec = [Theta(end-1:end) 1-sum(Theta(end-1:end))];
-        end
+%         end
     case 3 % fixed
         pVec = [0.6 0.3 0.1];
 end

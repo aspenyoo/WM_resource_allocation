@@ -173,19 +173,15 @@ save('cleandata_nodisc.mat','data')
 % % % % % % % % % % % % % % % % % % % % % % % % 
 clear all
 
-imodel = 2;
+imodel = 3;
 testmodel = 3;
 nSubj = 10;
 fakedata = 1;
-expnumber = 1;
+expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 if (fakedata)
-    if imodel == testmodel
-        pretxt = 'paramrecov';
-    else
-        pretxt = 'modelrecov';
-    end
+    pretxt = 'modelrecov';
 else
     pretxt = 'fits';
 end
@@ -228,12 +224,13 @@ expnumber = 2;
 imodel = 3;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
-load([filepath 'paramrecov_model' num2str(imodel) '.mat'])
+load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
 bfp = ML_parameters;
 
 load([filepath 'simdata_model' num2str(imodel) '.mat'])
 nParams = size(bfp,2);
 
+figure;
 for iparam = 1:nParams
     subplot(2,3,iparam);
     plot(bfp(:,iparam),simtheta(:,iparam),'ko'); hold on; 
@@ -250,7 +247,7 @@ clear all
 truemodel = 3;
 expnumber = 2;
 
-testmodelVec = [2 3];
+testmodelVec = [3];
 nModels = length(testmodelVec);
 
 % load true model stuff
@@ -265,16 +262,12 @@ for isubj = 1:nSubj
     nLLCell{1}(isubj) = calc_nLL(truemodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
 end
 
-for itestmodel = 1:nModels;
+for itestmodel = 1:nModels
     itestmodel
     testmodel = testmodelVec(itestmodel);
     
     % load relevant dataset
-    if (testmodel == truemodel)
-        load([filepath 'paramrecov_model' num2str(testmodel) '.mat'])
-    else
-        load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'])
-    end
+    load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'])
     for isubj = 1:nSubj
         % calculate nLL
         nLLCell{itestmodel+1}(isubj) = calc_nLL(testmodel,[log(ML_parameters(isubj,1:2)) ML_parameters(isubj,3:end)],simdata{isubj});
@@ -283,7 +276,7 @@ for itestmodel = 1:nModels;
     
 end
 
-[nLLCell{1}; nLLCell{2}; nLLCell{3}]
+[nLLCell{1}; nLLCell{2}]
 
 %% nLL as a function of numerical integration samples
 sampVec = [100 200 500 1000 10000 15000];
@@ -494,7 +487,7 @@ end
 modcompidx = 3;
 nSubj = length(nLLVec);
 comparison = structfun(@(x) x-AIC.(['model' num2str(modcompidx)]),AIC,'UniformOutput',false);
-if nModels == 3;
+if nModels == 3
 comparison = [comparison.model1' comparison.model2'];
 else
     comparison = comparison.model2;
@@ -502,7 +495,7 @@ end
 meancomp = mean(comparison);
 
 figure;
-if nModels == 3;
+if nModels == 3
     semcomp = std(comparison)/sqrt(size(comparison,1));
     for imodel = 1:(nModels-1)
         fill([imodel-0.475 imodel+0.475 imodel+0.475 imodel-0.475],[meancomp(imodel)-semcomp(imodel) meancomp(imodel)-semcomp(imodel)...
@@ -854,7 +847,7 @@ save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 clear all
 
 % things to change
-expnumber = 1;
+expnumber = 2;
 modelVec = [2 3];
 
 % things not to change
@@ -865,7 +858,7 @@ nTrials = sum([250 120 70]);
 
 nLLMat = cell(1,nModels);
 nParamMat = cell(1,nModels);
-for itruemodel = 1:nModelss
+for itruemodel = 1:nModels
     truemodel = modelVec(itruemodel);
     
     nLLMat{itruemodel} = nan(nModels,nSubj);
@@ -873,11 +866,7 @@ for itruemodel = 1:nModelss
     for itestmodel = 1:nModels
         testmodel = modelVec(itestmodel);
         
-        if (testmodel == truemodel)
-            filename = [filepath 'paramrecov_model' num2str(testmodel) '.mat'];
-        else
-            filename = [filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'];
-        end
+        filename = [filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'];
         load(filename)
 
         nLLMat{itruemodel}(itestmodel,:) = nLLVec;
@@ -892,8 +881,16 @@ BICMat = cellfun(@(x,y) bsxfun(@plus,2*x,y.*(log(nTrials) - log(2*pi))),nLLMat,n
 
 % which one wins
 [M,I] = cellfun(@(x) min(x),AICMat,'UniformOutput',false);
+sum(I{1} == 1)
+sum(I{2} == 2)
+
 [M,I] = cellfun(@(x) min(x),AICcMat,'UniformOutput',false);
+sum(I{1} == 1)
+sum(I{2} == 2)
+
 [M,I] = cellfun(@(x) min(x),BICMat,'UniformOutput',false);
+sum(I{1} == 1)
+sum(I{2} == 2)
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %           RANDOM THINGS
@@ -901,7 +898,7 @@ BICMat = cellfun(@(x,y) bsxfun(@plus,2*x,y.*(log(nTrials) - log(2*pi))),nLLMat,n
 
 clear all
 expnumber = 2;
-model = 3;
+model = 2;
 
 if (expnumber == 2)
     load('cleandata.mat')
@@ -996,7 +993,7 @@ end
 % str = {'Straight Line Plot','from 1 to 10'};
 % annotation('textbox',dim,'String',str,'FitBoxToText','on');
 
-%% looking at LL calculation as a function of number of grids for gamma distribution
+%% looking at LL calculation as a function of number of grids for rVec
 
 
 isubj = 1;
@@ -1018,10 +1015,10 @@ testtheta = theta;
 testtheta(1:2) = log(testtheta(1:2));
 for igrid = 1:nGrids
     if ~mod(igrid,10)
-        disp(nLLMat(iprop,igrid-1))
+        disp(nLLMat(igrid-1))
     end
     
-    nLLMat(iprop,igrid) = calc_nLL(model,testtheta,data{isubj},gridVec(igrid));
+    nLLMat(igrid) = calc_nLL(model,testtheta,data{isubj},gridVec(igrid));
 end
 
 figure;

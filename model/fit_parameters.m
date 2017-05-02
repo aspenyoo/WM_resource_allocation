@@ -69,9 +69,9 @@ if testmodel == 2 % p_high p_med
     plb = [plb 0.3 0];
     pub = [pub 0.7 0.3];
     logflag = [logflag 0 0];
-%     A = zeros(1,length(logflag));
-%     A(end-1:end) = 1;
-%     b = 1;
+    nonbcon = @(x) sum(x(end-1:end)) > 1;
+else
+    nonbcon = [];
 end
 logflag = logical(logflag);
 nParams = length(logflag);
@@ -80,8 +80,7 @@ ub(logflag) = log(ub(logflag));
 plb(logflag) = log(plb(logflag));
 pub(logflag) = log(pub(logflag));
 
-% [Aeq,beq,lb,ub,nonlcon] = deal([]);
-% options = optimset('Display','iter');
+
 for istartvals = 1:nStartVals
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
 
@@ -91,8 +90,7 @@ for istartvals = 1:nStartVals
     
     fun = @(x) calc_nLL(testmodel,x,subjdata);
     
-    [x,fval] = bps(fun,x0,lb,ub,plb,pub);
-%     [x,fval] = fmincon(fun,x0,A,b,Aeq,beq,lb,ub,nonlcon,options);
+    [x,fval] = bads(fun,x0,lb,ub,plb,pub,nonbcon);
 
     x(logflag) = exp(x(logflag));
     ML_parameters = [ML_parameters; x];
