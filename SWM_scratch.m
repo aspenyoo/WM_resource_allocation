@@ -173,10 +173,10 @@ save('cleandata_nodisc.mat','data')
 % % % % % % % % % % % % % % % % % % % % % % % % 
 clear all
 
-imodel = 3;
-testmodel = 3;
-nSubj = 11;
-fakedata = 0;
+imodel = 2;
+testmodel = 2;
+nSubj = 10;
+fakedata = 1;
 expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
@@ -812,7 +812,7 @@ mean(bleh)
 
 clear all
 expnumber = 2;
-imodel = 3;
+imodel = 2;
 nSubj = 10;
 
 % switch model
