@@ -219,6 +219,29 @@ else
     save([filepath pretxt '_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
 end
 
+%% check nLL for real data
+
+clear all
+expnumber = 2;
+imodel = 1;
+subjVec = [1 3:11];
+
+nSubj = 10;
+load('cleandata.mat')
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'fits_model' num2str(imodel) '.mat'])
+ML_parameters(:,1:2) = log(ML_parameters(:,1:2));
+
+nLL2 = nan(1,nSubj);
+for isubj = 1:nSubj
+    isubj
+    
+    nLL2(isubj) = calc_nLL(imodel,ML_parameters(isubj,:),data{subjVec(isubj)});
+end
+
+[nLLVec; nLL; nLL2]
+
 %% parameter recovery plot
 
 clear all
@@ -637,7 +660,7 @@ title('disc size (dva)')
 clear all
 
 expnumber = 2;
-imodel = 3;
+imodel = 2;
 
 nPriorities = 3;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
@@ -813,8 +836,8 @@ mean(bleh)
 % % % % % % % % % % % % % % % % % % % % % % % 
 
 clear all
-expnumber = 2;
-imodel = 1;
+expnumber = 1;
+imodel = 2;
 nSubj = 10;
 
 % switch model
@@ -836,13 +859,53 @@ simtheta = abs(simtheta); % hacky way to enforce positive parameter values
 % simtheta(:,logflag) = exp(simtheta(:,logflag));
 
 nTrials = [250 120 70]; % mean number of trials across actual participants
-for isubj = 1:10
+for isubj = 1:nSubj
     isubj
-    siMUmdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
+    simdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
 end
 save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 
-%% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+%% look at simulated data
+
+clear all
+
+expnumber = 2;
+imodel = 2;
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'simdata_model' num2str(imodel) '.mat'])
+
+for isubj = 1:10
+xlims = linspace(0,10,11);
+for ipriority = 1:3
+    saccerror = hist(simdata{isubj}{ipriority}(:,1),xlims);
+    error{ipriority}(isubj,:) = saccerror./sum(saccerror);
+
+    if expnumber == 2
+    disksize = hist(simdata{isubj}{ipriority}(:,2),xlims);
+    discsize{ipriority}(isubj,:) = disksize./sum(disksize);
+    end
+    
+end
+
+if expnumber == 2
+    subplot(1,2,2)
+    plot(xlims,disksize,'k-')
+    defaultplot;
+    xlabel('disc size')
+    
+    subplot(1,2,1)
+end
+plot(xlims,saccerror,'k-')
+defaultplot
+xlabel('saccade error')
+title(['subj ' num2str(isubj)])
+pause;
+end
+
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %               MODEL RECOVERY
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
@@ -910,13 +973,10 @@ end
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(model) '.mat'])
 
-%% fit parameter 
-
-fit_parameters(testmodel,subjnum,nStartVals,truemodel,expnumber)
 
 %% look at LL as a function of one parameter
 
-isubj = 6;
+isubj = 1;
 
 
 bfp = ML_parameters(isubj,:);
