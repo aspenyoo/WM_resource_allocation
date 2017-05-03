@@ -1,3 +1,90 @@
+
+%% % % % % % % % % % % % % % % % % % % % 
+%       DATA RELATED
+% % % % % % % % % % % % % % % % % % % % % 
+
+%% looking at nTrials 
+
+for isubj = 1:11
+    for ipriority = 1:3
+    blah(isubj,ipriority) = size(data{isubj}{ipriority},1);
+end
+end
+blah
+bleh = bsxfun(@rdivide,blah(:,1), blah)
+mean(bleh)
+
+%% get data in clean format for data fitting
+
+% load in data file
+% load('group_data.mat')
+
+% saving subjid, priority, radius, response_x, response_y, target_theta
+usefuldata = group_data(:,[1 2 11 12 13 14]);
+
+% deleting nans
+idx = logical(sum(isnan(usefuldata),2)); % idxs of nans 
+usefuldata(idx,:) = [];
+
+% rename useful columns of group_data.mat
+data_subj = usefuldata(:,1);
+data_priority = usefuldata(:,2);
+% data_radius = usefuldata(:,3);
+response_x = usefuldata(:,3);
+response_y = usefuldata(:,4);
+target_x = usefuldata(:,5);
+target_y = usefuldata(:,6);
+% response_x = usefuldata(:,4);
+% response_y = usefuldata(:,5);
+% target_x = 10*cosd(usefuldata(:,6)); % x location
+% target_y = 10*sind(usefuldata(:,6)); % y location
+
+% errors
+error_x = response_x - target_x;
+error_y = response_y - target_y;
+error_distance = sqrt(error_x.^2 + error_y.^2);
+
+% deleting trials with technical malfunctions
+idx = (error_distance >= 10);
+% idx = (error_distance >= 10) | (data_radius >= 10);
+error_distance(idx) = [];
+data_priority(idx) = [];
+data_subj(idx) = [];
+% data_radius(idx) = [];
+error_x(idx) = [];
+error_y(idx) = [];
+
+% priority and subject numbers
+priorityVec = [0.6 0.3 0.1]; % sort(unique(data_priority),'descend'); % priority condition
+nPriorities = length(priorityVec);
+titleVec = {'high','med','low'};
+subjVec = unique(data_subj);
+nSubj = length(subjVec);
+
+data = cell(1,nSubj);
+for isubj = 1:nSubj
+    subjnum = subjVec(isubj);
+    
+    data{isubj} = cell(1,nPriorities);
+    for ipriority = 1:nPriorities
+        priority = priorityVec(ipriority);
+        idx = (data_subj == subjnum) & (data_priority == priority);
+        nTrials = sum(idx);
+        
+%         data{isubj}{ipriority} = nan(nTrials,2);
+        data{isubj}{ipriority}(:,1) = error_distance(idx);
+%         data{isubj}{ipriority}(:,2) = data_radius(idx);
+    end
+end
+
+save('cleandata_nodisc.mat','data')
+
+
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % 
+%       MODEL RELATED
+% % % % % % % % % % % % % % % % % % % % % % % % % % 
+
 %% understanding Jbar, tau, and sigma
 
 Jbar = 1;
@@ -74,111 +161,39 @@ end
 
 % JVecMax
 
-%% look at previous nLL with new JVec
-clear all
+%% optimal pVec as a function of Jbar_total
+clear
 
-expnumber = 2;
-imodel = 2;
+tau = 1;
+beta = 1;
+N = 40;
+JbartotalVec = linspace(1e-3,20,N);
 
-switch expnumber
-    case 1
-        nSubj = 14;
-        load('cleandata_nodisc.mat')
-    case 2
-        nSubj = 11;
-        load('cleandata.mat')
-end
-
-load(['fits/exp' num2str(expnumber) '/fits_model' num2str(imodel) '.mat'])
-
-for isubj = 1:nSubj
-    theta = ML_parameters(isubj,:);
-    theta(1:2) = log(theta(1:2));
+pVec = nan(N,3);
+for iJbartotal = 1:N
+    iJbartotal
     
-    nLL(isubj) = calc_nLL(imodel,theta,data{isubj});
+    Jbartotal = JbartotalVec(iJbartotal);
+    pVec(iJbartotal,:) = calc_optimal_pVec([Jbartotal tau beta]);
 end
 
-[nLLVec' nLL']
+plot(bsxfun(@times,pVec,JbartotalVec'))
 
-%% ==========================================================
-%             STUFF WITH ACTUAL DATA!
-% ===========================================================
-% 02.5.2017
 
-% load in data file
-% load('group_data.mat')
 
-% saving subjid, priority, radius, response_x, response_y, target_theta
-usefuldata = group_data(:,[1 2 11 12 13 14]);
 
-% deleting nans
-idx = logical(sum(isnan(usefuldata),2)); % idxs of nans 
-usefuldata(idx,:) = [];
-
-% rename useful columns of group_data.mat
-data_subj = usefuldata(:,1);
-data_priority = usefuldata(:,2);
-% data_radius = usefuldata(:,3);
-response_x = usefuldata(:,3);
-response_y = usefuldata(:,4);
-target_x = usefuldata(:,5);
-target_y = usefuldata(:,6);
-% response_x = usefuldata(:,4);
-% response_y = usefuldata(:,5);
-% target_x = 10*cosd(usefuldata(:,6)); % x location
-% target_y = 10*sind(usefuldata(:,6)); % y location
-
-% errors
-error_x = response_x - target_x;
-error_y = response_y - target_y;
-error_distance = sqrt(error_x.^2 + error_y.^2);
-
-% deleting trials with technical malfunctions
-idx = (error_distance >= 10);
-% idx = (error_distance >= 10) | (data_radius >= 10);
-error_distance(idx) = [];
-data_priority(idx) = [];
-data_subj(idx) = [];
-% data_radius(idx) = [];
-error_x(idx) = [];
-error_y(idx) = [];
-
-% priority and subject numbers
-priorityVec = [0.6 0.3 0.1]; % sort(unique(data_priority),'descend'); % priority condition
-nPriorities = length(priorityVec);
-titleVec = {'high','med','low'};
-subjVec = unique(data_subj);
-nSubj = length(subjVec);
-
-data = cell(1,nSubj);
-for isubj = 1:nSubj
-    subjnum = subjVec(isubj);
-    
-    data{isubj} = cell(1,nPriorities);
-    for ipriority = 1:nPriorities
-        priority = priorityVec(ipriority);
-        idx = (data_subj == subjnum) & (data_priority == priority);
-        nTrials = sum(idx);
-        
-%         data{isubj}{ipriority} = nan(nTrials,2);
-        data{isubj}{ipriority}(:,1) = error_distance(idx);
-%         data{isubj}{ipriority}(:,2) = data_radius(idx);
-    end
-end
-
-save('cleandata_nodisc.mat','data')
 
 %% % % % % % % % % % % % % % % % % % % % % % % %
 %     GET ML PARAMETER ESTIMATES 
 % % % % % % % % % % % % % % % % % % % % % % % % 
 clear all
 
-imodel = 2;
+imodel = 3;
 testmodel = 2;
 subjVec = 1:10;
 nSubj = length(subjVec);
 fakedata = 1;
-expnumber = 2;
+expnumber = 1;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 if (fakedata)
@@ -219,7 +234,13 @@ else
     save([filepath pretxt '_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
 end
 
-%% check nLL for real data
+%% % % % % % % % % % % % % % % % % % % % % % %
+%       REAL DATA STUFF
+% % % % % % % % % % % % % % % % % % % % % % %
+
+
+
+%% check nLL
 
 clear all
 expnumber = 2;
@@ -241,141 +262,6 @@ for isubj = 1:nSubj
 end
 
 [nLLVec; nLL; nLL2]
-
-%% parameter recovery plot
-
-clear all
-expnumber = 1;
-imodel = 2;
-filepath = ['fits/exp' num2str(expnumber) '/'];
-
-load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
-bfp = ML_parameters;
-
-load([filepath 'simdata_model' num2str(imodel) '.mat'])
-nParams = size(bfp,2);
-
-figure;
-for iparam = 1:nParams
-    subplot(2,3,iparam);
-    plot(bfp(:,iparam),simtheta(:,iparam),'ko'); hold on; 
-    plot([min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],...
-        [min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],'k-')
-    xlabel('estimated'); ylabel('actual')
-    defaultplot
-end
-
-%% double chek NLL is good for parameter/model recovery
-
-clear all
-
-truemodel = 3;
-expnumber = 2;
-
-testmodelVec = [3];
-nModels = length(testmodelVec);
-
-% load true model stuff
-filepath = ['fits/exp' num2str(expnumber) '/'];
-load([filepath 'simdata_model' num2str(truemodel) '.mat'])
-
-
-nSubj = 10;
-nLLCell = cell(1,nModels);
-% calculate true nLL
-for isubj = 1:nSubj
-    nLLCell{1}(isubj) = calc_nLL(truemodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
-end
-
-for itestmodel = 1:nModels
-    itestmodel
-    testmodel = testmodelVec(itestmodel);
-    
-    % load relevant dataset
-    load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'])
-    for isubj = 1:nSubj
-        % calculate nLL
-        nLLCell{itestmodel+1}(isubj) = calc_nLL(testmodel,[log(ML_parameters(isubj,1:2)) ML_parameters(isubj,3:end)],simdata{isubj});
-    end
-    
-    
-end
-
-[nLLCell{1}; nLLCell{2}]
-
-%% nLL as a function of numerical integration samples
-sampVec = [100 200 500 1000 10000 15000];
-isubj = 4;
-for isamp = 1:(length(sampVec)-1)
-    isamp
-    nLLVec(isamp) = calc_nLL(testmodel,[log(ML_parameters(isubj,1:2)) ML_parameters(isubj,3:end)],simdata{isubj},sampVec(isamp));
-end
-figure;
-plot(log(sampVec),nLLVec)
-
-%% make nLL landscape
-
-clear all
-imodel = 1;
-isubj = 5;
-
-load(['simdata_model' num2str(imodel) '.mat'])
-load(['paramrecov_model' num2str(imodel) '.mat'])
-
-thetas = sort([simtheta(isubj,:); ML_parameters(isubj,:)]);
-
-JbartotalVec = linspace(log(thetas(1,1).*0.5),log(thetas(2,1)*2),11);
-tauVec = linspace(max(log([ 1e-5 thetas(1,2).*0.5])),max(log([1e-5 thetas(2,2)*2])),11);
-% betaVec = linspace(thetas(3).*0.5,thetas(3)*1.5,11);
-
-otherparams = simtheta(isubj,3:end);
-for iJ = 1:11
-    Jbartotal = JbartotalVec(iJ)
-    
-    for itau = 1:11
-        tau = tauVec(itau);
-        
-        nLLMat(iJ,itau) = calc_nLL(imodel,[Jbartotal tau otherparams],simdata{isubj});
-    end
-end
-
-figure;
-imagesc(tauVec,JbartotalVec,nLLMat);
-hold on;
-plot(log(simtheta(isubj,2)),log(simtheta(isubj,1)),'r*')
-plot(log(ML_parameters(isubj,2)),log(ML_parameters(isubj,1)),'go')
-defaultplot
-xlabel('tau'); ylabel('Jbar_{total}')
-
-% logflag = 1:2;
-% plb = [0.5 0.01 0.5];
-% pub = [20 5 1.5];
-% if model == 2
-%     plb = [plb 0.3 0];
-%     pub = [pub 0.7 0.3];
-% end
-% lb(logflag) = log(lb(logflag));
-% ub(logflag) = log(ub(logflag));
-% plb(logflag) = log(plb(logflag));
-% pub(logflag) = log(pub(logflag));
-    
-%% optimal pVec as a function of Jbar_total
-clear
-
-tau = 1;
-beta = 1;
-N = 40;
-JbartotalVec = linspace(1e-3,20,N);
-
-pVec = nan(N,3);
-for iJbartotal = 1:N
-    iJbartotal
-    
-    Jbartotal = JbartotalVec(iJbartotal);
-    pVec(iJbartotal,:) = calc_optimal_pVec([Jbartotal tau beta]);
-end
-
-plot(bsxfun(@times,pVec,JbartotalVec'))
 
 %% optimal pVec for model 1
 
@@ -475,25 +361,6 @@ hmod3 = ternaryc(0.6,0.3,0.1);
 set(hmod3,'marker','o','markerfacecolor','r','markersize',4','markeredgecolor','r')
 hlabels=terlabel('high','medium','low');
 
-%% double chek NLL is good
-
-imodel = 1;
-
-load(['fits_model' num2str(imodel) '.mat'])
-load('cleandata.mat','data')
-bfp = ML_parameters;
-bfp(:,1:2) = log(bfp(:,1:2));
-
-nSubj = 11;
-nLLVec2 = nan(1,nSubj);
-for isubj = 1:nSubj
-    isubj
-    
-    nLLVec2(isubj) = calc_nLL(imodel,bfp(isubj,:),data{isubj});
-end
-
-[nLLVec; nLLVec2]
-
 %% model comparison
 
 clear all
@@ -541,6 +408,256 @@ bar(comparison','k')
 defaultplot
 
 ylabel(['\Delta AIC (favoring fixed model)'])
+
+
+
+
+
+
+
+%% % % % % % % % % % % % % % % % % % % % % % 
+%       PARAMETER/MODEL RECOVERY
+% % % % % % % % % % % % % % % % % % % % % % 
+
+% double checking nLLs
+% parameter recovery plot
+
+
+%% simulate data
+
+clear all
+expnumber = 1;
+imodel = 2;
+nSubj = 10;
+
+% switch model
+%     case 1 
+%         logflag = logical([1 1 0]);
+%     case 2
+%         logflag = logical([1 1 0 0 0]);
+% end
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'fits_model' num2str(imodel) '.mat'])
+% ML_parameters(logflag) = log(ML_parameters(logflag));
+MU = mean(ML_parameters);
+SIGMA = cov(ML_parameters);
+
+simtheta = mvnrnd(MU,SIGMA,nSubj);
+simtheta = abs(simtheta); % hacky way to enforce positive parameter values
+
+% simtheta(:,logflag) = exp(simtheta(:,logflag));
+
+nTrials = [250 120 70]; % mean number of trials across actual participants
+for isubj = 1:nSubj
+    isubj
+    simdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
+end
+save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
+
+
+%% look at simulated data
+
+clear all
+
+expnumber = 2;
+imodel = 2;
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'simdata_model' num2str(imodel) '.mat'])
+
+for isubj = 1:10
+xlims = linspace(0,10,11);
+for ipriority = 1:3
+    saccerror = hist(simdata{isubj}{ipriority}(:,1),xlims);
+    error{ipriority}(isubj,:) = saccerror./sum(saccerror);
+
+    if expnumber == 2
+    disksize = hist(simdata{isubj}{ipriority}(:,2),xlims);
+    discsize{ipriority}(isubj,:) = disksize./sum(disksize);
+    end
+    
+end
+
+if expnumber == 2
+    subplot(1,2,2)
+    plot(xlims,disksize,'k-')
+    defaultplot;
+    xlabel('disc size')
+    
+    subplot(1,2,1)
+end
+plot(xlims,saccerror,'k-')
+defaultplot
+xlabel('saccade error')
+title(['subj ' num2str(isubj)])
+pause;
+end
+
+
+%% double chek NLL is good for parameter/model recovery
+
+clear all
+
+truemodel = 3;
+expnumber = 2;
+
+testmodelVec = [3];
+nModels = length(testmodelVec);
+
+% load true model stuff
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'simdata_model' num2str(truemodel) '.mat'])
+
+
+nSubj = 10;
+nLLCell = cell(1,nModels);
+% calculate true nLL
+for isubj = 1:nSubj
+    nLLCell{1}(isubj) = calc_nLL(truemodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
+end
+
+for itestmodel = 1:nModels
+    itestmodel
+    testmodel = testmodelVec(itestmodel);
+    
+    % load relevant dataset
+    load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'])
+    for isubj = 1:nSubj
+        % calculate nLL
+        nLLCell{itestmodel+1}(isubj) = calc_nLL(testmodel,[log(ML_parameters(isubj,1:2)) ML_parameters(isubj,3:end)],simdata{isubj});
+    end
+    
+    
+end
+
+[nLLCell{1}; nLLCell{2}]
+
+%% model recovery
+
+clear all
+
+% things to change
+expnumber = 1;
+modelVec = [2 3];
+
+% things not to change
+nSubj = 10;
+filepath = ['fits/exp' num2str(expnumber) '/'];
+nModels = length(modelVec);
+nTrials = sum([250 120 70]);
+
+nLLMat = cell(1,nModels);
+nParamMat = cell(1,nModels);
+for itruemodel = 1:nModels
+    truemodel = modelVec(itruemodel);
+    
+    nLLMat{itruemodel} = nan(nModels,nSubj);
+    nParamMat{itruemodel} = nan(nModels,1);
+    for itestmodel = 1:nModels
+        testmodel = modelVec(itestmodel);
+        
+        filename = [filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'];
+        load(filename)
+
+        nLLMat{itruemodel}(itestmodel,:) = nLLVec;
+        nParamMat{itruemodel}(itestmodel) = size(ML_parameters,2);
+
+    end
+end
+
+AICMat = cellfun(@(x,y) bsxfun(@plus,2*x,2*y),nLLMat,nParamMat,'UniformOutput',false);
+AICcMat = cellfun(@(x,y) bsxfun(@plus,x,(2.*y.*(y+1))./(nTrials-y-1)),AICMat,nParamMat,'UniformOutput',false);
+BICMat = cellfun(@(x,y) bsxfun(@plus,2*x,y.*(log(nTrials) - log(2*pi))),nLLMat,nParamMat,'UniformOutput',false);
+
+% which one wins
+[M,I] = cellfun(@(x) min(x),AICMat,'UniformOutput',false);
+sum(I{1} == 1)
+sum(I{2} == 2)
+
+[M,I] = cellfun(@(x) min(x),AICcMat,'UniformOutput',false);
+sum(I{1} == 1)
+sum(I{2} == 2)
+
+[M,I] = cellfun(@(x) min(x),BICMat,'UniformOutput',false);
+sum(I{1} == 1)
+sum(I{2} == 2)
+
+
+
+%% parameter recovery plot
+
+clear all
+expnumber = 1;
+imodel = 2;
+filepath = ['fits/exp' num2str(expnumber) '/'];
+
+load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
+bfp = ML_parameters;
+
+load([filepath 'simdata_model' num2str(imodel) '.mat'])
+nParams = size(bfp,2);
+
+figure;
+for iparam = 1:nParams
+    subplot(2,3,iparam);
+    plot(bfp(:,iparam),simtheta(:,iparam),'ko'); hold on; 
+    plot([min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],...
+        [min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],'k-')
+    xlabel('estimated'); ylabel('actual')
+    defaultplot
+end
+
+%% make nLL landscape
+
+clear all
+imodel = 1;
+isubj = 5;
+
+load(['simdata_model' num2str(imodel) '.mat'])
+load(['paramrecov_model' num2str(imodel) '.mat'])
+
+thetas = sort([simtheta(isubj,:); ML_parameters(isubj,:)]);
+
+JbartotalVec = linspace(log(thetas(1,1).*0.5),log(thetas(2,1)*2),11);
+tauVec = linspace(max(log([ 1e-5 thetas(1,2).*0.5])),max(log([1e-5 thetas(2,2)*2])),11);
+% betaVec = linspace(thetas(3).*0.5,thetas(3)*1.5,11);
+
+otherparams = simtheta(isubj,3:end);
+for iJ = 1:11
+    Jbartotal = JbartotalVec(iJ)
+    
+    for itau = 1:11
+        tau = tauVec(itau);
+        
+        nLLMat(iJ,itau) = calc_nLL(imodel,[Jbartotal tau otherparams],simdata{isubj});
+    end
+end
+
+figure;
+imagesc(tauVec,JbartotalVec,nLLMat);
+hold on;
+plot(log(simtheta(isubj,2)),log(simtheta(isubj,1)),'r*')
+plot(log(ML_parameters(isubj,2)),log(ML_parameters(isubj,1)),'go')
+defaultplot
+xlabel('tau'); ylabel('Jbar_{total}')
+
+% logflag = 1:2;
+% plb = [0.5 0.01 0.5];
+% pub = [20 5 1.5];
+% if model == 2
+%     plb = [plb 0.3 0];
+%     pub = [pub 0.7 0.3];
+% end
+% lb(logflag) = log(lb(logflag));
+% ub(logflag) = log(ub(logflag));
+% plb(logflag) = log(plb(logflag));
+% pub(logflag) = log(pub(logflag));
+    
+
+
+
+
 
 
 %% % % % % % % % % % % % % % % % % % % % % % %
@@ -821,141 +938,11 @@ plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},s
 
 end
 
-%% looking at nTrials 
-
-for isubj = 1:11
-    for ipriority = 1:3
-    blah(isubj,ipriority) = size(data{isubj}{ipriority},1);
-end
-end
-blah
-bleh = bsxfun(@rdivide,blah(:,1), blah)
-mean(bleh)
-%% % % % % % % % % % % % % % % % % % % % % % % 
-%           SIMULATE DATA
-% % % % % % % % % % % % % % % % % % % % % % % 
-
-clear all
-expnumber = 1;
-imodel = 2;
-nSubj = 10;
-
-% switch model
-%     case 1 
-%         logflag = logical([1 1 0]);
-%     case 2
-%         logflag = logical([1 1 0 0 0]);
-% end
-
-filepath = ['fits/exp' num2str(expnumber) '/'];
-load([filepath 'fits_model' num2str(imodel) '.mat'])
-% ML_parameters(logflag) = log(ML_parameters(logflag));
-MU = mean(ML_parameters);
-SIGMA = cov(ML_parameters);
-
-simtheta = mvnrnd(MU,SIGMA,nSubj);
-simtheta = abs(simtheta); % hacky way to enforce positive parameter values
-
-% simtheta(:,logflag) = exp(simtheta(:,logflag));
-
-nTrials = [250 120 70]; % mean number of trials across actual participants
-for isubj = 1:nSubj
-    isubj
-    simdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
-end
-save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 
 
-%% look at simulated data
-
-clear all
-
-expnumber = 2;
-imodel = 2;
-
-filepath = ['fits/exp' num2str(expnumber) '/'];
-load([filepath 'simdata_model' num2str(imodel) '.mat'])
-
-for isubj = 1:10
-xlims = linspace(0,10,11);
-for ipriority = 1:3
-    saccerror = hist(simdata{isubj}{ipriority}(:,1),xlims);
-    error{ipriority}(isubj,:) = saccerror./sum(saccerror);
-
-    if expnumber == 2
-    disksize = hist(simdata{isubj}{ipriority}(:,2),xlims);
-    discsize{ipriority}(isubj,:) = disksize./sum(disksize);
-    end
-    
-end
-
-if expnumber == 2
-    subplot(1,2,2)
-    plot(xlims,disksize,'k-')
-    defaultplot;
-    xlabel('disc size')
-    
-    subplot(1,2,1)
-end
-plot(xlims,saccerror,'k-')
-defaultplot
-xlabel('saccade error')
-title(['subj ' num2str(isubj)])
-pause;
-end
 
 
-%% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-%               MODEL RECOVERY
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
-clear all
-
-% things to change
-expnumber = 1;
-modelVec = [2 3];
-
-% things not to change
-nSubj = 10;
-filepath = ['fits/exp' num2str(expnumber) '/'];
-nModels = length(modelVec);
-nTrials = sum([250 120 70]);
-
-nLLMat = cell(1,nModels);
-nParamMat = cell(1,nModels);
-for itruemodel = 1:nModels
-    truemodel = modelVec(itruemodel);
-    
-    nLLMat{itruemodel} = nan(nModels,nSubj);
-    nParamMat{itruemodel} = nan(nModels,1);
-    for itestmodel = 1:nModels
-        testmodel = modelVec(itestmodel);
-        
-        filename = [filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'];
-        load(filename)
-
-        nLLMat{itruemodel}(itestmodel,:) = nLLVec;
-        nParamMat{itruemodel}(itestmodel) = size(ML_parameters,2);
-
-    end
-end
-
-AICMat = cellfun(@(x,y) bsxfun(@plus,2*x,2*y),nLLMat,nParamMat,'UniformOutput',false);
-AICcMat = cellfun(@(x,y) bsxfun(@plus,x,(2.*y.*(y+1))./(nTrials-y-1)),AICMat,nParamMat,'UniformOutput',false);
-BICMat = cellfun(@(x,y) bsxfun(@plus,2*x,y.*(log(nTrials) - log(2*pi))),nLLMat,nParamMat,'UniformOutput',false);
-
-% which one wins
-[M,I] = cellfun(@(x) min(x),AICMat,'UniformOutput',false);
-sum(I{1} == 1)
-sum(I{2} == 2)
-
-[M,I] = cellfun(@(x) min(x),AICcMat,'UniformOutput',false);
-sum(I{1} == 1)
-sum(I{2} == 2)
-
-[M,I] = cellfun(@(x) min(x),BICMat,'UniformOutput',false);
-sum(I{1} == 1)
-sum(I{2} == 2)
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %           RANDOM THINGS
@@ -1092,3 +1079,15 @@ title(['ML \theta for subject ' num2str(isubj)])
 else
     title(['\theta = ' num2str(theta)])
 end
+
+
+
+%% nLL as a function of numerical integration samples
+sampVec = [100 200 500 1000 10000 15000];
+isubj = 4;
+for isamp = 1:(length(sampVec)-1)
+    isamp
+    nLLVec(isamp) = calc_nLL(testmodel,[log(ML_parameters(isubj,1:2)) ML_parameters(isubj,3:end)],simdata{isubj},sampVec(isamp));
+end
+figure;
+plot(log(sampVec),nLLVec)
