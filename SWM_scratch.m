@@ -188,8 +188,8 @@ plot(bsxfun(@times,pVec,JbartotalVec'))
 % % % % % % % % % % % % % % % % % % % % % % % % 
 clear all
 
-imodel = 3;
-testmodel = 2;
+imodel = 2;
+testmodel = 3;
 subjVec = 1:10;
 nSubj = length(subjVec);
 fakedata = 1;
@@ -364,16 +364,16 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 2;
-nModels = 3;
+expnumber = 1;
+nModels = 2;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 nParamVec = nan(1,2);
 for imodel = (4-nModels):3
     load([filepath 'fits_model' num2str(imodel) '.mat'])
-    nLL.(['model' num2str(imodel)]) = nLLVec([1 3:11]);
+    nLL.(['model' num2str(imodel)]) = nLLVec;
     nParamVec(imodel) = size(ML_parameters,2);
-    AIC.(['model' num2str(imodel)]) = 2*nLLVec([1 3:11]) + 2*nParamVec(imodel);
+    AIC.(['model' num2str(imodel)]) = 2*nLLVec + 2*nParamVec(imodel);
 end
 
 modcompidx = 3;
@@ -589,7 +589,7 @@ sum(I{2} == 2)
 
 clear all
 expnumber = 1;
-imodel = 2;
+imodel = 3;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
