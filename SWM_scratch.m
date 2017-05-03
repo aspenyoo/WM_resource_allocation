@@ -189,11 +189,11 @@ plot(bsxfun(@times,pVec,JbartotalVec'))
 clear all
 
 imodel = 2;
-testmodel = 3;
+testmodel = 2;
 subjVec = 1:10;
 nSubj = length(subjVec);
 fakedata = 1;
-expnumber = 1;
+expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 if (fakedata)
@@ -426,8 +426,8 @@ ylabel(['\Delta AIC (favoring fixed model)'])
 %% simulate data
 
 clear all
-expnumber = 1;
-imodel = 2;
+expnumber = 2;
+imodel = 3;
 nSubj = 10;
 
 % switch model
