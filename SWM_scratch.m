@@ -175,7 +175,8 @@ clear all
 
 imodel = 2;
 testmodel = 2;
-nSubj = 10;
+subjVec = 1:10;
+nSubj = length(subjVec);
 fakedata = 1;
 expnumber = 2;
 
@@ -196,8 +197,9 @@ if (expnumber == 1); nParams = nParams - 2; end
 
 bfp = nan(nSubj,nParams);
 nLL = nan(1,nSubj);
-for isubj = 1:nSubj
-    isubj
+for subjnum = 1:nSubj
+    isubj = subjVec(subjnum);
+    
     if strcmp(pretxt,'modelrecov')
         load([filepath pretxt '_truemodel' num2str(imodel) '_testmodel' num2str(testmodel) '_subj' num2str(isubj) '.mat'],'ML_parameters','nLLVec')
     else
@@ -205,8 +207,8 @@ for isubj = 1:nSubj
     end
 %     load([filepath pretxt '_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
     blah = ML_parameters(nLLVec == min(nLLVec),:);
-    bfp(isubj,:) = blah(1,:);
-    nLL(isubj) = min(nLLVec);
+    bfp(subjnum,:) = blah(1,:);
+    nLL(subjnum) = min(nLLVec);
 end
 
 ML_parameters = bfp;
@@ -472,23 +474,23 @@ end
 %% model comparison
 
 clear all
-expnumber = 1;
-nModels = 2;
+expnumber = 2;
+nModels = 3;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 nParamVec = nan(1,2);
 for imodel = (4-nModels):3
     load([filepath 'fits_model' num2str(imodel) '.mat'])
-    nLL.(['model' num2str(imodel)]) = nLLVec;
+    nLL.(['model' num2str(imodel)]) = nLLVec([1 3:11]);
     nParamVec(imodel) = size(ML_parameters,2);
-    AIC.(['model' num2str(imodel)]) = 2*nLLVec + 2*nParamVec(imodel);
+    AIC.(['model' num2str(imodel)]) = 2*nLLVec([1 3:11]) + 2*nParamVec(imodel);
 end
 
 modcompidx = 3;
 nSubj = length(nLLVec);
 comparison = structfun(@(x) x-AIC.(['model' num2str(modcompidx)]),AIC,'UniformOutput',false);
 if nModels == 3
-comparison = [comparison.model1' comparison.model2'];
+    comparison = [comparison.model1' comparison.model2'];
 else
     comparison = comparison.model2;
 end
@@ -812,7 +814,7 @@ mean(bleh)
 
 clear all
 expnumber = 2;
-imodel = 2;
+imodel = 1;
 nSubj = 10;
 
 % switch model
@@ -836,7 +838,7 @@ simtheta = abs(simtheta); % hacky way to enforce positive parameter values
 nTrials = [250 120 70]; % mean number of trials across actual participants
 for isubj = 1:10
     isubj
-    simdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
+    siMUmdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
 end
 save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 
