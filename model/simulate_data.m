@@ -58,6 +58,7 @@ for ipriority = 1:nPriorities
         % generating disc size
         pdf_r = calc_pdf_r(beta, JVec, alpha); % length(rVec) x length(JVec)
         cdf_r = cumsum(pdf_r);
+        cdf_r = cdf_r./cdf_r(end); % normalize
         samples = num2cell(rand(1,ntrials));
         cdf_r = num2cell(cdf_r,1);
         
