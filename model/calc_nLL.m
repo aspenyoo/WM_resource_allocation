@@ -87,6 +87,7 @@ for ipriority = 1:nPriorities
     Sigma(1,:,:) = sort(repmat(sqrt(1./JVec(:)),nTrials,2),'descend')'; % SDs of diagonal matrix. sigmas in descending order --> J in ascending order
     p_Shat = mvnpdf(repmat([data_distance(:) zeros(nTrials,1)],nJs,1),0,Sigma);
     p_Shat = reshape(p_Shat,nTrials,nJs)'; % nJs x nTrials
+    p_Shat(p_Shat == 0) = 1e-10; % set to arbitrarily small vluae if zero
     
     % ====== Exp 2: with disc size data ======
     if (expnumber == 2)
