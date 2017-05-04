@@ -188,11 +188,11 @@ plot(bsxfun(@times,pVec,JbartotalVec'))
 % % % % % % % % % % % % % % % % % % % % % % % % 
 clear all
 
-imodel = 2;
-testmodel = 2;
-subjVec = 1:10;
+imodel = 1;
+testmodel = 1;
+subjVec = 1:11;
 nSubj = length(subjVec);
-fakedata = 1;
+fakedata = 0;
 expnumber = 2;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
@@ -364,8 +364,8 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 1;
-nModels = 2;
+expnumber = 2;
+nModels = 3;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 nParamVec = nan(1,2);
@@ -538,7 +538,7 @@ end
 clear all
 
 % things to change
-expnumber = 1;
+expnumber = 2;
 modelVec = [2 3];
 
 % things not to change
@@ -588,8 +588,8 @@ sum(I{2} == 2)
 %% parameter recovery plot
 
 clear all
-expnumber = 1;
-imodel = 3;
+expnumber = 2;
+imodel = 2;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
@@ -777,7 +777,7 @@ title('disc size (dva)')
 clear all
 
 expnumber = 2;
-imodel = 2;
+imodel = 3;
 
 nPriorities = 3;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority

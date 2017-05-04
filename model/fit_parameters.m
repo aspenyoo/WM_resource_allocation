@@ -1,4 +1,4 @@
-function fit_parameters(testmodel,subjnum,nStartVals,truemodel,expnumber)
+function fit_parameters(testmodel,subjnum,nStartVals,truemodel,expnumber,fixparams)
 if nargin < 3; nStartVals = 1; end
 if nargin < 4; truemodel = testmodel; end % for model recovery
 if nargin < 5; expnumber = 2; end
@@ -20,8 +20,8 @@ if isempty(truemodel); truemodel = testmodel; end
 %   aspen.yoo@nyu.edu
 %     April 10, 2017
 
-% filepath = ['fits/exp' num2str(expnumber) '/'];
-filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
+filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
+% filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
 if (expnumber == 1) % if nodiscsize experiment (first experiment)
     suffix = '_nodisc';
 else
@@ -60,8 +60,8 @@ logflag = [1 1];
 if expnumber == 2 % alpha beta
     lb = [lb 1e-5 1e-5];
     ub = [ub 10 5];
-    plb = [plb 0.5 0.5];
-    pub = [pub 2 1.5];
+    plb = [plb 0.7 0.5];
+    pub = [pub 1.3 1.5];
     logflag = [logflag 0 0];
 end
 if testmodel == 2 % p_high p_med
@@ -75,21 +75,29 @@ else
     nonbcon = [];
 end
 logflag = logical(logflag);
-nParams = length(logflag);
 lb(logflag) = log(lb(logflag));
 ub(logflag) = log(ub(logflag));
 plb(logflag) = log(plb(logflag));
 pub(logflag) = log(pub(logflag));
 
+if ~(isempty(fixparams))
+    logflag(fixparams(1,:)) = [];
+    lb(fixparams(1,:)) = [];
+    ub(fixparams(1,:)) = [];
+    plb(fixparams(1,:)) = [];
+    pub(fixparams(1,:)) = [];
+end
+
+nParams = length(logflag);
 
 for istartvals = 1:nStartVals
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
 
-        x0 = plb + rand(1,nParams).*(pub - plb);
+    x0 = plb + rand(1,nParams).*(pub - plb);
 %     load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '.mat'],'ML_parameters')
 %     x0 = ML_parameters(subjnum,:);
     
-    fun = @(x) calc_nLL(testmodel,x,subjdata);
+    fun = @(x) calc_nLL(testmodel,x,subjdata,fixparams);
     
     [x,fval] = bads(fun,x0,lb,ub,plb,pub,nonbcon);
 
