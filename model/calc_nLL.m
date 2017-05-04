@@ -1,4 +1,6 @@
-function nLL = calc_nLL(model,Theta,data)
+function nLL = calc_nLL(model,Theta,data,fixparams)
+% if nargin < 4; fixparams = []; end
+
 % CALC_NLL(JBAR_TOTAL,TAU,BETA)
 %
 % CALC_NLL: calculates negative log likelihood of parameter combination for
@@ -30,15 +32,32 @@ expnumber = size(data{1},2);
 switch model
     case {1,3}  % optimal model
         logflag = logical([1 1]);
-        if (expnumber == 2); logflag = logical([logflag 0]); end
+        if (expnumber == 2); logflag = logical([logflag 0 0]); end
     case 2 % not optimal model
         logflag = logical([1 1 0 0]);
-        if (expnumber == 2); logflag = logical([logflag 0]); end
+        if (expnumber == 2); logflag = logical([logflag 0 0]); end
 end
+if (expnumber == 1); logflag(end-1:end) = []; end
+
+% if there are fixed parameters
+if ~isempty(fixparams)
+    nParams = length(Theta) + size(fixparams,2);
+    nonfixedparamidx = 1:nParams;
+    nonfixedparamidx(fixparams(1,:)) = [];
+    
+    temptheta = nan(1,nParams);
+    temptheta(nonfixedparamidx) = Theta;
+    temptheta(fixparams(1,:)) = fixparams(2,:);
+ 
+    Theta = temptheta;
+end
+
 Theta(logflag) = exp(Theta(logflag));
 Jbar_total = Theta(1);
 tau = Theta(2);
 if (expnumber == 2); alpha = Theta(3); beta = Theta(4); end
+
+
 
 % data stuff
 priorityVec = [0.6 0.3 0.1];

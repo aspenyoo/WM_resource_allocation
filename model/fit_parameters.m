@@ -1,8 +1,10 @@
-function fit_parameters(testmodel,subjnum,nStartVals,truemodel,expnumber)
-if nargin < 3; nStartVals = 1; end
-if nargin < 4; truemodel = testmodel; end % for model recovery
-if nargin < 5; expnumber = 2; end
+function fit_parameters(testmodel,subjnum,runlist,runmax,truemodel,expnumber,fixparams)
+if nargin < 4; runmax = 50; end
+if nargin < 5; truemodel = testmodel; end % for model recovery
 if isempty(truemodel); truemodel = testmodel; end
+if nargin < 6; expnumber = 2; end
+if nargin < 7; fixparams = []; end
+
 
 %
 %
@@ -20,7 +22,7 @@ if isempty(truemodel); truemodel = testmodel; end
 %   aspen.yoo@nyu.edu
 %     April 10, 2017
 
-% filepath = ['fits/exp' num2str(expnumber) '/'];
+% filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
 filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
 if (expnumber == 1) % if nodiscsize experiment (first experiment)
     suffix = '_nodisc';
@@ -48,10 +50,7 @@ else
     end
 end
 
-
-rng(0);
-% rng(str2double([num2str(model) num2str(subjnum)]));
-
+% lower and upper bounds, logflags
 lb = [1e-5 1e-3]; % Jbar_total, tau
 ub = [50 10];
 plb = [0.5 0.01];
@@ -59,9 +58,9 @@ pub = [20 5];
 logflag = [1 1];
 if expnumber == 2 % alpha beta
     lb = [lb 1e-5 1e-5];
-    ub = [ub 10 5];
-    plb = [plb 0.5 0.5];
-    pub = [pub 2 1.5];
+    ub = [ub 5 5];
+    plb = [plb 0.7 0.5];
+    pub = [pub 1.3 1.5];
     logflag = [logflag 0 0];
 end
 if testmodel == 2 % p_high p_med
@@ -75,28 +74,55 @@ else
     nonbcon = [];
 end
 logflag = logical(logflag);
-nParams = length(logflag);
 lb(logflag) = log(lb(logflag));
 ub(logflag) = log(ub(logflag));
 plb(logflag) = log(plb(logflag));
 pub(logflag) = log(pub(logflag));
 
+if ~(isempty(fixparams))
+    % vector of non-fixed parameter indices
+    nParams= length(logflag);
+    freeparamsidx = 1:nParams;
+    freeparamsidx(fixparams(1,:)) = [];
+    
+    logflag(fixparams(1,:)) = [];
+    lb(fixparams(1,:)) = [];
+    ub(fixparams(1,:)) = [];
+    plb(fixparams(1,:)) = [];
+    pub(fixparams(1,:)) = [];
+    
 
-for istartvals = 1:nStartVals
+end
+
+% create list of all x0s
+rng(0);
+nParams = length(logflag);
+x0_list = lhs(runmax,nParams,plb,pub,[],1e3);
+
+% optimize for starting values in RUNLIST
+for irun = 1:length(runlist)
+    
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
-
-        x0 = plb + rand(1,nParams).*(pub - plb);
+    try blah = runlist_completed*2; catch; runlist_completed = []; end % seeing if runlist_completed exists yet
+    
+    x0 = x0_list(runlist(irun),:);
+%     x0 = plb + rand(1,nParams).*(pub - plb);
 %     load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '.mat'],'ML_parameters')
 %     x0 = ML_parameters(subjnum,:);
     
-    fun = @(x) calc_nLL(testmodel,x,subjdata);
+    fun = @(x) calc_nLL(testmodel,x,subjdata,fixparams);
     
     [x,fval] = bads(fun,x0,lb,ub,plb,pub,nonbcon);
 
     x(logflag) = exp(x(logflag));
-    ML_parameters = [ML_parameters; x];
+    bfp = nan(1,nParams);
+    bfp(freeparamsidx) = x;
+    bfp(fixparams(1,:)) = fixparams(2,:);
+    
+    ML_parameters = [ML_parameters; bfp];
     nLLVec = [nLLVec fval];
-    save(filename,'ML_parameters','nLLVec')
+    runlist_completed = [runlist_completed runlist(irun)];
+    save(filename,'ML_parameters','nLLVec','runlist_completed')
 end
 
 
