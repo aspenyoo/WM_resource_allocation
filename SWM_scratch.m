@@ -373,8 +373,14 @@ hlabels=terlabel('high','medium','low');
 clear all
 expnumber = 2;
 nModels = 3;
-filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
-% filepath = ['fits/exp' num2str(expnumber) '/'];
+modcompidx = 3;
+fixedrisk = 0;
+
+if (fixedrisk)
+    filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
+else
+    filepath = ['fits/exp' num2str(expnumber) '/'];
+end
 
 nParamVec = nan(1,2);
 for imodel = (4-nModels):3
@@ -384,42 +390,53 @@ for imodel = (4-nModels):3
     AIC.(['model' num2str(imodel)]) = 2*nLLVec + 2*nParamVec(imodel);
 end
 
-modcompidx = 3;
+% labels and index stuff
+modlabels = {'optimal','free','fixed'};
+modcomplabel = modlabels{modcompidx};
+modidx = (4-nModels):3;
+modidx(modidx == modcompidx) = [];
+modlabels = modlabels(modidx);
+
 nSubj = length(nLLVec);
 comparison = structfun(@(x) x-AIC.(['model' num2str(modcompidx)]),AIC,'UniformOutput',false);
-if nModels == 3
-    comparison = [comparison.model1' comparison.model2'];
-else
-    comparison = comparison.model2;
+blah = [];
+for imodel = 1:(nModels-1)
+    blah = [blah comparison.(['model' num2str(modidx(imodel))])']; 
 end
+comparison = blah;
+% if nModels == 3
+%     comparison = [comparison.model1' comparison.model2' comparison.model3'];
+% else
+%     comparison = [comparison.model2' comparison.model3'];
+% end
+% comparison(
 meancomp = mean(comparison);
 
 figure;
 if nModels == 3
     semcomp = std(comparison)/sqrt(size(comparison,1));
     for imodel = 1:(nModels-1)
+%         imodel = modidx(imodel);
         fill([imodel-0.475 imodel+0.475 imodel+0.475 imodel-0.475],[meancomp(imodel)-semcomp(imodel) meancomp(imodel)-semcomp(imodel)...
             meancomp(imodel)+semcomp(imodel) meancomp(imodel)+semcomp(imodel)],...
             0.7*ones(1,3),'EdgeColor','none'); hold on;
-        set(gca,'XTick',[],'XTick',[1 2],'XTickLabel',{'optimal','free param'})
+        set(gca,'XTick',[],'XTick',[1 2],'XTickLabel',modlabels)
     end
 else
+%     meancomp = meancomp(modidx-1);
     semcomp = std(comparison)/sqrt(length(comparison));
+%     semcomp = semcomp(modidx-1);
     fill([0 nSubj+1 nSubj+1 0],[meancomp-semcomp meancomp-semcomp...
             meancomp+semcomp meancomp+semcomp],...
             0.7*ones(1,3),'EdgeColor','none'); hold on;
-        set(gca,'XTick',[],'XTickLabel',[])
+        set(gca,'XTick',[],'XTickLabel',modlabels)
 end
 
 bar(comparison','k')
 
 defaultplot
 
-ylabel(['\Delta AIC (favoring fixed model)'])
-
-
-
-
+ylabel(['\Delta AIC (favoring ' modcomplabel ' model)'])
 
 
 
