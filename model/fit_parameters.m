@@ -22,8 +22,14 @@ if nargin < 7; fixparams = []; end
 %   aspen.yoo@nyu.edu
 %     April 10, 2017
 
-filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
-% filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
+
+% filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
+if isempty(fixparams)
+filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
+else
+filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '_fixedrisk/'];
+end
+
 if (expnumber == 1) % if nodiscsize experiment (first experiment)
     suffix = '_nodisc';
 else
@@ -115,10 +121,10 @@ for irun = 1:length(runlist)
     [x,fval] = bads(fun,x0,lb,ub,plb,pub,nonbcon);
 
     x(logflag) = exp(x(logflag));
-    bfp = nan(1,nParams);
+    bfp = nan(1,nParams+size(fixparams,2));
     bfp(freeparamsidx) = x;
     bfp(fixparams(1,:)) = fixparams(2,:);
-    
+
     ML_parameters = [ML_parameters; bfp];
     nLLVec = [nLLVec fval];
     runlist_completed = [runlist_completed runlist(irun)];
