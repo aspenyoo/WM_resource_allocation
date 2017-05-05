@@ -189,13 +189,20 @@ plot(bsxfun(@times,pVec,JbartotalVec'))
 clear all
 
 imodel = 1;
-testmodel = 1;
-subjVec = 1:11;
-nSubj = length(subjVec);
 fakedata = 0;
 expnumber = 2;
+isriskfixed = 1;
+testmodel = 1;
 
+subjVec = 1:11;
+nSubj = length(subjVec);
+
+if (isriskfixed)
+filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
+else
 filepath = ['fits/exp' num2str(expnumber) '/'];
+end
+
 if (fakedata)
     pretxt = 'modelrecov';
 else
@@ -366,7 +373,8 @@ hlabels=terlabel('high','medium','low');
 clear all
 expnumber = 2;
 nModels = 3;
-filepath = ['fits/exp' num2str(expnumber) '/'];
+filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
+% filepath = ['fits/exp' num2str(expnumber) '/'];
 
 nParamVec = nan(1,2);
 for imodel = (4-nModels):3
