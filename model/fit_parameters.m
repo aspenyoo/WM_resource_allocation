@@ -22,8 +22,8 @@ if nargin < 7; fixparams = []; end
 %   aspen.yoo@nyu.edu
 %     April 10, 2017
 
-% filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
-filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
+filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
+% filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
 if (expnumber == 1) % if nodiscsize experiment (first experiment)
     suffix = '_nodisc';
 else
