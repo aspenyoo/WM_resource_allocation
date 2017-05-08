@@ -179,6 +179,41 @@ end
 
 plot(bsxfun(@times,pVec,JbartotalVec'))
 
+%%
+clear all
+
+Jbar = 2;
+tau = 1;
+alpha = 1;
+beta = .1;
+
+J = gamrnd(Jbar,Jbar/tau)
+rVec = loadvar('rVec');
+
+EU = calc_EU(rVec,J,alpha);
+pdf_r = calc_pdf_r(beta,J,alpha);
+
+subplot(2,1,1)
+plot(rVec,EU)
+
+subplot(2,1,2)
+plot(rVec,pdf_r)
+
+
+%% looking at expected number of points
+clear all
+
+Jbar = 2; 
+tau = 1;
+alpha = 1;
+beta = 0.5;
+
+[JVec, rVec] = loadvar('JVec',{Jbar,tau},'rVec');
+Jpdf = gampdf(JVec,Jbar/tau,tau);
+Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+pdf_r = calc_pdf_r(beta, JVec, alpha);
+
+EU = calc_EU(rVec,JVec,alpha);
 
 
 
@@ -368,13 +403,46 @@ hmod3 = ternaryc(0.6,0.3,0.1);
 set(hmod3,'marker','o','markerfacecolor','r','markersize',4','markeredgecolor','r')
 hlabels=terlabel('high','medium','low');
 
+%% nTrials for each subject
+clear all
+expnumber = 1;
+
+switch expnumber
+    case 1
+        filename = 'cleandata_nodisc.mat';
+    case 2
+        filename = 'cleandata.mat';
+end
+load(filename)
+
+nSubj = length(data);
+nTrials = nan(nSubj,3);
+for isubj = 1:nSubj
+    for ipriority = 1:3
+    nTrials(isubj,ipriority) = size(data{isubj}{ipriority},1);
+    end
+end
+
+save(filename,'data','nTrials')
+% [AIC,BIC,AICc] = modcomp(nLL,K,n);
+
 %% model comparison
 
 clear all
 expnumber = 2;
 nModels = 3;
-modcompidx = 3;
+modcompidx = 2;
 fixedrisk = 0;
+MCM = 'AIC';
+
+switch expnumber
+    case 1
+        filename = 'cleandata_nodisc.mat';
+    case 2
+        filename = 'cleandata.mat';
+end
+load(filename,'nTrials')
+nTrials = sum(nTrials,2);
 
 if (fixedrisk)
     filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
@@ -387,8 +455,12 @@ for imodel = (4-nModels):3
     load([filepath 'fits_model' num2str(imodel) '.mat'])
     nLL.(['model' num2str(imodel)]) = nLLVec;
     nParamVec(imodel) = size(ML_parameters,2);
-    AIC.(['model' num2str(imodel)]) = 2*nLLVec + 2*nParamVec(imodel);
+%     AIC.(['model' num2str(imodel)]) = 2*nLLVec + 2*nParamVec(imodel);
 end
+    
+nLLMat = reshape(struct2mat(nLL),[length(nTrials),nModels])';
+[AIC  BIC  AICc ]= modcomp(nLLMat',nParamVec,nTrials);
+
 
 % labels and index stuff
 modlabels = {'optimal','free','fixed'};
@@ -398,12 +470,20 @@ modidx(modidx == modcompidx) = [];
 modlabels = modlabels(modidx);
 
 nSubj = length(nLLVec);
-comparison = structfun(@(x) x-AIC.(['model' num2str(modcompidx)]),AIC,'UniformOutput',false);
-blah = [];
-for imodel = 1:(nModels-1)
-    blah = [blah comparison.(['model' num2str(modidx(imodel))])']; 
+switch MCM
+    case 'AIC'
+comparison = bsxfun(@minus,AIC,AIC(:,modcompidx));
+    case 'BIC'
+        comparison = bsxfun(@minus,BIC,BIC(:,modcompidx));
+    case 'AICc'
+        comparison = bsxfun(@minus,AICc,AICc(:,modcompidx));
 end
-comparison = blah;
+comparison(:,modcompidx) = [];
+% blah = [];
+% for imodel = 1:(nModels-1)
+%     blah = [blah comparison.(['model' num2str(modidx(imodel))])]; 
+% end
+% comparison = blah;
 % if nModels == 3
 %     comparison = [comparison.model1' comparison.model2' comparison.model3'];
 % else
@@ -802,7 +882,8 @@ title('disc size (dva)')
 clear all
 
 expnumber = 2;
-imodel = 3;
+imodel = 2;
+fixedrisk = ['_fixedrisk'];
 
 nPriorities = 3;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
@@ -813,14 +894,14 @@ else
     load('cleandata.mat','data')
     nSubj = 11;
 end
-filename = ['fits/exp' num2str(expnumber) '/'];
+filename = ['fits/exp' num2str(expnumber) fixedrisk '/'];
 
 % get ML parameter estimate for isubj
 load([filename 'fits_model' num2str(imodel) '.mat'])
 
 loadpreddata = 0;
 if (loadpreddata)
-    load([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) '.mat'],'preddata')
+    load([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata')
 else
     preddata = cell(1,nSubj);
     for isubj = 1:nSubj
@@ -829,7 +910,7 @@ else
         preddata{isubj} = simulate_data(imodel,expnumber,Theta,nTrials);
     end
     
-    save([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) '.mat'],'preddata')
+    save([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata')
 end
 %% histograms per subjects
 xlims = linspace(0,10,11);
@@ -881,36 +962,59 @@ semdiscsize = cellfun(@(x) std(x)./sqrt(size(x,1)),discsize,'UniformOutput',fals
 meansimdiscsize = cellfun(@mean,simdiscsize,'UniformOutput',false);
 semsimdiscsize = cellfun(@(x) std(x)./sqrt(size(x,1)),simdiscsize,'UniformOutput',false);
 end
+% 
+% ha = tight_subplot(3,2,[.01 .03],[.1 .01],[.01 .01])
+%             for ii = 1:6; axes(ha(ii)); plot(randn(10,ii)); end
+%             set(ha(1:4),'XTickLabel',''); set(ha,'YTickLabel','')
 
 figure;
 colorMat = {'r','b','k'};
+if (expnumber == 2)
+        ha = tight_subplot(3,3,{[.03 .03],[.03 .07]},[.1 .01],[.1 .01]);
+    else
+        ha = tight_subplot(1,3,[.07 .07],[.1 .01],[.1 .01]);
+    end
 for ipriority = 1:nPriorities
     
     % error
-    if (expnumber == 2)
-    subplot(3,3,ipriority)
-    else
-        subplot(1,3,ipriority)
-    end
+%     if (expnumber == 2)
+%         tight_subplot(3,3,ipriority)
+%     else
+%         tight_subplot(1,3,ipriority)
+%     end
+    axes(ha(3*ipriority-2))
     fill([xlims fliplr(xlims)],[meansimerror{ipriority}-semsimerror{ipriority}...
         fliplr(meansimerror{ipriority}+semsimerror{ipriority})],colorMat{ipriority},'EdgeColor','none','FaceAlpha',0.4);
     hold on;
-    errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color','k');
+    errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color','k','LineStyle','none','LineWidth',1);
     defaultplot
     axis([0 10 0 0.6])
-    if ipriority == 1; title('euclidean error'); end
+    if ipriority == 3
+        xlabel('error'); 
+    else
+        set(ha(3*ipriority-2),'XTickLabel',''); 
+    end
+    ylabel('proportion','FontSize',14);
+   
     
     if (expnumber == 2)
         % discsize
-        subplot(3,3,3+ipriority)
+        %         subplot(3,3,3+ipriority)
+        axes(ha(3*ipriority-1))
         fill([xlims fliplr(xlims)],[meansimdiscsize{ipriority}-semsimdiscsize{ipriority}...
             fliplr(meansimdiscsize{ipriority}+semsimdiscsize{ipriority})],colorMat{ipriority},'EdgeColor','none','FaceAlpha',0.4);
         hold on;
-        errorbar(xlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color','k');
+        errorbar(xlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color','k','LineStyle','none','LineWidth',1);
         defaultplot
         axis([0 10 0 0.6])
-        if ipriority == 1; title('disc size'); end
+        if ipriority == 3
+           xlabel('disc size','FontSize',14); 
+        else
+            set(ha(3*ipriority-1),'XTickLabel','');
+        end
+        set(ha(3*ipriority-1),'YTickLabel','');
     end
+   
 end
 
 %% quantile correlation plot per subject
@@ -954,15 +1058,21 @@ semmeanquantsimdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantsimdiscsi
 % figure;
 colorMat = {'r','b','k'};
 for ipriority = 1:nPriorities
-        subplot(3,3,6+ipriority)
+    axes(ha(3*ipriority))
+%         subplot(3,3,6+ipriority)
     hold on
     plot_summaryfit(meanmeanquantsimerror{ipriority},[],[],meanmeanquantsimdiscsize{ipriority},...
-    semmeanquantsimdiscsize{ipriority},[],colorMat{ipriority})
-plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},semmeanquantdiscsize{ipriority},...
-    [],[],'k')
-
+        semmeanquantsimdiscsize{ipriority},[],colorMat{ipriority})
+    plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},semmeanquantdiscsize{ipriority},...
+        [],[],'k')
+    
+    ylabel('disc size');
+    axis([0 6 2 4])
+    set(ha(3*ipriority),'XTick',[0 3 6],'YTick',[2 3 4]);
+    set(ha(3*ipriority),'YTickLabel',[2 3 4])
 end
-
+set(ha(3*ipriority),'XTickLabel',[0 3 6])
+xlabel('error');
 
 
 
