@@ -121,9 +121,13 @@ for irun = 1:length(runlist)
     [x,fval] = bads(fun,x0,lb,ub,plb,pub,nonbcon);
 
     x(logflag) = exp(x(logflag));
-    bfp = nan(1,nParams+size(fixparams,2));
+if isempty(fixparams)
+bfp = x;
+else    
+bfp = nan(1,nParams+size(fixparams,2));
     bfp(freeparamsidx) = x;
     bfp(fixparams(1,:)) = fixparams(2,:);
+end
 
     ML_parameters = [ML_parameters; bfp];
     nLLVec = [nLLVec fval];
