@@ -472,11 +472,11 @@ save(filename,'data','nTrials')
 %% model comparison
 
 clear all
-expnumber = 2;
-nModels = 3;
+expnumber = 1;
+nModels = expnumber+1;
 modcompidx = 2;
 fixedrisk = 0;
-MCM = 'AIC';
+MCM = 'BIC';
 
 switch expnumber
     case 1
@@ -493,13 +493,13 @@ else
     filepath = ['fits/exp' num2str(expnumber) '/'];
 end
 
-nParamVec = nan(1,2);
 for imodel = (4-nModels):3
     load([filepath 'fits_model' num2str(imodel) '.mat'])
     nLL.(['model' num2str(imodel)]) = nLLVec;
     nParamVec(imodel) = size(ML_parameters,2);
     %     AIC.(['model' num2str(imodel)]) = 2*nLLVec + 2*nParamVec(imodel);
 end
+if expnumber == 1; nParamVec(1) = []; end
 
 nLLMat = reshape(struct2mat(nLL),[length(nTrials),nModels])';
 [AIC  BIC  AICc ]= modcomp(nLLMat',nParamVec,nTrials);
@@ -522,36 +522,31 @@ switch MCM
         comparison = bsxfun(@minus,AICc,AICc(:,modcompidx));
 end
 comparison(:,modcompidx) = [];
-% blah = [];
-% for imodel = 1:(nModels-1)
-%     blah = [blah comparison.(['model' num2str(modidx(imodel))])];
-% end
-% comparison = blah;
-% if nModels == 3
-%     comparison = [comparison.model1' comparison.model2' comparison.model3'];
-% else
-%     comparison = [comparison.model2' comparison.model3'];
-% end
-% comparison(
-meancomp = mean(comparison);
+mediancomp = median(comparison);
+
+% bootstrap the confidence intervals
+nBoots = 10000;
+for imodel = 1:(nModels-1)
+    currVec = comparison(:,imodel);
+    sampless = currVec(randi(nSubj,nSubj,nBoots));
+    medsamps = sort(median(sampless));
+    medCI(imodel,1) = medsamps(.025*nBoots);
+    medCI(imodel,2) = medsamps(.975*nBoots);
+end
 
 figure;
 if nModels == 3
-    semcomp = std(comparison)/sqrt(size(comparison,1));
     for imodel = 1:(nModels-1)
         %         imodel = modidx(imodel);
-        fill([imodel-0.475 imodel+0.475 imodel+0.475 imodel-0.475],[meancomp(imodel)-semcomp(imodel) meancomp(imodel)-semcomp(imodel)...
-            meancomp(imodel)+semcomp(imodel) meancomp(imodel)+semcomp(imodel)],...
+        fill([imodel-0.475 imodel+0.475 imodel+0.475 imodel-0.475],medCI([1 1 2 2]),...
             0.7*ones(1,3),'EdgeColor','none'); hold on;
+        plot([imodel-0.475 imodel+0.475],mediancomp(imodel)*ones(1,2),'Color',[0.1 0.1 0.1])
         set(gca,'XTick',[],'XTick',[1 2],'XTickLabel',modlabels)
     end
 else
-    %     meancomp = meancomp(modidx-1);
-    semcomp = std(comparison)/sqrt(length(comparison));
-    %     semcomp = semcomp(modidx-1);
-    fill([0 nSubj+1 nSubj+1 0],[meancomp-semcomp meancomp-semcomp...
-        meancomp+semcomp meancomp+semcomp],...
-        0.7*ones(1,3),'EdgeColor','none'); hold on;
+    fill([0 nSubj+1 nSubj+1 0],medCI([1 1 2 2]),...
+        0.8*ones(1,3),'EdgeColor','none'); hold on;
+    plot([0 nSubj+1],[mediancomp mediancomp],'Color',[0.1 0.1 0.1])
     set(gca,'XTick',[],'XTickLabel',modlabels)
 end
 
@@ -813,14 +808,14 @@ xlabel('tau'); ylabel('Jbar_{total}')
 % % % % % % % % % % % % % % % % % % % % % % %
 
 % for real data and probability (given ML parameters)
-
+clear all
 
 % ========= simulating a bunch of data per subject =========
 
-expnumber = 2;
-imodel = 1;
+expnumber = 1;
+imodel = 2;
 fixedrisk = [];%'_fixedrisk';
-loadpreddata = 1;
+loadpreddata = 0;
 indvlplot = 0;
 
 nPriorities = 3;
@@ -851,7 +846,7 @@ else
 end
 
 % histograms per subjects
-xlims = linspace(0,10,15);
+xlims = linspace(0,10,16);
 
 for isubj = 1:nSubj
     if (indvlplot); figure; end;
@@ -894,6 +889,14 @@ end
 
 % =========== group plot =====================
 
+figure;
+colorMat = {'r','b','k'};
+if (expnumber == 2)
+    ha = tight_subplot(3,3,{[.03 .03],[.03 .07]},[.1 .01],[.1 .01]);
+else
+    ha = tight_subplot(1,3,.03,[.26 .05],[.11 .05]);
+end
+
 meanerror = cellfun(@mean,error,'UniformOutput',false);
 semerror = cellfun(@(x) std(x)./sqrt(size(x,1)),error,'UniformOutput',false);
 meansimerror = cellfun(@mean,simerror,'UniformOutput',false);
@@ -906,29 +909,40 @@ if (expnumber == 2)
     semsimdiscsize = cellfun(@(x) std(x)./sqrt(size(x,1)),simdiscsize,'UniformOutput',false);
 end
 
-
-figure;
-colorMat = {'r','b','k'};
-if (expnumber == 2)
-    ha = tight_subplot(3,3,{[.03 .03],[.03 .07]},[.1 .01],[.1 .01]);
-else
-    ha = tight_subplot(1,3,[.07 .07],[.1 .01],[.1 .01]);
-end
 for ipriority = 1:nPriorities
     
+    if(expnumber == 2)
     axes(ha(3*ipriority-2))
+    else
+        axes(ha(ipriority))
+    end
     fill([xlims fliplr(xlims)],[meansimerror{ipriority}-semsimerror{ipriority}...
         fliplr(meansimerror{ipriority}+semsimerror{ipriority})],colorMat{ipriority},'EdgeColor','none','FaceAlpha',0.4);
     hold on;
     errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color','k','LineStyle','none','LineWidth',1);
     defaultplot
-    axis([0 10 0 0.6])
-    if ipriority == 3
-        xlabel('error');
+     axis([0 10 0 0.4])
+   
+    if expnumber == 2
+%          axis([0 10 0 0.6])
+        if ipriority == 3
+            xlabel('error');
+        else
+            set(ha(3*ipriority-2),'XTickLabel','');
+        end
+        ylabel('proportion','FontSize',14);
+    
     else
-        set(ha(3*ipriority-2),'XTickLabel','');
+        
+        xlabel('error','FontSize',16)
+        set(ha(ipriority),'YTick',[0 0.2 0.4],'FontSize',12);
+        if ipriority ~= 1
+            set(ha(ipriority),'YTickLabel','');
+        else
+            ylabel('proportion','FontSize',16)
+        end
+        
     end
-    ylabel('proportion','FontSize',14);
     
     
     if (expnumber == 2)
@@ -946,6 +960,7 @@ for ipriority = 1:nPriorities
             set(ha(3*ipriority-1),'XTickLabel','');
         end
         set(ha(3*ipriority-1),'YTickLabel','');
+        
     end
     
 end
@@ -1007,8 +1022,12 @@ for ipriority = 1:nPriorities
     axis([0 6 2 4])
     set(ha(3*ipriority),'XTick',[0 3 6],'YTick',[2 3 4]);
     set(ha(3*ipriority),'YTickLabel',[2 3 4])
+    if (expnumber == 1)
+        set(ha(ipriority),'XTickLabel',[0 3 6])
+        xlabel('error');
+    end
 end
-set(ha(3*ipriority),'XTickLabel',[0 3 6])
+if (expnumber == 2);set(ha(3*ipriority),'XTickLabel',[0 3 6]); end
 xlabel('error');
 
 
