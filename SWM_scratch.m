@@ -912,7 +912,7 @@ end
 for ipriority = 1:nPriorities
     
     if(expnumber == 2)
-    axes(ha(3*ipriority-2))
+        axes(ha(3*ipriority-2))
     else
         axes(ha(ipriority))
     end
@@ -921,17 +921,17 @@ for ipriority = 1:nPriorities
     hold on;
     errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color','k','LineStyle','none','LineWidth',1);
     defaultplot
-     axis([0 10 0 0.4])
-   
+    axis([0 10 0 0.4])
+    
     if expnumber == 2
-%          axis([0 10 0 0.6])
+        %          axis([0 10 0 0.6])
         if ipriority == 3
             xlabel('error');
         else
             set(ha(3*ipriority-2),'XTickLabel','');
         end
         ylabel('proportion','FontSize',14);
-    
+        
     else
         
         xlabel('error','FontSize',16)
@@ -1029,6 +1029,7 @@ for ipriority = 1:nPriorities
 end
 if (expnumber == 2);set(ha(3*ipriority),'XTickLabel',[0 3 6]); end
 xlabel('error');
+
 
 
 
