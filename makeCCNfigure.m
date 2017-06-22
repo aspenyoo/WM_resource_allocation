@@ -4,7 +4,8 @@ imodel = 2;
 fixedrisk = [];%'_fixedrisk';
 nPriorities = 3;
 % colorMat = [ .5 .5 1; 1 1 .5; 1 .5 .5];
-colorMat = [aspencolors('indigo'); aspencolors('bluegreen'); aspencolors('orange')];
+% colorMat = [aspencolors('indigo'); aspencolors('bluegreen'); aspencolors('orange')];
+colorMat = [0.5 0.5 0.5; 0.5 0.5 1; 1 0.5 0.5 ];
 markerMat = {'.','x','s'};
 
 figure;
@@ -40,21 +41,39 @@ modelSEMerror = std(modelerrorVec)./sqrt(nSubj);
 
 dx = 0.2;
 %  ========== plot ==========
-subplot(1,9,1); hold on;
-for ipriority = 1:nPriorities
-    mm = modelMerror(nPriorities+1-ipriority);
-    sem = modelSEMerror(nPriorities+1-ipriority);
-    fill([ipriority-dx ipriority+dx ipriority+dx ipriority-dx],...
-        [mm-sem mm-sem mm+sem mm+sem],...
-        colorMat(nPriorities+1-ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
-    errorbar(ipriority,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
-        'k','Marker',markerMat{ipriority},'LineWidth',1); 
-end
-defaultplot;
+% subplot(1,9,1); hold on;
+% for ipriority = 1:nPriorities
+%     mm = modelMerror(nPriorities+1-ipriority);
+%     sem = modelSEMerror(nPriorities+1-ipriority);
+%     fill([ipriority-dx ipriority+dx ipriority+dx ipriority-dx],...
+%         [mm-sem mm-sem mm+sem mm+sem],...
+%         colorMat(nPriorities+1-ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+%     errorbar(ipriority,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
+%         'k','Marker',markerMat{ipriority},'LineWidth',1); 
+% end
+% defaultplot;
+% axis([0.5 3.5 1 2.2])
+% set(gca,'YTick',1:.4:2.2,'YTickLabel',{1, '','', 2.2});
+% xlabel('priority'); ylabel('error');
+% set(gca,'XTick',1:3,'XTickLabel',{'low','medium','high'})
+
+% plot bargraph instead of errorbars
+dx = 0.1;
+subplot(1,3,1);hold on;
 axis([0.5 3.5 1 2.2])
 set(gca,'YTick',1:.4:2.2,'YTickLabel',{1, '','', 2.2});
 xlabel('priority'); ylabel('error');
 set(gca,'XTick',1:3,'XTickLabel',{'low','medium','high'})
+for ipriority = 1:nPriorities
+    mm = modelMerror(nPriorities+1-ipriority);
+    sem = modelSEMerror(nPriorities+1-ipriority);
+    errorbar(ipriority-dx,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
+        'k','Marker',markerMat{ipriority},'LineWidth',1); 
+    errorbar(ipriority+dx,modelMerror(nPriorities+1-ipriority),modelSEMerror(nPriorities+1-ipriority),...
+        'Color',colorMat(ipriority,:),'LineWidth',1); 
+end
+defaultplot;
+
 
 % ------------ ternary plot ------------
 load([filepath 'fits_model' num2str(imodel) '.mat'])
@@ -143,16 +162,51 @@ modelSEMerror = std(modelerrorVec)./sqrt(nSubj);
 modelMdiscsize = mean(modeldiscsizeVec);
 modelSEMdiscsize = std(modeldiscsizeVec)/sqrt(nSubj);
 
+% plot modelpredictions as errorbars
+
 %  ========== plot ==========
-subplot(1,9,2);hold on;
+% subplot(1,9,2);hold on;
+% for ipriority = 1:nPriorities
+%     mm = modelMerror(nPriorities+1-ipriority);
+%     sem = modelSEMerror(nPriorities+1-ipriority);
+%     fill([ipriority-dx ipriority+dx ipriority+dx ipriority-dx],...
+%         [mm-sem mm-sem mm+sem mm+sem],...
+%         colorMat(nPriorities+1-ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+%     errorbar(ipriority,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
+%         'k','Marker',markerMat{ipriority},'LineWidth',1); 
+% end
+% defaultplot;
+% axis([0.5 3.5 1 2.2])
+% xlabel('priority'); ylabel('error');
+% set(gca,'YTick',1:.4:2.2, 'YTickLabel', {1,'','', 2.2},...
+%     'XTick',1:3,'XTickLabel',{'low','medium','high'})
+% 
+% 
+% subplot(1,9,3); hold on;
+% for ipriority = 1:nPriorities
+%     mm = modelMdiscsize(nPriorities+1-ipriority);
+%     sem = modelSEMdiscsize(nPriorities+1-ipriority);
+%     fill([ipriority-dx ipriority+dx ipriority+dx ipriority-dx],...
+%         [mm-sem mm-sem mm+sem mm+sem],...
+%         colorMat(nPriorities+1-ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+%     errorbar(ipriority,dataMdiscsize(nPriorities+1-ipriority),dataSEMdiscsize(nPriorities+1-ipriority),...
+%         'k','Marker',markerMat{ipriority},'LineWidth',1); 
+% end
+% defaultplot;
+% axis([0.5 3.5 2 4])
+% xlabel('priority'); ylabel('disc size')
+% set(gca,'YTick',2:4,'YTickLabel',{2,'', 4},...
+%     'XTick',1:3,'XTickLabel',{'low','medium','high'})
+
+subplot(1,3,2);hold on;
 for ipriority = 1:nPriorities
-    mm = modelMerror(nPriorities+1-ipriority);
-    sem = modelSEMerror(nPriorities+1-ipriority);
-    fill([ipriority-dx ipriority+dx ipriority+dx ipriority-dx],...
-        [mm-sem mm-sem mm+sem mm+sem],...
-        colorMat(nPriorities+1-ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
-    errorbar(ipriority,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
+%     fill([ipriority-dx ipriority+dx ipriority+dx ipriority-dx],...
+%         [mm-sem mm-sem mm+sem mm+sem],...
+%         colorMat(nPriorities+1-ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+    errorb(ipriority-dx,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
         'k','Marker',markerMat{ipriority},'LineWidth',1); 
+    errorb(ipriority+dx,modelMerror(nPriorities+1-ipriority),modelSEMerror(nPriorities+1-ipriority),...
+        'Color',colorMat(ipriority,:),'LineWidth',1); 
 end
 defaultplot;
 axis([0.5 3.5 1 2.2])
@@ -160,15 +214,13 @@ xlabel('priority'); ylabel('error');
 set(gca,'YTick',1:.4:2.2, 'YTickLabel', {1,'','', 2.2},...
     'XTick',1:3,'XTickLabel',{'low','medium','high'})
 
-subplot(1,9,3); hold on;
+
+subplot(1,3,3); hold on;
 for ipriority = 1:nPriorities
-    mm = modelMdiscsize(nPriorities+1-ipriority);
-    sem = modelSEMdiscsize(nPriorities+1-ipriority);
-    fill([ipriority-dx ipriority+dx ipriority+dx ipriority-dx],...
-        [mm-sem mm-sem mm+sem mm+sem],...
-        colorMat(nPriorities+1-ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
-    errorbar(ipriority,dataMdiscsize(nPriorities+1-ipriority),dataSEMdiscsize(nPriorities+1-ipriority),...
+    errorb(ipriority-dx,dataMdiscsize(nPriorities+1-ipriority),dataSEMdiscsize(nPriorities+1-ipriority),...
         'k','Marker',markerMat{ipriority},'LineWidth',1); 
+    errorb(ipriority+dx,modelMdiscsize(nPriorities+1-ipriority),modelSEMdiscsize(nPriorities+1-ipriority),...
+        'Color',colorMat(ipriority,:),'LineWidth',1); 
 end
 defaultplot;
 axis([0.5 3.5 2 4])
