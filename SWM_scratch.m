@@ -1183,3 +1183,85 @@ for isamp = 1:(length(sampVec)-1)
 end
 figure;
 plot(log(sampVec),nLLVec)
+
+%% plot bias in polar angle as a function of location
+% exp 1
+
+% load group_data.mat from other SWM folder
+
+clear all
+load('/Users/blobface/Research/SWM/VWM-Eye-Movements-Uncertainty/group_data.mat')
+
+% response
+r_x = group_data(:,6);
+r_y = group_data(:,7);
+r_angle = atand(r_x./r_y); % response in polar angles
+
+idx = (r_x < 0) & (r_y < 0); % third quadrant, both negative
+r_angle(idx) = r_angle(idx) + 180;
+idx = (r_x < 0) & (r_y > 0); % second quadrant, negative x
+r_angle(idx) = r_angle(idx) + 180;
+idx = (r_x > 0) & (r_y < 0); % fourth quadrant, negative y
+r_angle(idx) = r_angle(idx) + 360;
+
+% target
+t_x = group_data(:,8);
+t_y = group_data(:,9);
+t_angle = atand(t_x./t_y);
+
+idx = (t_x < 0) & (t_y < 0); % third quadrant, both negative
+t_angle(idx) = t_angle(idx) + 180;
+idx = (t_x < 0) & (t_y > 0); % second quadrant, negative x
+t_angle(idx) = t_angle(idx) + 180;
+idx = (t_x > 0) & (t_y < 0); % fourth quadrant, negative y
+t_angle(idx) = t_angle(idx) + 360;
+
+idx = isnan(t_angle);
+idx = idx + isnan(r_angle);
+idx = logical(idx);
+
+t_angle(idx) = [];
+r_angle(idx) = [];
+
+t_angle_rad = deg2rad(t_angle);
+r_angle_rad = deg2rad(r_angle);
+
+biass = circ_dist(r_angle_rad, t_angle_rad);
+
+
+plot(t_angle,biass,'o')
+
+%% average and plot
+
+angless = unique(round(t_angle));
+nAngles = length(angless);
+
+for iangle = 1:nAngles
+    anglee = angless(iangle);
+    
+    idx = round(t_angle) == anglee;
+    
+    biasVec(iangle) = mean(biass(idx));
+    
+end
+
+figure
+plot(angless,biasVec,'o')
+
+%% pick every 10 angles
+
+angless = [10:10:80 100:10:170 180:10:260 280:10:350];
+nAngles = length(angless);
+
+biasVec = [];
+for iangle = 1:nAngles
+    anglee = angless(iangle);
+    
+    idx = round(t_angle) == anglee;
+    
+    biasVec(iangle) = mean(biass(idx));
+    
+end
+
+figure
+plot(angless,biasVec,'o')
