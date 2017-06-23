@@ -24,6 +24,6 @@ addpath(genpath('/home/ay963/spatialWM'))
 
 expnumber = 2;
 
-slurmtest(1,expnumber)
+slurmtest(expnumber,index)
 
 EOF
