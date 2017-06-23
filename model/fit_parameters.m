@@ -9,11 +9,11 @@ if nargin < 7; fixparams = []; end
 %
 %
 % ================= INPUT VARIABLES ==================
-% MODEL: 1 (optimal priority placement) or 2 (not optimal)
+% MODEL: 1 (optimal priority placement) or 2 (not optimal) or 3 (fixed)
 % SUBJNUM: subject number. 1 - 11
 % NSTARTVALS: optimization starting vals
-% TESTMODEL: 1 (optimal priority placement) or 2 (not optimal). this is
-% used only for model recovery.
+% TESTMODEL: 1 (optimal priority placement) or 2 (not optimal) or 3 (fixed). 
+% this is used only for model recovery.
 % EXPNUMBER: 1 (experiment with just priority manipulation) or 2
 % (experiment with disc size response also). 
 % 

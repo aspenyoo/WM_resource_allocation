@@ -1265,3 +1265,19 @@ end
 
 figure
 plot(angless,biasVec,'o')
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+%       CLUSTER RELATED
+% % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+clear all
+expnumber = 2;
+modelnum = 1;
+if expnumber == 1; nSubj = 14; else; nSubj = 11;end
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+
+for isubj = 1:nSubj
+    load([filepath 'fits_model' num2str(modelnum) '_subj' num2str(isubj) '.mat'],'runlist_completed')
+    runlist.(['subj' num2str(isubj)]) = sort(runlist_completed);
+end
