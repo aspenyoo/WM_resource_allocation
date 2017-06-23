@@ -23,6 +23,6 @@ expnumber = 2
 index = $SLURM_ARRAY_JOB_ID
 idx = $SLURM_ARRAY_TASK_ID
 
-slurmtest(expnumber,index)
+slurmtest(expnumber,index,idx)
 
 EOF
