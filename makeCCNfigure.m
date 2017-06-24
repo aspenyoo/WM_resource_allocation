@@ -25,7 +25,7 @@ load([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixed
 for ipriority = 1:nPriorities
     
     for isubj = 1:nSubj
-        dataerrorVec(isubj,ipriority) = mean(preddata{isubj}{ipriority}(:,1));
+        dataerrorVec(isubj,ipriority) = mean(data{isubj}{ipriority}(:,1));
         modelerrorVec(isubj,ipriority) = mean(preddata{isubj}{ipriority}(:,1));
     end
     
@@ -141,8 +141,8 @@ load([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixed
 for ipriority = 1:nPriorities
     
     for isubj = 1:nSubj
-        dataerrorVec(isubj,ipriority) = mean(preddata{isubj}{ipriority}(:,1));
-        datadiscsizeVec(isubj,ipriority) = mean(preddata{isubj}{ipriority}(:,2));
+        dataerrorVec(isubj,ipriority) = mean(data{isubj}{ipriority}(:,1));
+        datadiscsizeVec(isubj,ipriority) = mean(data{isubj}{ipriority}(:,2));
         modelerrorVec(isubj,ipriority) = mean(preddata{isubj}{ipriority}(:,1));
         modeldiscsizeVec(isubj,ipriority) = mean(preddata{isubj}{ipriority}(:,2));
     end
