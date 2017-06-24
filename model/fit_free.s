@@ -8,7 +8,7 @@
 #SBATCH --job-name=SWM_free
 #SBATCH --mail-type=END
 #SBATCH --mail-user=aspen.yoo@nyu.edu
-#SBATCH --output=SWM_free_%j_%a.out
+#SBATCH --output=SWM_free_%a.out
 
 module purge
 module load matlab/2016b
