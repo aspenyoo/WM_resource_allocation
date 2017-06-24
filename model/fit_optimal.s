@@ -8,7 +8,7 @@
 #SBATCH --job-name=SWM_optimal
 #SBATCH --mail-type=END
 #SBATCH --mail-user=aspen.yoo@nyu.edu
-#SBATCH --output=SWM_optimal_%j_%a.out
+#SBATCH --output=SWM_optimal_%a.out
 
 module purge
 module load matlab/2016b
