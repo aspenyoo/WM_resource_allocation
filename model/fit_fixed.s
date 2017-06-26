@@ -17,7 +17,7 @@ cat<<EOF | matlab -nodisplay
 addpath(genpath('/home/ay963/matlab-scripts'))
 addpath(genpath('/home/ay963/spatialWM'))
 
-model = 2;
+model = 3;
 expnumber = 2;
 subjnum = $SLURM_ARRAY_TASK_ID;
 runlist = 1:50;
