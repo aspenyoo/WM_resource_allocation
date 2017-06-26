@@ -6,8 +6,7 @@ if nargin < 6; expnumber = 2; end
 if nargin < 7; fixparams = []; end
 
 
-%
-%
+
 % ================= INPUT VARIABLES ==================
 % MODEL: 1 (optimal priority placement) or 2 (not optimal) or 3 (fixed)
 % SUBJNUM: subject number. 1 - 11
@@ -108,28 +107,25 @@ x0_list = lhs(runmax,nParams,plb,pub,[],1e3);
 
 % optimize for starting values in RUNLIST
 for irun = 1:length(runlist)
-    
-    try load(filename); catch; ML_parameters = []; nLLVec = []; end
-    try blah = runlist_completed*2; catch; runlist_completed = []; end % seeing if runlist_completed exists yet
-    
+       
     x0 = x0_list(runlist(irun),:);
-%     x0 = plb + rand(1,nParams).*(pub - plb);
-%     load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '.mat'],'ML_parameters')
-%     x0 = ML_parameters(subjnum,:);
     
     fun = @(x) calc_nLL(testmodel,x,subjdata,fixparams);
     
     [x,fval] = bads(fun,x0,lb,ub,plb,pub,nonbcon);
-
+    
     x(logflag) = exp(x(logflag));
-if isempty(fixparams)
-bfp = x;
-else    
-bfp = nan(1,nParams+size(fixparams,2));
-    bfp(freeparamsidx) = x;
-    bfp(fixparams(1,:)) = fixparams(2,:);
-end
+    if isempty(fixparams)
+        bfp = x;
+    else
+        bfp = nan(1,nParams+size(fixparams,2));
+        bfp(freeparamsidx) = x;
+        bfp(fixparams(1,:)) = fixparams(2,:);
+    end
 
+    try load(filename); catch; ML_parameters = []; nLLVec = []; end
+    try runlist_completed*2; catch; runlist_completed = []; end % seeing if runlist_completed exists yet
+    
     ML_parameters = [ML_parameters; bfp];
     nLLVec = [nLLVec fval];
     runlist_completed = [runlist_completed runlist(irun)];
