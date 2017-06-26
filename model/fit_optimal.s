@@ -20,11 +20,11 @@ addpath(genpath('/home/ay963/spatialWM'))
 model = 1;
 expnumber = 2;
 blah = num2str($SLURM_ARRAY_TASK_ID);
-runlistidx = str2double(blah(1));
-subjnum = str2double(blah(2:end));
+runlistidx = str2double(blah(end-1:end));
+subjnum = str2double(blah(1:end-2));
 
 runmax = 50;
-runlist = runlistidx:5:(45+runlistidx);
+runlist = [runlistidx runlistidx*2];
 
 fit_parameters(model,subjnum,runlist,runmax,[],expnumber)
 
