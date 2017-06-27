@@ -107,9 +107,10 @@ x0_list = lhs(runmax,nParams,plb,pub,[],1e3);
 
 % optimize for starting values in RUNLIST
 for irun = 1:length(runlist)
-       
-    x0 = x0_list(runlist(irun),:);
     
+    rng(runlist(irun));
+    
+    x0 = x0_list(runlist(irun),:);
     fun = @(x) calc_nLL(testmodel,x,subjdata,fixparams);
     
     [x,fval] = bads(fun,x0,lb,ub,plb,pub,nonbcon);

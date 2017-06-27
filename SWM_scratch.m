@@ -2,13 +2,13 @@
 
 clear all
 nSubj = 11;
-expnumber = 2;
-model = 2;
+expnumber = 1;
+model = 3;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 for isubj = 1:nSubj
-    isubj
+    isubj;
     load([filepath 'fits_model' num2str(model) '_subj' num2str(isubj) '.mat'])
     
     blah = sort(unique(runlist_completed));
@@ -16,6 +16,7 @@ for isubj = 1:nSubj
 %     pause
     bleh(isubj) = length(blah);
 end
+bleh
 
 %% % % % % % % % % % % % % % % % % % % %
 %       DATA RELATED
@@ -490,7 +491,7 @@ save(filename,'data','nTrials')
 %% model comparison
 
 clear all
-expnumber = 1;
+expnumber = 2;
 nModels = expnumber+1;
 modcompidx = 2;
 fixedrisk = 0;
