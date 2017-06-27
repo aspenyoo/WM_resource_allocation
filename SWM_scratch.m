@@ -1,3 +1,21 @@
+%% CLUSTER RELATED
+
+clear all
+nSubj = 11;
+expnumber = 2;
+model = 2;
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+
+for isubj = 1:nSubj
+    isubj
+    load([filepath 'fits_model' num2str(model) '_subj' num2str(isubj) '.mat'])
+    
+    blah = sort(unique(runlist_completed));
+%     length(blah)
+%     pause
+    bleh(isubj) = length(blah);
+end
 
 %% % % % % % % % % % % % % % % % % % % %
 %       DATA RELATED
