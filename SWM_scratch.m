@@ -242,8 +242,8 @@ EU = calc_EU(rVec,JVec,alpha);
 % % % % % % % % % % % % % % % % % % % % % % % %
 clear all
 
-imodel = 3;
-testmodel = 3;
+imodel = 2;
+testmodel = 2;
 fakedata = 0;
 expnumber = 2;
 isriskfixed = 0;
@@ -324,29 +324,83 @@ end
 % % % % % % % % % % % % % % % % % % % % % % %
 
 
-
-%% check nLL
+%% recalculate nLL for each subject
 
 clear all
 expnumber = 2;
 imodel = 1;
-subjVec = [1 3:11];
+nSubj = 11;
 
-nSubj = 10;
+load('cleandata.mat')
+filepath = ['fits/exp' num2str(expnumber) '/'];
+
+for isubj = 1:nSubj
+    isubj
+    
+    load([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
+    ML_parameters(:,1:2) = log(ML_parameters(:,1:2));
+    
+    nStarts = length(nLLVec);
+    newnLL = nan(1,nStarts);
+    for inll = 1:nStarts
+        fprintf([num2str(inll) ', '])
+        newnLL(inll) = calc_nLL(imodel,ML_parameters(inll,:),data{isubj});
+    end 
+    
+    nLLVec = newnLL;
+    ML_parameters(:,1:2) = exp(ML_parameters(:,1:2));
+    save([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'],...
+        'runlist_completed','nLLVec','ML_parameters')
+end
+
+%% recalculate best fit nLL
+
+clear all
+expnumber = 1;
+modelVec = [2 3];
+
+load('cleandata_nodisc.mat')
+filepath = ['fits/exp' num2str(expnumber) '/'];
+
+for imodel = modelVec
+    load([filepath 'fits_model' num2str(imodel) '.mat'])
+    ML_parameters(:,1:2) = log(ML_parameters(:,1:2));
+  
+    nSubj = length(nLLVec);
+    newnLL = nan(1,nSubj);
+    for isubj = 1:nSubj
+        fprintf([num2str(isubj) ', '])
+        newnLL(isubj) = calc_nLL(imodel,ML_parameters(isubj,:),data{isubj});
+    end 
+    
+    nLLVec = newnLL;
+    ML_parameters(:,1:2) = exp(ML_parameters(:,1:2));
+    save([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'],...
+        'nLLVec','ML_parameters')
+end
+
+%% check nLL
+
+% clear all
+expnumber = 2;
+imodel = 1;
+subjVec = [1:11];
+
+nSubj = 11;
 load('cleandata.mat')
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(imodel) '.mat'])
 ML_parameters(:,1:2) = log(ML_parameters(:,1:2));
 
-nLL2 = nan(1,nSubj);
+nLL4 = nan(1,nSubj);
 for isubj = 1:nSubj
     isubj
     
-    nLL2(isubj) = calc_nLL(imodel,ML_parameters(isubj,:),data{subjVec(isubj)});
+    nLL4(isubj) = calc_nLL(imodel,ML_parameters(isubj,:),data{subjVec(isubj)});
 end
 
-[nLLVec; nLL; nLL2]
+[nLLVec; nLL2; nLL; nLL3; nLL4]
 
 %% optimal pVec for model 1
 
@@ -515,7 +569,7 @@ save(filename,'data','nTrials')
 %% model comparison
 
 clear all
-expnumber = 2;
+expnumber = 1;
 nModels = expnumber+1;
 modcompidx = 2;
 fixedrisk = 0;
@@ -1271,8 +1325,9 @@ r_angle_rad = deg2rad(r_angle);
 
 biass = circ_dist(r_angle_rad, t_angle_rad);
 
+figure; plot(t_angle,'o')
 
-plot(t_angle,biass,'o')
+figure; plot(t_angle,biass,'o')
 
 %% average and plot
 
