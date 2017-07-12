@@ -298,7 +298,7 @@ end
 %% fit exp1 
 
 clear all
-testmodel = 3;
+testmodel = 2;
 truemodel = testmodel;
 runmax = 50;
 expnumber = 1;
@@ -309,15 +309,15 @@ switch expnumber
         nSubj = 11;
 end
 
-for isubj = 1:nSubj;
-    isubj
+% for isubj = 1:nSubj;
+    isubj = 14;
     
-    load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '_subj' num2str(isubj) '.mat'])
+%     load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '_subj' num2str(isubj) '.mat'])
     runlist = 1:runmax;
-    runlist(unique(runlist_completed)) = [];
+%     runlist(unique(runlist_completed)) = [];
     
     fit_parameters(testmodel,isubj,runlist,runmax,truemodel,expnumber)
-end
+% end
 
 %% % % % % % % % % % % % % % % % % % % % % % %
 %       REAL DATA STUFF
