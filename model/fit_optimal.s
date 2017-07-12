@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=10:00:00
+#SBATCH --time=06:00:00
 #SBATCH --mem=2GB
 #SBATCH --job-name=SWM_optimal
 #SBATCH --mail-type=END
@@ -24,7 +24,7 @@ runlistidx = str2double(blah(end-1:end));
 subjnum = str2double(blah(1:end-2));
 
 runmax = 50;
-runlist = [runlistidx runlistidx*2];
+runlist = [runlistidx runlistidx+runmax/2];
 
 fit_parameters(model,subjnum,runlist,runmax,[],expnumber)
 
