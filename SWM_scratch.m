@@ -298,7 +298,7 @@ end
 %% fit exp1 
 
 clear all
-testmodel = 3;
+testmodel = 2;
 truemodel = testmodel;
 runmax = 50;
 expnumber = 1;
@@ -308,6 +308,7 @@ switch expnumber
     case 2
         nSubj = 11;
 end
+
 
 for isubj = 1:nSubj
     isubj
