@@ -242,8 +242,8 @@ EU = calc_EU(rVec,JVec,alpha);
 % % % % % % % % % % % % % % % % % % % % % % % %
 clear all
 
-imodel = 2;
-testmodel = 2;
+imodel = 3;
+testmodel = 3;
 fakedata = 0;
 expnumber = 2;
 isriskfixed = 0;
@@ -309,12 +309,12 @@ switch expnumber
         nSubj = 11;
 end
 
-for isubj = 1:nSubj;
+for isubj = 1:nSubj
     isubj
     
-    load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '_subj' num2str(isubj) '.mat'])
+%     load(['fits/exp' num2str(expnumber) '/fits_model' num2str(testmodel) '_subj' num2str(isubj) '.mat'])
     runlist = 1:runmax;
-    runlist(unique(runlist_completed)) = [];
+%     runlist(unique(runlist_completed)) = [];
     
     fit_parameters(testmodel,isubj,runlist,runmax,truemodel,expnumber)
 end
@@ -356,8 +356,8 @@ end
 %% recalculate best fit nLL
 
 clear all
-expnumber = 1;
-modelVec = [2 3];
+expnumber = 2;
+modelVec = [1 2 3];
 
 load('cleandata_nodisc.mat')
 filepath = ['fits/exp' num2str(expnumber) '/'];
@@ -382,12 +382,12 @@ end
 %% check nLL
 
 % clear all
-expnumber = 2;
-imodel = 1;
-subjVec = [1:11];
+expnumber = 1;
+imodel = 3;
+subjVec = [1:14];
 
-nSubj = 11;
-load('cleandata.mat')
+nSubj = 14;
+load('cleandata_nodisc.mat')
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(imodel) '.mat'])
@@ -400,14 +400,15 @@ for isubj = 1:nSubj
     nLL4(isubj) = calc_nLL(imodel,ML_parameters(isubj,:),data{subjVec(isubj)});
 end
 
-[nLLVec; nLL2; nLL; nLL3; nLL4]
+[nLLVec; nLL4]
 
 %% optimal pVec for model 1
 
 clear all
 imodel = 1;
+expnumber = 2;
 
-load(['fits_model' num2str(imodel) '.mat'])
+load(['fits/exp' num2str(expnumber) '/fits_model' num2str(imodel) '.mat'])
 nSubj = 11;
 
 pMat = nan(nSubj,3);
@@ -666,8 +667,8 @@ ylabel(['\Delta AIC (favoring ' modcomplabel ' model)'])
 %% simulate data
 
 clear all
-expnumber = 2;
-imodel = 3;
+expnumber = 1;
+imodel = 2;
 nSubj = 10;
 
 % switch model
@@ -695,6 +696,12 @@ for isubj = 1:nSubj
 end
 save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 
+
+%% check that none of the subjects have nans
+
+for isubj = 1:nSubj
+    cellfun(@(x) sum(isnan(x(:))),simdata{isubj},'UniformOutput',false)
+end
 
 %% look at simulated data
 
@@ -910,7 +917,7 @@ clear all
 % ========= simulating a bunch of data per subject =========
 
 expnumber = 1;
-imodel = 2;
+imodel = 3;
 fixedrisk = [];%'_fixedrisk';
 loadpreddata = 0;
 indvlplot = 0;

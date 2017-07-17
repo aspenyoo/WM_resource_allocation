@@ -113,7 +113,8 @@ for irun = 1:length(runlist)
     x0 = x0_list(runlist(irun),:);
     fun = @(x) calc_nLL(testmodel,x,subjdata,fixparams);
     
-    [x,fval] = bads(fun,x0,lb,ub,plb,pub,nonbcon);
+    x = bads(fun,x0,lb,ub,plb,pub,nonbcon);
+    fval = fun(x);
     
     x(logflag) = exp(x(logflag));
     if isempty(fixparams)
