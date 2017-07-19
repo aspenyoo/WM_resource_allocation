@@ -751,6 +751,23 @@ for isubj = 1:nSubj
     cellfun(@(x) sum(isnan(x(:))),simdata{isubj},'UniformOutput',false)
 end
 
+%% see what runlist idxs you need to do still
+clear all
+expnumber = 2;
+testmodel = 1;
+truemodel = 1;
+nSubj = 10;
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+
+for isubj = 1:nSubj
+    load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '_subj' num2str(isubj) '.mat'])
+
+    blah = 1:50;
+    blah(runlist_completed) = []
+end
+
+
 %% look at simulated data
 
 clear all
