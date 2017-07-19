@@ -761,6 +761,7 @@ nSubj = 10;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 for isubj = 1:nSubj
+    isubj
     load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '_subj' num2str(isubj) '.mat'])
 
     blah = 1:50;
