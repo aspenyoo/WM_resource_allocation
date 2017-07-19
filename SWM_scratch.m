@@ -752,10 +752,10 @@ for isubj = 1:nSubj
 end
 
 %% see what runlist idxs you need to do still
-clear all
+clear all; clc
 expnumber = 2;
-testmodel = 1;
-truemodel = 1;
+testmodel = 2;
+truemodel = 3;
 nSubj = 10;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
