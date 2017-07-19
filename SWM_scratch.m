@@ -715,8 +715,8 @@ ylabel(['\Delta AIC (favoring ' modcomplabel ' model)'])
 %% simulate data
 
 clear all
-expnumber = 1;
-imodel = 2;
+expnumber = 2;
+imodel = 3;
 nSubj = 10;
 
 % switch model
