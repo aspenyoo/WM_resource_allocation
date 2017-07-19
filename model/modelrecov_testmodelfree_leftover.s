@@ -20,16 +20,14 @@ expnumber = 2;
 blah = num2str($SLURM_ARRAY_TASK_ID);
 truemodel = str2double(blah(1));
 subjnum = str2double(blah(2));
-runlistidx = str2double(blah(3));
-
 jobidx = str2double(blah(end-1:end));
 
 nSubj = 11;
-testmodel = 1;
+testmodel = 2;
 runmax = 50;
 
 filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
-load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel1_subj' num2str(subjnum+1) '.mat'])
+load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel2_subj' num2str(subjnum+1) '.mat'])
 
 blah = 1:runmax;
 blah(runlist_completed) = [];
