@@ -99,6 +99,73 @@ end
 save('cleandata_nodisc.mat','data')
 
 
+%% nTrials for each subject
+clear all
+expnumber = 1;
+
+switch expnumber
+    case 1
+        filename = 'cleandata_nodisc.mat';
+    case 2
+        filename = 'cleandata.mat';
+end
+load(filename)
+
+nSubj = length(data);
+nTrials = nan(nSubj,3);
+for isubj = 1:nSubj
+    for ipriority = 1:3
+        nTrials(isubj,ipriority) = size(data{isubj}{ipriority},1);
+    end
+end
+
+save(filename,'data','nTrials')
+% [AIC,BIC,AICc] = modcomp(nLL,K,n);
+
+
+%% make excel files into one big mat file
+clear all
+
+% get all file names in this folder
+nFiles = length(filenames);
+
+concatMat = [];
+for ifile = 1:nFiles
+    filename = filenames(ifile);
+    
+    load(filename)
+    concatMat = [concatMat; mat];
+end
+
+data = concatMat;
+save('exp1_rawdata.mat','data');
+
+%% check bias as a function of distractor priority
+
+clear all
+
+isubj = 9;
+target = 0.3;
+distractor = 0.6;
+
+load('exp1_rawdata.mat')
+priorityvals = [ 8 11 14 ];
+
+% keep only isubj's data
+idx = data(1,:) = isubj; 
+data = data(idx); 
+
+% delete those with RT higher than some cutoff
+cutoff = 2500;
+idx = data(:,5) > cutoff; 
+data(idx) = [];
+
+% get target loc (just angle)
+idx = data(:,8) == target;
+targetloc = data(idx,10);
+
+% get disctractor loc (just angle)
+
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % %
 %       MODEL RELATED
@@ -235,11 +302,17 @@ pdf_r = calc_pdf_r(beta, JVec, alpha);
 EU = calc_EU(rVec,JVec,alpha);
 
 
+%% % % % % % % % % % % % % % % % % % % % % % %
+%       MODEL FIT RELATED
+% % % % % % % % % % % % % % % % % % % % % % %
 
+% - get ML parameter estimates
+% - recalculate nLLs
+% - calculate pVecs for different models
+% - ternary plots
 
-%% % % % % % % % % % % % % % % % % % % % % % % %
-%     GET ML PARAMETER ESTIMATES
-% % % % % % % % % % % % % % % % % % % % % % % %
+%%   GET ML PARAMETER ESTIMATES
+
 clear all
 
 imodel = 3;
@@ -319,10 +392,6 @@ for isubj = 1:nSubj
     
     fit_parameters(testmodel,isubj,runlist,runmax,truemodel,expnumber)
 end
-
-%% % % % % % % % % % % % % % % % % % % % % % %
-%       REAL DATA STUFF
-% % % % % % % % % % % % % % % % % % % % % % %
 
 
 %% recalculate nLL for each subject
@@ -545,28 +614,6 @@ hmod3 = ternaryc(0.6,0.3,0.1);
 set(hmod3,'marker','o','markerfacecolor','r','markersize',4','markeredgecolor','r')
 hlabels=terlabel('high','medium','low');
 
-%% nTrials for each subject
-clear all
-expnumber = 1;
-
-switch expnumber
-    case 1
-        filename = 'cleandata_nodisc.mat';
-    case 2
-        filename = 'cleandata.mat';
-end
-load(filename)
-
-nSubj = length(data);
-nTrials = nan(nSubj,3);
-for isubj = 1:nSubj
-    for ipriority = 1:3
-        nTrials(isubj,ipriority) = size(data{isubj}{ipriority},1);
-    end
-end
-
-save(filename,'data','nTrials')
-% [AIC,BIC,AICc] = modcomp(nLL,K,n);
 
 %% model comparison
 
