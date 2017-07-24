@@ -756,8 +756,8 @@ end
 clear all; clc
 
 expnumber = 2;
-testmodel = 1;
-truemodel = 3;
+testmodel = 3;
+truemodel = 2;
 nSubj = 10;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
