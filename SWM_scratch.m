@@ -152,7 +152,7 @@ load('exp1_rawdata.mat')
 priorityvals = [ 8 11 14 ];
 
 % keep only isubj's data
-idx = data(1,:) = isubj; 
+idx = data(1,:) == isubj; 
 data = data(idx); 
 
 % delete those with RT higher than some cutoff
@@ -749,23 +749,25 @@ save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
 
 for isubj = 1:nSubj
     cellfun(@(x) sum(isnan(x(:))),simdata{isubj},'UniformOutput',false)
+    cellfun(@(x) max(x(:)),simdata{isubj},'UniformOutput',false)
 end
 
 %% see what runlist idxs you need to do still
 clear all; clc
+
 expnumber = 2;
-testmodel = 2;
+testmodel = 1;
 truemodel = 3;
 nSubj = 10;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 for isubj = 1:nSubj
-    isubj
     load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '_subj' num2str(isubj) '.mat'])
 
     blah = 1:50;
-    blah(runlist_completed) = []
+    blah(runlist_completed) = [];
+    fprintf([num2str(isubj) ' ' num2str(blah) '\r'])
 end
 
 
