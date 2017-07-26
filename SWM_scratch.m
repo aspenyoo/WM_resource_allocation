@@ -98,6 +98,17 @@ end
 
 save('cleandata_nodisc.mat','data')
 
+%% look at guess distributions! permutation test!!
+
+clear all
+expnumber = 1;
+
+switch expnumber
+    case 1
+        load('cleandata_nodisc.mat')
+    case 2
+        load('cleandata.mat')
+end
 
 %% nTrials for each subject
 clear all
