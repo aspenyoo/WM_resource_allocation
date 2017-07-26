@@ -755,9 +755,12 @@ end
 %% see what runlist idxs you need to do still
 clear all; clc
 
+% 1, 2, 3
+%
+ 
 expnumber = 2;
-testmodel = 3;
-truemodel = 2;
+testmodel = 2;
+truemodel = 3;
 nSubj = 10;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
