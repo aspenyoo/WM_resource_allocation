@@ -98,6 +98,17 @@ end
 
 save('cleandata_nodisc.mat','data')
 
+%% look at guess distributions! permutation test!!
+
+clear all
+expnumber = 1;
+
+switch expnumber
+    case 1
+        load('cleandata_nodisc.mat')
+    case 2
+        load('cleandata.mat')
+end
 
 %% nTrials for each subject
 clear all
@@ -755,9 +766,12 @@ end
 %% see what runlist idxs you need to do still
 clear all; clc
 
+% 1, 2, 3
+%
+ 
 expnumber = 2;
-testmodel = 3;
-truemodel = 2;
+testmodel = 2;
+truemodel = 3;
 nSubj = 10;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
