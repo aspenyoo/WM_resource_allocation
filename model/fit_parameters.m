@@ -30,12 +30,6 @@ else
 filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '_fixedrisk/'];
 end
 
-if (expnumber == 1) % if nodiscsize experiment (first experiment)
-    suffix = '_nodisc';
-else
-    suffix = [];
-end
-
 if (expnumber == 1)
     nSubj = 14;
 else

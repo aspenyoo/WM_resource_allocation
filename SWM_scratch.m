@@ -258,23 +258,34 @@ target = 0.3;
 distractor = 0.6;
 
 load('exp1_rawdata.mat')
-priorityvals = [ 8 11 14 ];
 
 % keep only isubj's data
-idx = data(1,:) == isubj; 
-data = data(idx); 
+idx = data(:,1) == isubj; 
+data = data(idx,:); 
 
-% delete those with RT higher than some cutoff
-cutoff = 2500;
-idx = data(:,5) > cutoff; 
-data(idx) = [];
+% % delete those with RT higher than some cutoff
+% cutoff = 2500;
+% idx = data(:,5) > cutoff; 
+% data(idx) = [];
 
 % get target loc (just angle)
 idx = data(:,8) == target;
-targetloc = data(idx,10);
+data = data(idx,:);
+targetloc = data(:,10);
 
 % get disctractor loc (just angle)
+idx = data == distractor;
+idx = [idx(:,end-1:end) idx(:,1:end-2)]';
+dataT = data';
+distractorloc = dataT(idx);
 
+% response (angle)
+
+%% 
+
+load('exp1_zuzprocesseddata.mat')
+
+idx = (group_data(:,1) == isubj) & (group_data(:,2) == target);
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % %
 %       MODEL RELATED
@@ -859,11 +870,10 @@ end
 %% see what runlist idxs you need to do still
 clear all; clc
 
-% 1, 2, 3
-%
+% 2, 3, 3 then done!
  
-expnumber = 1;
-testmodel = 2;
+expnumber = 2;
+testmodel = 3;
 truemodel = 3;
 nSubj = 10;
 
