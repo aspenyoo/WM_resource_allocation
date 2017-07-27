@@ -435,13 +435,13 @@ EU = calc_EU(rVec,JVec,alpha);
 
 clear all
 
+expnumber = 2;
 imodel = 3;
 testmodel = 3;
-fakedata = 0;
-expnumber = 2;
+fakedata = 1;
 isriskfixed = 0;
 
-subjVec = 1:11;
+subjVec = 1:10;
 nSubj = length(subjVec);
 
 if (isriskfixed)
@@ -870,10 +870,10 @@ end
 %% see what runlist idxs you need to do still
 clear all; clc
 
-% 2, 3, 3 then done!
+% 2 1 3 subj 8 then done!
  
 expnumber = 2;
-testmodel = 3;
+testmodel = 1;
 truemodel = 3;
 nSubj = 10;
 
@@ -971,7 +971,7 @@ clear all
 
 % things to change
 expnumber = 2;
-modelVec = [2 3];
+modelVec = [1 2 3];
 
 % things not to change
 nSubj = 10;
@@ -1003,17 +1003,26 @@ AICcMat = cellfun(@(x,y) bsxfun(@plus,x,(2.*y.*(y+1))./(nTrials-y-1)),AICMat,nPa
 BICMat = cellfun(@(x,y) bsxfun(@plus,2*x,y.*(log(nTrials) - log(2*pi))),nLLMat,nParamMat,'UniformOutput',false);
 
 % which one wins
+fprintf('AIC: ')
 [M,I] = cellfun(@(x) min(x),AICMat,'UniformOutput',false);
-sum(I{1} == 1)
-sum(I{2} == 2)
+for imodel = 1:length(modelVec)
+    fprintf('%d ',sum(I{imodel} == imodel))
+end
+fprintf('\n')
 
+fprintf('AICc: ')
 [M,I] = cellfun(@(x) min(x),AICcMat,'UniformOutput',false);
-sum(I{1} == 1)
-sum(I{2} == 2)
+for imodel = 1:length(modelVec)
+    fprintf('%d ',sum(I{imodel} == imodel))
+end
+fprintf('\n')
 
+fprintf('BIC: ')
 [M,I] = cellfun(@(x) min(x),BICMat,'UniformOutput',false);
-sum(I{1} == 1)
-sum(I{2} == 2)
+for imodel = 1:length(modelVec)
+    fprintf('%d ',sum(I{imodel} == imodel))
+end
+fprintf('\n')
 
 
 
@@ -1021,7 +1030,7 @@ sum(I{2} == 2)
 
 clear all
 expnumber = 2;
-imodel = 2;
+imodel = 3;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
@@ -1101,8 +1110,8 @@ clear all
 
 % ========= simulating a bunch of data per subject =========
 
-expnumber = 1;
-imodel = 3;
+expnumber = 2;
+imodel = 2;
 fixedrisk = [];%'_fixedrisk';
 loadpreddata = 0;
 indvlplot = 0;

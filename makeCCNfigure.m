@@ -15,7 +15,7 @@ set(gcf,'Position',[28 504 1300 236])
 % EXP 1
 % ========================
 expnumber = 1;
-load('cleandata_nodisc.mat','data')
+load(['exp' num2str(expnumber) '_cleandata.mat'],'data')
 nSubj = 14;
 
 filepath = ['fits/exp' num2str(expnumber) fixedrisk '/'];
@@ -129,7 +129,7 @@ set(hter,'marker','o','markerfacecolor','k','markersize',4','markeredgecolor','k
 % EXP 2
 % =======================
 expnumber = 2;
-load('cleandata.mat','data')
+load(['exp' num2str(expnumber) '_cleandata.mat'],'data')
 nSubj = 11;
 
 
