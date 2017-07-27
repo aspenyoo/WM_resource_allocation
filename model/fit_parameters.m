@@ -75,7 +75,7 @@ if testmodel == 2 % p_high p_med
     plb = [plb 0.3 1e-10];
     pub = [pub 0.7 0.3];
     logflag = [logflag 0 0];
-    nonbcon = @(x) sum(x(:,end-1:end),2) > 1;
+    nonbcon = @(x) sum(x(:,end-1:end),2) >= 1;
 else
     nonbcon = [];
 end
