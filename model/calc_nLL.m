@@ -150,6 +150,7 @@ for ipriority = 1:nPriorities
         % \int p(Shat|S,J) p(J) dJ
         pTrials = sum(bsxfun(@times,p_Shat,Jpdf')); % 1 x nTrials
     end
+%     if ipriority == 3; Jpdf, end
     nLL = nLL - sum(log(pTrials));
     
 end
