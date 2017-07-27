@@ -98,28 +98,114 @@ end
 
 save('cleandata_nodisc.mat','data')
 
-%% look at guess distributions! permutation test!!
+%% check jitter
+
+[t, r] = cart2pol(group_data(:,8),group_data(:,9));
+plot(t,'o')
+
+
+%% look at guess distributions. permutation test
 
 clear all
-expnumber = 1;
+isubj = 4;
+expnumber = 2;
+priorityVec = [0.1 0.3 0.6];
+nPriorities = length(priorityVec);
+nbins = 15;
+xmax = 30;
 
-switch expnumber
-    case 1
-        load('cleandata_nodisc.mat')
-    case 2
-        load('cleandata.mat')
+load(['exp' num2str(expnumber) '_groupdata.mat'])
+
+
+figure;
+for ipriority = 1:nPriorities
+    priority = priorityVec(ipriority);
+    
+    idx = (group_data(:,2) == priority) & (group_data(:,1) == isubj);
+    
+    switch expnumber
+        case 1
+            x_resp = group_data(idx,11);
+            y_resp = group_data(idx,12);
+            x_target = group_data(idx,13);
+            y_target = group_data(idx,14);
+        case 2
+            x_resp = group_data(idx,6);
+            y_resp = group_data(idx,7);
+            [x_target,y_target] = pol2cart(group_data(idx,13)/180*pi,10);
+%             x_target = group_data(idx,8);
+%             y_target = group_data(idx,9);
+    end
+    
+    % ========== actual data =========
+    % calculate error of actual data
+    error_x = x_resp - x_target;
+    error_y = y_resp - y_target;
+    error_distance = sqrt(error_x.^2 + error_y.^2);
+    
+    % plot distributions of errors
+    subplot(2,3,ipriority)
+    histogram(error_distance,linspace(0,xmax,nbins));
+    xlim([0 xmax])
+    
+    % =========== permuted data ========
+    % permute data
+    idxx = randperm(sum(idx));
+    x_respperm = x_resp(idxx);
+    y_respperm = y_resp(idxx);
+    
+    % calculate error
+    error_x = x_respperm - x_target;
+    error_y = y_respperm - y_target;
+    error_distance = sqrt(error_x.^2 + error_y.^2);
+    
+    % plot distribution of errors
+    subplot(2,3,3+ipriority)
+    histogram(error_distance,linspace(0,xmax,nbins));
+    xlim([0 xmax])
+    
 end
 
+%% bootstrap guess distribution for each priority
+
+nBoots = 10;
+
+counts = cell(1,3);
+for ipriority = 1:nPriorities
+    priority = priorityVec(ipriority)
+    counts{ipriority} = nan(nBoots,nbins-1);
+    
+    for iboot = 1:nBoots
+        
+        % permute data
+        idxx = randperm(sum(idx));
+        x_respperm = x_resp(idxx);
+        y_respperm = y_resp(idxx);
+        
+        % calculate error
+        error_x = x_respperm - x_target;
+        error_y = y_respperm - y_target;
+        error_distance = sqrt(error_x.^2 + error_y.^2);
+        
+        % get histogram counts
+        counts{ipriority}(iboot,:)  = histcounts(error_distance,linspace(0,xmax,nbins));
+        
+    end
+    
+    % plot M sem of counts
+    M = mean(counts{ipriority});
+    SEM = std(counts{ipriority})/sqrt(nBoots);
+    centers = linspace(0,xmax,nbins);
+    centers = centers(1:end-1) + diff(centers(1:2))/2;
+    subplot(1,3,ipriority)
+    plot_summaryfit(centers,[],[],M,SEM,aspencolors('booger'));
+
+end
 %% nTrials for each subject
 clear all
 expnumber = 1;
 
-switch expnumber
-    case 1
-        filename = 'cleandata_nodisc.mat';
-    case 2
-        filename = 'cleandata.mat';
-end
+filename = ['exp' num2str(expnumber) '_cleandata.mat'];
 load(filename)
 
 nSubj = length(data);
@@ -136,20 +222,32 @@ save(filename,'data','nTrials')
 
 %% make excel files into one big mat file
 clear all
+expnumber = 2;
 
 % get all file names in this folder
-nFiles = length(filenames);
+filepath = ['exp' num2str(expnumber) '_rawdata/'];
+blah = dir([filepath '*.csv']);
+nFiles = length(blah);
 
 concatMat = [];
 for ifile = 1:nFiles
-    filename = filenames(ifile);
+    filename = blah(ifile).name
     
-    load(filename)
+    T = readtable([filepath filename],'ReadVariableNames',true);
+    mat = table2array(T(:,1:end-1));
+    
+%     mat = dlmread(filename,',',1,0);
+%     size(concatMat)
+%     size(mat)
     concatMat = [concatMat; mat];
 end
 
 data = concatMat;
-save('exp1_rawdata.mat','data');
+names = T.Properties.VariableNames(1:end-1);
+% names = {'subject'	'run'	'trial'	'response'	'delay'	'RT'	'distance'	'target_value'	'target_loc_quadrant'	'target_loc_angle'	'distractor1_value'	'distractor1_loc_quadrant'	'distractor1_loc_angle'	'distractor2_value'	'distractor2_loc_quadrant'	'distractor2_loc_angle'	'target_value'	'distractor3_loc_quadrant'	'distractor3_loc_angle'	'order_0'	'order_0.1'	'order_0.3'	'order_0.6' 'timestamp'};
+save(['exp' num2str(expnumber) '_rawdata.mat'],'data','names');
+
+% names = {'subject'	'run'	'trial'	'accuracy'	'delay'	'disc_size'	'reward_at_stake'	'target_value'	'error'	'memorandum_x'	'memorandum_y'	'actual_location_x'	'actual_location_y'	'target_loc_quadrant'	'target_loc_angle'	'distractor1_value'	'distractor1_loc_quadrant'	'distractor1_loc_angle'	'distractor2_value'	'distractor2_loc_quadrant'	'distractor2_loc_angle'	'distractor3_value'	'distractor3_loc_quadrant'	'distractor3_loc_angle'};
 
 %% check bias as a function of distractor priority
 
@@ -412,7 +510,7 @@ expnumber = 2;
 imodel = 1;
 nSubj = 11;
 
-load('cleandata.mat')
+load(['exp' num2str(expnumber) '_cleandata.mat'])
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 for isubj = 1:nSubj
@@ -440,7 +538,7 @@ clear all
 expnumber = 2;
 modelVec = [1 2 3];
 
-load('cleandata_nodisc.mat')
+load(['exp' num2str(expnumber) '_cleandata.mat'])
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 for imodel = modelVec
@@ -468,7 +566,7 @@ imodel = 3;
 subjVec = [1:14];
 
 nSubj = 14;
-load('cleandata_nodisc.mat')
+load(['exp' num2str(expnumber) '_cleandata.mat'])
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(imodel) '.mat'])
@@ -635,12 +733,7 @@ modcompidx = 2;
 fixedrisk = 0;
 MCM = 'BIC';
 
-switch expnumber
-    case 1
-        filename = 'cleandata_nodisc.mat';
-    case 2
-        filename = 'cleandata.mat';
-end
+filename = ['exp' num2str(expnumber) '_cleandata.mat'];
 load(filename,'nTrials')
 nTrials = sum(nTrials,2);
 
@@ -769,7 +862,7 @@ clear all; clc
 % 1, 2, 3
 %
  
-expnumber = 2;
+expnumber = 1;
 testmodel = 2;
 truemodel = 3;
 nSubj = 10;
@@ -1006,11 +1099,10 @@ indvlplot = 0;
 
 nPriorities = 3;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
+load(['exp' num2str(expnumber) '_cleandata.mat'],'data')
 if (expnumber == 1)
-    load('cleandata_nodisc.mat','data')
     nSubj = 14;
 else
-    load('cleandata.mat','data')
     nSubj = 11;
 end
 filename = ['fits/exp' num2str(expnumber) fixedrisk '/'];
@@ -1230,11 +1322,7 @@ clear all
 expnumber = 2;
 model = 2;
 
-if (expnumber == 2)
-    load('cleandata.mat')
-else
-    load('cleandata_nodisc.mat')
-end
+load(['exp' num2str(expnumber) '_cleandata.mat'])
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(model) '.mat'])
 
