@@ -437,7 +437,7 @@ clear all
 
 expnumber = 2;
 imodel = 3;
-testmodel = 3;
+testmodel = 1;
 fakedata = 1;
 isriskfixed = 0;
 
