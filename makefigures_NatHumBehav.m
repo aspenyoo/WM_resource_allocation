@@ -1,4 +1,10 @@
 
+
+
+%% =================== EXP 1 ==========================
+%           MAIN BEHAVIORAL RESULTS
+% =====================================================
+
 clear all
 expnumber = 1;
 load(['exp' num2str(expnumber) '_cleandata.mat'],'data')
@@ -11,16 +17,6 @@ colorMat = [0.5 0.5 0.5; 0.5 0.5 1; 1 0.5 0.5];
 markerMat = {'.','x','s'};
 
 modelnameVec = {'optimal','free','fixed'}';
-
-
-%% get data, generate model predictions
-
-
-
-
-%% =================== EXP 1 ==========================
-%           MAIN BEHAVIORAL RESULTS
-% =====================================================
 
 figure; hold on
 
@@ -87,7 +83,7 @@ clear all
 expnumber = 2;
 imodel = 2;
 fixedrisk = [];%'_fixedrisk';
-loadpreddata = 1;
+loadpreddata = 0;
 indvlplot = 0;
 
 nPriorities = 3;
@@ -164,9 +160,12 @@ figure;
 colorMat = {'r','b','k'};
 if (expnumber == 2)
     ha = tight_subplot(3,3,{[.03 .03],[.03 .07]},[.1 .01],[.1 .01]);
+    set(gcf,'Position',[28 504 800 500])
 else
     ha = tight_subplot(1,3,.03,[.26 .05],[.11 .05]);
+    set(gcf,'Position',[28 504 800 236])
 end
+
 
 meanerror = cellfun(@mean,error,'UniformOutput',false);
 semerror = cellfun(@(x) std(x)./sqrt(size(x,1)),error,'UniformOutput',false);
