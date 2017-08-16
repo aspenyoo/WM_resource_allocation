@@ -293,23 +293,29 @@ idx = (group_data(:,1) == isubj) & (group_data(:,2) == target);
 
 %% understanding Jbar, tau, and sigma
 
-Jbar = 1;
-tau = .1;
-beta = 0.01;
+isubj = 1;
+ipriority = 3;
+Jbar = JbarMat(isubj,ipriority);
+tau = ML_parameters(isubj,2);
+beta = ML_parameters(isubj,end);
 
-[JVec] = loadvar({'JVec',Jbar,tau});
+% Jbar = 1;
+% tau = .1;
+% beta = 0.01;
+
+[JVec] = loadvar('JVec',{Jbar,tau});
 % JVec = linspace(1,2,100);
 Jpdf = gampdf(JVec,Jbar/tau,tau);
 Jpdf = Jpdf./qtrapz(Jpdf); % normalize
 
 
 % figure;
-subplot(3,1,1)
-plot(JVec,Jpdf,'k-'); defaultplot;hold on
-subplot(3,1,2)
-plot(JVec./Jbar,Jpdf,'k-'); defaultplot;hold on
-subplot(3,1,3)
-plot(1./sqrt(JVec),Jpdf,'k-'); defaultplot; hold on
+subplot(3,1,1) % JVec
+plot(JVec,Jpdf,'k-'); defaultplot
+subplot(3,1,2) % relative to mean, Jbar
+plot(JVec./Jbar,Jpdf,'k-'); defaultplot
+subplot(3,1,3) % sigma
+plot(1./sqrt(JVec),Jpdf,'k-'); defaultplot
 
 %% look at typical max for J/Jbar gamma distribution
 
@@ -371,19 +377,20 @@ end
 clear
 
 tau = 1;
+alpha = 1;
 beta = 1;
-N = 40;
-JbartotalVec = linspace(1e-3,20,N);
+N = 20;
+JbartotalVec = linspace(1e-3,10,N);
 
 pVec = nan(N,3);
 for iJbartotal = 1:N
     iJbartotal
     
     Jbartotal = JbartotalVec(iJbartotal);
-    pVec(iJbartotal,:) = calc_optimal_pVec([Jbartotal tau beta]);
+    pVec(iJbartotal,:) = calc_optimal_pVec([Jbartotal tau alpha beta]);
 end
 
-plot(bsxfun(@times,pVec,JbartotalVec'))
+plot(bsxfun(@times,pVec,JbartotalVec'),'k-')
 
 %%
 clear all
@@ -436,9 +443,9 @@ EU = calc_EU(rVec,JVec,alpha);
 clear all
 
 expnumber = 2;
-imodel = 3;
+imodel = 1;
 testmodel = 1;
-fakedata = 1;
+fakedata = 0;
 isriskfixed = 0;
 
 subjVec = 1:10;
@@ -572,22 +579,28 @@ end
 %% check nLL
 
 % clear all
-expnumber = 1;
-imodel = 3;
-subjVec = [1:14];
+expnumber = 2;
+imodel = 1;
+subjVec = 3;
 
-nSubj = 14;
+nSubj = length(subjVec);
 load(['exp' num2str(expnumber) '_cleandata.mat'])
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(imodel) '.mat'])
 ML_parameters(:,1:2) = log(ML_parameters(:,1:2));
 
-nLL4 = nan(1,nSubj);
+switch expnumber
+    case 1
+        nLL4 = nan(1,14);
+    case 2
+        nLL4 = nan(1,11);
+end
 for isubj = 1:nSubj
-    isubj
+    subjnum = subjVec(isubj);
+    subjnum
     
-    nLL4(isubj) = calc_nLL(imodel,ML_parameters(isubj,:),data{subjVec(isubj)});
+    nLL4(subjnum) = calc_nLL(imodel,ML_parameters(subjnum,:),data{subjnum});
 end
 
 [nLLVec; nLL4]
@@ -602,10 +615,12 @@ load(['fits/exp' num2str(expnumber) '/fits_model' num2str(imodel) '.mat'])
 nSubj = 11;
 
 pMat = nan(nSubj,3);
-for isubj = 1:nSubj
+for isubj = [1 6 10 11]
     isubj
     pMat(isubj,:) = calc_optimal_pVec(ML_parameters(isubj,:));
 end
+
+save(['fits/exp' num2str(expnumber) '/fits_model' num2str(imodel) '.mat'],'ML_parameters','nLLVec')
 
 figure;
 % plot(pMat)
@@ -738,7 +753,7 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 1;
+expnumber = 2;
 nModels = expnumber+1;
 modcompidx = 2;
 fixedrisk = 0;
@@ -831,8 +846,8 @@ ylabel(['\Delta AIC (favoring ' modcomplabel ' model)'])
 
 clear all
 expnumber = 2;
-imodel = 3;
-nSubj = 10;
+imodel = 1;
+nSubj = 11;
 
 % switch model
 %     case 1
@@ -1111,9 +1126,9 @@ clear all
 % ========= simulating a bunch of data per subject =========
 
 expnumber = 2;
-imodel = 2;
+imodel = 1;
 fixedrisk = [];%'_fixedrisk';
-loadpreddata = 0;
+loadpreddata = 1;
 indvlplot = 0;
 
 nPriorities = 3;
@@ -1139,14 +1154,21 @@ else
         preddata{isubj} = simulate_data(imodel,expnumber,Theta,nTrials);
     end
     
-    save([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata')
+    save([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata','pMat')
 end
 
 % histograms per subjects
 xlims = linspace(0,10,16);
 
+figure;
 for isubj = 1:nSubj
     if (indvlplot); figure; end;
+    
+    subplot(3,4,isubj);
+    histogram(preddata{isubj}{3}(:,1));
+    title(['subject ' num2str(isubj)])
+    defaultplot
+    
     for ipriority = 1:nPriorities
         
         % histogram of euclidean error

@@ -36,6 +36,8 @@ switch model
     case 3
         pVec = [0.6 0.3 0.1];
 end
+pVec
+pVec.*Jbar_total
 
 % make data
 data = cell(1,nPriorities);
