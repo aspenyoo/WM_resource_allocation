@@ -901,7 +901,7 @@ end
 % =====================================================
 
 clear all
-expnumber = 1;
+expnumber = 2;
 fixedrisk = [];%'_fixedrisk';
 % colorMat = [aspencolors('dustyrose'); aspencolors('booger'); aspencolors('seacolored')];
 colorMat = [0 0 1; 1 0 0; 0 0 0];
@@ -1150,9 +1150,9 @@ if (expnumber == 2)
             [],[],colorMat(ipriority,:))
         
         ylabel('disc size');
-        axis([0 6 2 4])
-        set(ha(3*imodel),'XTick',[0 3 6],'YTick',[2 3 4]);
-        set(ha(3*imodel),'YTickLabel',[2 3 4])
+        axis([0 6 2 6])
+        set(ha(3*imodel),'XTick',[0 3 6],'YTick',[2 4 6]);
+        set(ha(3*imodel),'YTickLabel',[2 4 6])
         if (expnumber == 1)
             set(ha(imodel),'XTickLabel',[0 3 6])
             xlabel('error');

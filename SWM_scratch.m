@@ -581,7 +581,7 @@ end
 % clear all
 expnumber = 2;
 imodel = 1;
-subjVec = 3;
+subjVec = [6:11];
 
 nSubj = length(subjVec);
 load(['exp' num2str(expnumber) '_cleandata.mat'])
@@ -830,7 +830,7 @@ bar(comparison','k')
 
 defaultplot
 
-ylabel(['\Delta AIC (favoring ' modcomplabel ' model)'])
+ylabel(['\Delta ' MCM ' (favoring ' modcomplabel ' model)'])
 
 
 
@@ -941,6 +941,31 @@ for isubj = 1:10
     pause;
 end
 
+
+%% check fits of indvl subjects
+
+clear all
+
+expnumber = 2;
+imodel = 1;
+isubj = 6;
+
+load(sprintf('data/exp%d_cleandata.mat',expnumber))
+
+
+load(sprintf('fits/exp%d/fits_model%d_subj%d.mat',expnumber,imodel,isubj))
+
+nLLcol = size(ML_parameters,2)+1;
+blah = sortrows([ML_parameters nLLVec'],nLLcol);
+blah(:,1:2) = log(blah(:,1:2));
+blah = [blah nan(size(blah,1),1)];
+
+for iblah = 1:10; 
+    blah(iblah,end) = calc_nLL(1,blah(iblah,1:4),data{isubj}); 
+    blah(iblah,5:end)
+end
+
+blah
 
 %% double chek NLL is good for parameter/model recovery
 
@@ -1139,22 +1164,23 @@ if (expnumber == 1)
 else
     nSubj = 11;
 end
-filename = ['fits/exp' num2str(expnumber) fixedrisk '/'];
+filepath = ['fits/exp' num2str(expnumber) fixedrisk '/'];
 
 % get ML parameter estimate for isubj
-load([filename 'fits_model' num2str(imodel) '.mat'])
+load([filepath 'fits_model' num2str(imodel) '.mat'])
 
 if (loadpreddata)
-    load([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata')
+    load([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'])
 else
     preddata = cell(1,nSubj);
     for isubj = 1:nSubj
         isubj
         Theta = ML_parameters(isubj,:);
+        pMat(isubj,:) = calc_optimal_pVec(Theta);
         preddata{isubj} = simulate_data(imodel,expnumber,Theta,nTrials);
     end
     
-    save([filename 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata','pMat')
+    save([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata','pMat')
 end
 
 % histograms per subjects
@@ -1168,6 +1194,7 @@ for isubj = 1:nSubj
     histogram(preddata{isubj}{3}(:,1));
     title(['subject ' num2str(isubj)])
     defaultplot
+    xlim([0 15])
     
     for ipriority = 1:nPriorities
         

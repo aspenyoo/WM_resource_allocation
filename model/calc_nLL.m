@@ -62,7 +62,7 @@ priorityVec = [0.6 0.3 0.1];
 nPriorities = length(priorityVec);
 
 switch model
-    case 1 % optimal
+    case 1 % optimal: maximizing points (exp 2 only)
         % calculate the proportions that maximize expected utility
         pVec = calc_optimal_pVec(Theta);
     case 2 % not optimal 
@@ -74,6 +74,8 @@ switch model
 %         end
     case 3 % fixed
         pVec = [0.6 0.3 0.1];
+    case 4 % optimal: minimizing squared error
+        pVec = [0.4727 0.3343 0.1930];
 end
 
 % loading vector of disc radii

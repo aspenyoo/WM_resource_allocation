@@ -1,4 +1,8 @@
-function pVec = calc_optimal_pVec(Theta)
+function pVec = calc_pVec_optimalerror(Theta)
+% PVEC = calc_pVec_optimalerror(THETA)
+% 
+% calculates the proportion allocated to each priority condition that
+% minimizes the squared error of target and response. 
 
 Jbar_total = Theta(1);
 tau = Theta(2);
@@ -9,10 +13,9 @@ beta = Theta(4);
 priorityVec = [0.6 0.3 0.1];
 nPriorities = length(priorityVec);
 
-% calculate the optimal proportions given the parameters
-calc_ntotalEU = @(x) -(0.6*calc_E_EU([Jbar_total*x(1),tau,alpha,beta]) ...
-    + 0.3*calc_E_EU([Jbar_total*x(2),tau,alpha,beta])...
-    + 0.1*calc_E_EU([Jbar_total*x(3),tau,alpha,beta]));
+% equation for expected squared error
+calc_E_squarederror = @(x) 0.6/x(1) + 0.3/x(2) + 0.1/x(3);
+
 
 Aeq = [1 1 1];
 beq = 1;
@@ -24,7 +27,7 @@ nStartVals = 10; % tried with different parameters and lowest value showed up 3,
 pVec = nan(nStartVals,3);
 nEU = nan(1,nStartVals);
 for istartval = 1:nStartVals
-    [pVec(istartval,:), nEU(istartval)] = fmincon(calc_ntotalEU,rand(1,3),A,b,Aeq,beq,lb,ub,nonlcon,options);
+    [pVec(istartval,:), nEU(istartval)] = fmincon(calc_E_squarederror,rand(1,3),A,b,Aeq,beq,lb,ub,nonlcon,options);
 end
 pVec = pVec(nEU == min(nEU),:);
 pVec = pVec(1,:); % in case multiple entries have the nEU == min(nEU)
