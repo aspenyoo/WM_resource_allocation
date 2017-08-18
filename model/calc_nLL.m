@@ -30,12 +30,11 @@ expnumber = size(data{1},2);
 
 % exponentiating appropriate parameters
 switch model
-    case {1,3}  % optimal or model
-        logflag = logical([1 1]);
-    case 2 % not optimal model
+    case {1,3,4}  % optimal or fixed model
         logflag = logical([1 1 0 0]);
+    case 2 % not optimal model
+        logflag = logical([1 1 0 0 0 0]);
 end
-if (expnumber == 2); logflag = logical([logflag 0 0]); end
 
 % if there are fixed parameters
 if ~isempty(fixparams)
