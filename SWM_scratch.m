@@ -438,17 +438,62 @@ EU = calc_EU(rVec,JVec,alpha);
 % - calculate pVecs for different models
 % - ternary plots
 
-%%   GET ML PARAMETER ESTIMATES
+
+%% see what runlist idxs you need to do still
+clear all; clc
+
+% 2 1 3 subj 8 then done!
+ 
+expnumber = 1;
+imodel = 4;
+nSubj = 11;
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+
+for isubj = 1:nSubj
+    load([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
+
+    blah = 1:50;
+    blah(runlist_completed) = [];
+    fprintf([num2str(isubj) ' ' num2str(blah) '\r'])
+end
+
+%% check fits of indvl subjects
 
 clear all
 
 expnumber = 2;
 imodel = 1;
+isubj = 3;
+
+load(sprintf('data/exp%d_cleandata.mat',expnumber))
+
+
+load(sprintf('fits/exp%d/fits_model%d_subj%d.mat',expnumber,imodel,isubj))
+
+nLLcol = size(ML_parameters,2)+1;
+blah = sortrows([ML_parameters nLLVec'],nLLcol);
+blah(:,1:2) = log(blah(:,1:2));
+blah = [blah nan(size(blah,1),1)];
+
+for iblah = 1:10; 
+    blah(iblah,end) = calc_nLL(1,blah(iblah,1:4),data{isubj}); 
+    blah(iblah,5:end)
+end
+
+blah
+
+%%   GET ML PARAMETER ESTIMATES
+
+clear all
+
+expnumber = 1;
+imodel = 4;
 testmodel = 1;
 fakedata = 0;
 isriskfixed = 0;
 
-subjVec = 1:10;
+subjVec = 1:14;
 nSubj = length(subjVec);
 
 if (isriskfixed)
@@ -581,7 +626,7 @@ end
 % clear all
 expnumber = 2;
 imodel = 1;
-subjVec = [6:11];
+subjVec = 1:11;
 
 nSubj = length(subjVec);
 load(['exp' num2str(expnumber) '_cleandata.mat'])
@@ -754,7 +799,7 @@ hlabels=terlabel('high','medium','low');
 
 clear all
 expnumber = 2;
-nModels = expnumber+1;
+nModels = expnumber+2;
 modcompidx = 2;
 fixedrisk = 0;
 MCM = 'BIC';
@@ -769,7 +814,7 @@ else
     filepath = ['fits/exp' num2str(expnumber) '/'];
 end
 
-for imodel = (4-nModels):3
+for imodel = (5-nModels):4
     load([filepath 'fits_model' num2str(imodel) '.mat'])
     nLL.(['model' num2str(imodel)]) = nLLVec;
     nParamVec(imodel) = size(ML_parameters,2);
@@ -782,22 +827,23 @@ nLLMat = reshape(struct2mat(nLL),[length(nTrials),nModels])';
 
 
 % labels and index stuff
-modlabels = {'optimal','free','fixed'};
+modlabels = {'max points','free','fixed','min error'};
 modcomplabel = modlabels{modcompidx};
-modidx = (4-nModels):3;
+modidx = (5-nModels):4;
 modidx(modidx == modcompidx) = [];
 modlabels = modlabels(modidx);
 
 nSubj = length(nLLVec);
+subtractything = 2-expnumber;
 switch MCM
     case 'AIC'
-        comparison = bsxfun(@minus,AIC,AIC(:,modcompidx));
+        comparison = bsxfun(@minus,AIC,AIC(:,modcompidx-subtractything));
     case 'BIC'
-        comparison = bsxfun(@minus,BIC,BIC(:,modcompidx));
+        comparison = bsxfun(@minus,BIC,BIC(:,modcompidx-subtractything));
     case 'AICc'
-        comparison = bsxfun(@minus,AICc,AICc(:,modcompidx));
+        comparison = bsxfun(@minus,AICc,AICc(:,modcompidx-subtractything));
 end
-comparison(:,modcompidx) = [];
+comparison(:,modcompidx-subtractything) = [];
 mediancomp = median(comparison);
 
 % bootstrap the confidence intervals
@@ -811,19 +857,19 @@ for imodel = 1:(nModels-1)
 end
 
 figure;
-if nModels == 3
-    for imodel = 1:(nModels-1)
-        %         imodel = modidx(imodel);
-        fill([imodel-0.475 imodel+0.475 imodel+0.475 imodel-0.475],medCI([1 1 2 2]),...
-            0.7*ones(1,3),'EdgeColor','none'); hold on;
-        plot([imodel-0.475 imodel+0.475],mediancomp(imodel)*ones(1,2),'Color',[0.1 0.1 0.1])
-        set(gca,'XTick',[],'XTick',[1 2],'XTickLabel',modlabels)
-    end
-else
+if nModels == 2
     fill([0 nSubj+1 nSubj+1 0],medCI([1 1 2 2]),...
         0.8*ones(1,3),'EdgeColor','none'); hold on;
     plot([0 nSubj+1],[mediancomp mediancomp],'Color',[0.1 0.1 0.1])
     set(gca,'XTick',[],'XTickLabel',modlabels)
+else
+    for imodel = 1:(nModels-1)
+        %         imodel = modidx(imodel);
+        fill([imodel-0.475 imodel+0.475 imodel+0.475 imodel-0.475],medCI([imodel imodel imodel+nModels-1 imodel+nModels-1]),...
+            0.7*ones(1,3),'EdgeColor','none'); hold on;
+        plot([imodel-0.475 imodel+0.475],mediancomp(imodel)*ones(1,2),'Color',[0.1 0.1 0.1])
+        set(gca,'XTick',[],'XTick',1:3,'XTickLabel',modlabels)
+    end
 end
 
 bar(comparison','k')
@@ -941,31 +987,6 @@ for isubj = 1:10
     pause;
 end
 
-
-%% check fits of indvl subjects
-
-clear all
-
-expnumber = 2;
-imodel = 1;
-isubj = 6;
-
-load(sprintf('data/exp%d_cleandata.mat',expnumber))
-
-
-load(sprintf('fits/exp%d/fits_model%d_subj%d.mat',expnumber,imodel,isubj))
-
-nLLcol = size(ML_parameters,2)+1;
-blah = sortrows([ML_parameters nLLVec'],nLLcol);
-blah(:,1:2) = log(blah(:,1:2));
-blah = [blah nan(size(blah,1),1)];
-
-for iblah = 1:10; 
-    blah(iblah,end) = calc_nLL(1,blah(iblah,1:4),data{isubj}); 
-    blah(iblah,5:end)
-end
-
-blah
 
 %% double chek NLL is good for parameter/model recovery
 
@@ -1150,11 +1171,11 @@ clear all
 
 % ========= simulating a bunch of data per subject =========
 
-expnumber = 2;
-imodel = 1;
+expnumber = 1;
+imodel = 4;
 fixedrisk = [];%'_fixedrisk';
-loadpreddata = 1;
-indvlplot = 0;
+loadpreddata = 0;
+indvlplot = 1;
 
 nPriorities = 3;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
@@ -1176,7 +1197,6 @@ else
     for isubj = 1:nSubj
         isubj
         Theta = ML_parameters(isubj,:);
-        pMat(isubj,:) = calc_optimal_pVec(Theta);
         preddata{isubj} = simulate_data(imodel,expnumber,Theta,nTrials);
     end
     
@@ -1190,11 +1210,11 @@ figure;
 for isubj = 1:nSubj
     if (indvlplot); figure; end;
     
-    subplot(3,4,isubj);
-    histogram(preddata{isubj}{3}(:,1));
-    title(['subject ' num2str(isubj)])
-    defaultplot
-    xlim([0 15])
+%     subplot(3,4,isubj);
+%     histogram(preddata{isubj}{3}(:,1));
+%     title(['subject ' num2str(isubj)])
+%     defaultplot
+%     xlim([0 15])
     
     for ipriority = 1:nPriorities
         

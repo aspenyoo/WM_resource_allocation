@@ -35,9 +35,9 @@ switch model
         pVec = [Theta(end-1:end) 1-sum(Theta(end-1:end))];
     case 3
         pVec = [0.6 0.3 0.1];
+    case 4 % optimal: minimizing squared error
+        pVec = [0.4727 0.3343 0.1930];
 end
-pVec
-pVec.*Jbar_total
 
 % make data
 data = cell(1,nPriorities);
