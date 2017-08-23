@@ -906,7 +906,8 @@ fixedrisk = [];  %'_fixedrisk';
 % colorMat = [aspencolors('dustyrose'); aspencolors('booger'); aspencolors('seacolored')];
 colorMat = [0 0 1; 1 0 0; 0 0 0; 0 1 0];
 nModelsPossible = 4; % how many total models there are
-modelorderVec = [3 1 4 2]; % the order the models should be plotted
+modelorderVec = [3 4]; % the order the models should be plotted
+nModels = length(modelorderVec); % how many models you want to plot now
 modelnameVec = {'max points','free','proportional','min error'};
 
 if (expnumber == 1)
@@ -922,18 +923,19 @@ filepath = ['fits/exp' num2str(expnumber) fixedrisk '/'];
 figure;
 if (expnumber == 2)
     % top down, left right, bottom and top margins, left and right margins
-    ha = tight_subplot(3,4,{[.1 .1],[.03 .03 .03]},[.08 .03],[.05 .03]);
+    ha = tight_subplot(3,nModels,{[.1 .1],[.03 .03 .03]},[.08 .03],[.05 .03]);
     set(gcf,'Position',[28 504 800 500])
 else
-    ha = tight_subplot(1,3,[.03 .03],[.2 .07],[.06 .01]);
+    ha = tight_subplot(1,nModels,[.03 .03],[.2 .07],[.06 .01]);
     set(gcf,'Position',[28 504 800 236])
 end
 
 % load and plot predicted data for each model
-for imodel = (nModelsPossible-1-expnumber):nModelsPossible
+for imodel = 1:nModels
+    model = modelorderVec(imodel);
     
     % load data
-    load([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata')
+    load([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(model) fixedrisk '.mat'],'preddata')
     
     % get model predictions
     for isubj = 1:nSubj
@@ -960,19 +962,15 @@ for imodel = (nModelsPossible-1-expnumber):nModelsPossible
     % plot error (and disc size) model predictions
     for ipriority = 1:nPriorities
         
-        if(expnumber == 2)
             axes(ha(imodel))
-        else
-            axes(ha(imodel-1))
-        end
         fill([xlims fliplr(xlims)],[meansimerror{ipriority}-semsimerror{ipriority}...
             fliplr(meansimerror{ipriority}+semsimerror{ipriority})],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
         hold on;
-        title(modelnameVec{imodel})
+        title(modelnameVec{model})
         
         if (expnumber == 2)
             % discsize
-            axes(ha(nModelsPossible+imodel))
+            axes(ha(nModels+imodel))
             fill([xlims fliplr(xlims)],[meansimdiscsize{ipriority}-semsimdiscsize{ipriority}...
                 fliplr(meansimdiscsize{ipriority}+semsimdiscsize{ipriority})],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
             hold on;
@@ -1003,7 +1001,7 @@ for imodel = (nModelsPossible-1-expnumber):nModelsPossible
         meanmeanquantsimdiscsize = cellfun(@mean,meanquantsimdiscsize,'UniformOutput',false);
         semmeanquantsimdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantsimdiscsize,'UniformOutput',false);
         
-        axes(ha(2*nModelsPossible+imodel)); hold on
+        axes(ha(2*nModels+imodel)); hold on
         for ipriority = 1:nPriorities
             plot_summaryfit(meanmeanquantsimerror{ipriority},[],[],meanmeanquantsimdiscsize{ipriority},...
                 semmeanquantsimdiscsize{ipriority},[],colorMat(ipriority,:))
@@ -1016,7 +1014,7 @@ end
 
 % load data
 load(['exp' num2str(expnumber) '_cleandata.mat'],'data')
-load([filepath 'fits_model' num2str(imodel) '.mat'])
+% load([filepath 'fits_model' num2str(model) '.mat'])
 
 
 % histograms per subjects
@@ -1038,7 +1036,7 @@ end
 
 % =========== group plot =====================
 
-for imodel = (nModelsPossible-1-expnumber):nModelsPossible
+for imodel = 1:nModels
 
 meanerror = cellfun(@mean,error,'UniformOutput',false);
 semerror = cellfun(@(x) std(x)./sqrt(size(x,1)),error,'UniformOutput',false);
@@ -1053,11 +1051,7 @@ for ipriority = 1:nPriorities
     
     % =========== ERROR ============
     
-    if(expnumber == 2)
         axes(ha(imodel))
-    else
-        axes(ha(imodel-1))
-    end
     hold on;
     errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineStyle','none','LineWidth',1);
     defaultplot
@@ -1073,28 +1067,28 @@ for ipriority = 1:nPriorities
         end
     else
         xlabel('error','FontSize',16)
-        set(ha(imodel-1),'YTick',[0 0.2 0.4],'FontSize',12);
+        set(ha(imodel),'YTick',[0 0.2 0.4],'FontSize',12);
         
         if imodel == 2
             ylabel('proportion','FontSize',16)
         else
-            set(ha(imodel-1),'YTickLabel','');
+            set(ha(imodel),'YTickLabel','');
         end
     end
     
     % ========= DISC SIZE ===========
     if (expnumber == 2)
-        axes(ha(nModelsPossible+imodel))
+        axes(ha(nModels+imodel))
         hold on;
         errorbar(xlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color',colorMat(ipriority,:),'LineStyle','none','LineWidth',1);
         defaultplot
         axis([0 10 0 0.4])
-        set(ha(nModelsPossible+imodel),'XTick',[0 5 10],'YTick',[0 0.2 0.4],...
+        set(ha(nModels+imodel),'XTick',[0 5 10],'YTick',[0 0.2 0.4],...
             'FontSize',10,'YTickLabel','');
         xlabel('disc size','FontSize',10);
         if (imodel == 1); 
             ylabel('proportion','FontSize',14); 
-            set(ha(nModelsPossible+imodel),'YTickLabel',[0 0.2 0.4]);
+            set(ha(nModels+imodel),'YTickLabel',[0 0.2 0.4]);
         end
     end
 end
@@ -1122,7 +1116,7 @@ if (expnumber == 2)
     meanmeanquantdiscsize = cellfun(@mean,meanquantdiscsize,'UniformOutput',false);
     semmeanquantdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantdiscsize,'UniformOutput',false);
     
-    axes(ha(2*nModelsPossible+imodel))
+    axes(ha(2*nModels+imodel))
     for ipriority = 1:nPriorities
         hold on
         plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},semmeanquantdiscsize{ipriority},...
@@ -1133,7 +1127,7 @@ if (expnumber == 2)
         ylabel('disc size','FontSize',14); 
     end
     axis([0 6 2 6])
-    set(ha(2*nModelsPossible+imodel),'XTick',[0 3 6],'YTick',[2 4 6],...
+    set(ha(2*nModels+imodel),'XTick',[0 3 6],'YTick',[2 4 6],...
         'XTickLabel',[0 3 6],'YTickLabel',[2 4 6]);
    
     if (expnumber == 1)
