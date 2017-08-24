@@ -800,7 +800,7 @@ hlabels=terlabel('high','medium','low');
 clear all
 expnumber = 2;
 nModels = expnumber+2;
-modcompidx = 2;
+modcompidx = 4;
 fixedrisk = 0;
 MCM = 'BIC';
 
