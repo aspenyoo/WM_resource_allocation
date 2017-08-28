@@ -1,4 +1,4 @@
-function pVec = calc_pVec_optimalerror(Theta)
+function [pVec fval] = calc_pVec_optimalerror(Theta)
 % PVEC = calc_pVec_optimalerror(THETA)
 % 
 % calculates the proportion allocated to each priority condition that
@@ -6,15 +6,9 @@ function pVec = calc_pVec_optimalerror(Theta)
 
 Jbar_total = Theta(1);
 tau = Theta(2);
-alpha = Theta(3);
-beta = Theta(4);
-
-% data stuff
-priorityVec = [0.6 0.3 0.1];
-nPriorities = length(priorityVec);
 
 % equation for expected squared error
-calc_E_squarederror = @(x) 0.6/x(1) + 0.3/x(2) + 0.1/x(3);
+calc_E_squarederror = @(x) 0.6/(x(1)*Jbar_total - tau) + 0.3/(x(2)*Jbar_total - tau) + 0.1/(x(3)*Jbar_total - tau);
 
 
 Aeq = [1 1 1];
@@ -29,5 +23,6 @@ nEU = nan(1,nStartVals);
 for istartval = 1:nStartVals
     [pVec(istartval,:), nEU(istartval)] = fmincon(calc_E_squarederror,rand(1,3),A,b,Aeq,beq,lb,ub,nonlcon,options);
 end
-pVec = pVec(nEU == min(nEU),:);
+fval = min(nEU);
+pVec = pVec(nEU == fval,:);
 pVec = pVec(1,:); % in case multiple entries have the nEU == min(nEU)
