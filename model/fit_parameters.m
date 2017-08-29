@@ -63,15 +63,18 @@ if expnumber == 2 % alpha beta
     pub = [pub 1.3 1.5];
     logflag = [logflag 0 0];
 end
-if testmodel == 2 % p_high p_med
-    lb = [lb 1e-10 1e-10];
-    ub = [ub 1 1];
-    plb = [plb 0.3 1e-10];
-    pub = [pub 0.7 0.3];
-    logflag = [logflag 0 0];
-    nonbcon = @(x) sum(x(:,end-1:end),2) >= 1;
-else
-    nonbcon = [];
+switch testmodel
+    case 2 % define p_high p_med for flexible model
+        lb = [lb 1e-10 1e-10];
+        ub = [ub 1 1];
+        plb = [plb 0.3 1e-10];
+        pub = [pub 0.7 0.3];
+        logflag = [logflag 0 0];
+        nonbcon = @(x) sum(x(:,end-1:end),2) >= 1;
+    case 4
+        nonbcon = @(x) x(2)*3 > x(1);
+    otherwise
+        nonbcon = [];
 end
 logflag = logical(logflag);
 lb(logflag) = log(lb(logflag));
