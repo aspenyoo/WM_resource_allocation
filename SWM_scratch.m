@@ -446,7 +446,7 @@ clear all; clc
  
 expnumber = 1;
 imodel = 4;
-nSubj = 11;
+nSubj = 14;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
@@ -569,9 +569,9 @@ end
 %% recalculate nLL for each subject
 
 clear all
-expnumber = 2;
-imodel = 1;
-nSubj = 11;
+expnumber = 1;
+imodel = 4;
+nSubj = 14;
 
 load(['exp' num2str(expnumber) '_cleandata.mat'])
 filepath = ['fits/exp' num2str(expnumber) '/'];
@@ -589,17 +589,18 @@ for isubj = 1:nSubj
         newnLL(inll) = calc_nLL(imodel,ML_parameters(inll,:),data{isubj});
     end 
     
-    nLLVec = newnLL;
-    ML_parameters(:,1:2) = exp(ML_parameters(:,1:2));
-    save([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'],...
-        'runlist_completed','nLLVec','ML_parameters')
+    [nLLVec; newnLL]
+%     nLLVec = newnLL;
+%     ML_parameters(:,1:2) = exp(ML_parameters(:,1:2));
+%     save([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'],...
+%         'runlist_completed','nLLVec','ML_parameters')
 end
 
 %% recalculate best fit nLL
 
 clear all
-expnumber = 2;
-modelVec = [1 2 3];
+expnumber = 1;
+modelVec = [4];
 
 load(['exp' num2str(expnumber) '_cleandata.mat'])
 filepath = ['fits/exp' num2str(expnumber) '/'];
@@ -614,11 +615,12 @@ for imodel = modelVec
         fprintf([num2str(isubj) ', '])
         newnLL(isubj) = calc_nLL(imodel,ML_parameters(isubj,:),data{isubj});
     end 
-    
-    nLLVec = newnLL;
-    ML_parameters(:,1:2) = exp(ML_parameters(:,1:2));
-    save([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'],...
-        'nLLVec','ML_parameters')
+
+    [newnLL; nLLVec]
+%     nLLVec = newnLL;
+%     ML_parameters(:,1:2) = exp(ML_parameters(:,1:2));
+%     save([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'],...
+%         'nLLVec','ML_parameters')
 end
 
 %% check nLL
@@ -686,6 +688,25 @@ nSubj = size(ML_parameters,1);
 
 pMat = ML_parameters(:,end-1:end);
 pMat(:,3) = 1-sum(pMat,2);
+
+% plot(pMat)
+figure
+plot(bsxfun(@times,pMat,ML_parameters(:,1)))
+hold on;
+
+%% pVec for model4
+
+clear all
+imodel = 4;
+expnumber = 1;
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'fits_model' num2str(imodel) '.mat'])
+nSubj = size(ML_parameters,1);
+
+pMat = nan(nSubj,3);
+for isubj = 1:nSubj;
+    pMat(isubj,:) = calc_pVec_optimalerror(ML_parameters(isubj,:));
+end
 
 % plot(pMat)
 figure
@@ -798,9 +819,9 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 2;
+expnumber = 1;
 nModels = expnumber+2;
-modcompidx = 4;
+modcompidx = 2;
 fixedrisk = 0;
 MCM = 'BIC';
 
@@ -1200,7 +1221,11 @@ else
         preddata{isubj} = simulate_data(imodel,expnumber,Theta,nTrials);
     end
     
-    save([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata','pMat')
+    try
+        save([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata','pMat')
+    catch
+        save([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata')
+    end
 end
 
 % histograms per subjects
