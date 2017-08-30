@@ -6,7 +6,6 @@ if nargin < 6; expnumber = 2; end
 if nargin < 7; fixparams = []; end
 
 
-
 % ================= INPUT VARIABLES ==================
 % MODEL: 1 (optimal priority placement) or 2 (not optimal) or 3 (fixed)
 % SUBJNUM: subject number. 1 - 11
@@ -24,8 +23,8 @@ if nargin < 7; fixparams = []; end
 
 % filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
 if isempty(fixparams)
-%  filepath = ['fits/exp' num2str(expnumber) '/'];
-filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
+ filepath = ['fits/exp' num2str(expnumber) '/'];
+% filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
 else
 filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '_fixedrisk/'];
 end
@@ -72,15 +71,15 @@ switch testmodel
         logflag = [logflag 0 0];
         nonbcon = @(x) sum(x(:,end-1:end),2) >= 1;
     case 4
-        nonbcon = @(x) x(2)*3 > x(1);
+        nonbcon = @(x) x(2)+log(3) > x(1); % Jbar_total must be at least three times tau
     otherwise
         nonbcon = [];
 end
-logflag = logical(logflag);
-lb(logflag) = log(lb(logflag));
-ub(logflag) = log(ub(logflag));
-plb(logflag) = log(plb(logflag));
-pub(logflag) = log(pub(logflag));
+logflag = logical(logflag); 
+lb(logflag) = log(lb(logflag)); 
+ub(logflag) = log(ub(logflag)); 
+plb(logflag) = log(plb(logflag)); 
+pub(logflag) = log(pub(logflag)); 
 
 if ~(isempty(fixparams))
     % vector of non-fixed parameter indices
@@ -93,8 +92,6 @@ if ~(isempty(fixparams))
     ub(fixparams(1,:)) = [];
     plb(fixparams(1,:)) = [];
     pub(fixparams(1,:)) = [];
-    
-
 end
 
 % create list of all x0s
@@ -104,7 +101,8 @@ x0_list = lhs(runmax,nParams,plb,pub,[],1e3);
 
 % optimize for starting values in RUNLIST
 for irun = 1:length(runlist)
-    
+    runlist(irun)
+   
     rng(runlist(irun));
     
     x0 = x0_list(runlist(irun),:);
