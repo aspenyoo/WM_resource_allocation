@@ -329,3 +329,65 @@ set(htick(:,3),'color',axis3,'linewidth',3)
 % plot data
 hter=ternaryc(pMat(:,1),pMat(:,2),pMat(:,3));
 set(hter,'marker','o','markerfacecolor','k','markersize',4','markeredgecolor','k')
+
+
+%% EU didactics
+
+clear all
+close all
+
+Jbar = 2;
+tau = 0.1;
+lowJ = 0.1;
+highJ = 2;
+alpha = 1;
+betalow = 1;
+betahigh = 0.3;
+
+[JVec, rVec] = loadvar('JVec',{Jbar,tau},'rVec');
+
+pHit = calc_p_Hit(rVec,[lowJ highJ]);
+points_rewarded = rewardFn(rVec,alpha)';
+EU = bsxfun(@times,pHit,points_rewarded);
+
+% p(r)
+deltar = diff(rVec(1:2)); 
+pdf_r_low = exp(betalow.*EU); % size: (rVec x JVec)
+pdf_r_low = bsxfun(@rdivide, pdf_r_low, sum(pdf_r_low));
+pdf_r_high = exp(betahigh.*EU); % size: (rVec x JVec)
+pdf_r_high = bsxfun(@rdivide, pdf_r_high, sum(pdf_r_high));
+
+
+% ===== PLOT =====
+figure;
+
+% plot 
+subplot(1,4,1)
+plot(rVec,pHit)
+defaultplot
+set(gca,'YTick',[0 0.5 1],'XTick',[0 5 10])
+
+subplot(1,4,2)
+plot(rVec,points_rewarded,'k-')
+defaultplot
+set(gca,'YTick',[0 60 120],'XTick',[0 5 10])
+
+subplot(1,4,3)
+plot(rVec,EU)
+defaultplot
+set(gca,'YTick',[0 30 60],'XTick',[0 5 10])
+
+subplot(1,4,4)
+plot(rVec,[pdf_r_high pdf_r_low])
+defaultplot
+set(gca,'XTick',[0 5 10],'YTick',[])
+
+%% panel figure of circle size model didactics
+% first plot: expected utility as a function of circle radius
+
+
+
+% second plot: probability of choosing r as a function of circle size
+% (shows decision noise)
+
+% third plot: optimal radius as a function of memory uncertainty
