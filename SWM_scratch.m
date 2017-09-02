@@ -487,13 +487,13 @@ blah
 
 clear all
 
-expnumber = 1;
+expnumber = 2;
 imodel = 4;
 testmodel = 1;
 fakedata = 0;
 isriskfixed = 0;
 
-subjVec = 1:14;
+subjVec = 1:11;
 nSubj = length(subjVec);
 
 if (isriskfixed)
@@ -819,7 +819,7 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 1;
+expnumber = 2;
 nModels = expnumber+2;
 modcompidx = 2;
 fixedrisk = 0;
@@ -844,7 +844,7 @@ end
 if expnumber == 1; nParamVec(1) = []; end
 
 nLLMat = reshape(struct2mat(nLL),[length(nTrials),nModels])';
-[AIC  BIC  AICc ]= modcomp(nLLMat',nParamVec,nTrials);
+[AIC, BIC, AICc]= modcomp(nLLMat',nParamVec,nTrials);
 
 
 % labels and index stuff
@@ -1192,7 +1192,7 @@ clear all
 
 % ========= simulating a bunch of data per subject =========
 
-expnumber = 1;
+expnumber = 2;
 imodel = 4;
 fixedrisk = [];%'_fixedrisk';
 loadpreddata = 0;

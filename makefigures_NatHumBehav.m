@@ -901,12 +901,12 @@ end
 % =====================================================
 
 clear all; close all
-expnumber = 1;
+expnumber = 2;
 fixedrisk = [];  %'_fixedrisk';
 % colorMat = [aspencolors('dustyrose'); aspencolors('booger'); aspencolors('seacolored')];
 colorMat = [0 0 1; 1 0 0; 0 0 0; 0 1 0];
 nModelsPossible = 4; % how many total models there are
-modelorderVec = [2 3 4]; % the order the models should be plotted
+modelorderVec = [1 2 3 4]; % the order the models should be plotted
 nModels = length(modelorderVec); % how many models you want to plot now
 modelnameVec = {'max points','free','proportional','min error'};
 
