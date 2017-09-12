@@ -2,7 +2,7 @@ function varargout = loadvar(varargin)
 nvars = ceil(length(varargin)/2);
 varargout = cell(1,nvars);
 for ivar = 1:nvars
-    var = varargin{2*ivar-1};
+    var = varargin{2*ivar-1}
     switch var
         case 'JVec'
             Jbar = varargin{2*ivar}{1};
