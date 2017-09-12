@@ -820,7 +820,8 @@ hlabels=terlabel('high','medium','low');
 
 clear all
 expnumber = 2;
-nModels = expnumber+2;
+modVec = [3 1 2];
+nModels = length(modVec);
 modcompidx = 2;
 fixedrisk = 0;
 MCM = 'BIC';
@@ -828,6 +829,7 @@ MCM = 'BIC';
 filename = ['exp' num2str(expnumber) '_cleandata.mat'];
 load(filename,'nTrials')
 nTrials = sum(nTrials,2);
+nSubj = length(nTrials);
 
 if (fixedrisk)
     filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
@@ -835,36 +837,35 @@ else
     filepath = ['fits/exp' num2str(expnumber) '/'];
 end
 
-for imodel = (5-nModels):4
-    load([filepath 'fits_model' num2str(imodel) '.mat'])
-    nLL.(['model' num2str(imodel)]) = nLLVec;
+nLLMat = nan(nModels,nSubj);
+for imodel = 1:nModels
+    modidx = modVec(imodel);
+    
+    load([filepath 'fits_model' num2str(modidx) '.mat'])
+    nLLMat(imodel,:) = nLLVec;
     nParamVec(imodel) = size(ML_parameters,2);
     %     AIC.(['model' num2str(imodel)]) = 2*nLLVec + 2*nParamVec(imodel);
 end
-if expnumber == 1; nParamVec(1) = []; end
 
-nLLMat = reshape(struct2mat(nLL),[length(nTrials),nModels])';
 [AIC, BIC, AICc]= modcomp(nLLMat',nParamVec,nTrials);
 
 
 % labels and index stuff
-modlabels = {'max points','free','fixed','min error'};
+modlabels = {'max points','flexible','fixed','min error'};
 modcomplabel = modlabels{modcompidx};
-modidx = (5-nModels):4;
-modidx(modidx == modcompidx) = [];
-modlabels = modlabels(modidx);
+modlabels = modlabels(modVec(modVec ~= modcompidx));
 
 nSubj = length(nLLVec);
 subtractything = 2-expnumber;
 switch MCM
     case 'AIC'
-        comparison = bsxfun(@minus,AIC,AIC(:,modcompidx-subtractything));
+        comparison = bsxfun(@minus,AIC,AIC(:,modVec == modcompidx));
     case 'BIC'
-        comparison = bsxfun(@minus,BIC,BIC(:,modcompidx-subtractything));
+        comparison = bsxfun(@minus,BIC,BIC(:,modVec == modcompidx));
     case 'AICc'
-        comparison = bsxfun(@minus,AICc,AICc(:,modcompidx-subtractything));
+        comparison = bsxfun(@minus,AICc,AICc(:,modVec == modcompidx));
 end
-comparison(:,modcompidx-subtractything) = [];
+comparison(:,modVec == modcompidx) = [];
 mediancomp = median(comparison);
 
 % bootstrap the confidence intervals
@@ -885,7 +886,6 @@ if nModels == 2
     set(gca,'XTick',[],'XTickLabel',modlabels)
 else
     for imodel = 1:(nModels-1)
-        %         imodel = modidx(imodel);
         fill([imodel-0.475 imodel+0.475 imodel+0.475 imodel-0.475],medCI([imodel imodel imodel+nModels-1 imodel+nModels-1]),...
             0.7*ones(1,3),'EdgeColor','none'); hold on;
         plot([imodel-0.475 imodel+0.475],mediancomp(imodel)*ones(1,2),'Color',[0.1 0.1 0.1])
