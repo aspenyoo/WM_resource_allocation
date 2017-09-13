@@ -73,7 +73,7 @@ switch model
     case 3 % fixed
         pVec = [0.6 0.3 0.1];
     case 4 % optimal: minimizing squared error
-        pVec = calc_pVec_optimalerror(Theta);
+        pVec = calc_pVec_minerror(Theta);
         %         pVec = [0.4727 0.3343 0.1930];
 end
 

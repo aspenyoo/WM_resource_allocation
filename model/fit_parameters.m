@@ -23,8 +23,8 @@ if nargin < 7; fixparams = []; end
 
 % filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
 if isempty(fixparams)
- filepath = ['fits/exp' num2str(expnumber) '/'];
-% filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
+%  filepath = ['fits/exp' num2str(expnumber) '/'];
+filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
 else
 filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '_fixedrisk/'];
 end
@@ -71,7 +71,12 @@ switch testmodel
         logflag = [logflag 0 0];
         nonbcon = @(x) sum(x(:,end-1:end),2) >= 1;
     case 4
-        nonbcon = @(x) x(2)+log(3) > x(1); % Jbar_total must be at least three times tau
+        lb = [lb 1e-10];
+        ub = [ub 100];
+        plb = [plb 1e-3];
+        pub = [pub 10];
+        logflag = [logflag 0];
+        nonbcon = []; % Jbar_total must be at least three times tau
     otherwise
         nonbcon = [];
 end
@@ -123,8 +128,8 @@ for irun = 1:length(runlist)
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
     try runlist_completed*2; catch; runlist_completed = []; end % seeing if runlist_completed exists yet
     
-    ML_parameters = [ML_parameters; bfp];
-    nLLVec = [nLLVec fval];
+    ML_parameters = [ML_parameters; bfp]
+    nLLVec = [nLLVec fval]
     runlist_completed = [runlist_completed runlist(irun)];
     save(filename,'ML_parameters','nLLVec','runlist_completed')
 end
