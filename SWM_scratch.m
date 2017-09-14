@@ -487,13 +487,14 @@ blah
 
 clear all
 
-expnumber = 2;
+expnumber = 1;
+subjVec = 1:14;
 imodel = 4;
-testmodel = 1;
+
+
+testmodel = imodel;
 fakedata = 0;
 isriskfixed = 0;
-
-subjVec = 1:11;
 nSubj = length(subjVec);
 
 if (isriskfixed)
@@ -513,6 +514,8 @@ switch testmodel
         nParams = 4;
     case 2
         nParams = 6;
+    case 4
+        nParams = 5;
 end
 if (expnumber == 1); nParams = nParams - 2; end
 
@@ -1192,7 +1195,7 @@ clear all
 
 % ========= simulating a bunch of data per subject =========
 
-expnumber = 2;
+expnumber = 1;
 imodel = 4;
 fixedrisk = [];%'_fixedrisk';
 loadpreddata = 0;
