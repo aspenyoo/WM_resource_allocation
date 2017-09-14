@@ -6,7 +6,7 @@ function [pVec, fval] = calc_pVec_minerror(Theta)
 
 
 % function for expected squared error
-calc_E_error = @(x) calc_expectederror(Theta,x);
+calc_E_error = @(x) calc_expectederror_analytical(Theta,x);
 
 % parameters for optimization
 Aeq = [1 1 1];
