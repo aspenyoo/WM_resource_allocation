@@ -13,7 +13,7 @@ Aeq = [1 1 1];
 beq = 1;
 [A, b, nonlcon] = deal([]);
 options = optimset('Display','none');
-lb = [1e-5 1e-5 1e-5];
+lb = [1e-3 1e-3 1e-3];
 ub = [1 1 1];
 nStartVals = 10;  % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
 

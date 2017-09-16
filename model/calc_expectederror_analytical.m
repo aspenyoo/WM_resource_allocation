@@ -14,16 +14,39 @@ nPriorities = length(allocatedpriorityVec);
 expectederror = 0;
 for ipriority = 1:nPriorities
     Jbar = Jbar_total*allocatedpriorityVec(ipriority);
+
+    
+    Jbar = .5
+    % constants
+    k = Jbar/tau;
+    constantt = 2^(k+1) .* Jbar; 
     
     % get distance d
+    dend = 10;
+    while (dend^(gamma+1)./((dend^2)*tau + 2).^(k+1)) > 1e-3
+        dend = dend + 1;
+    end
+    dend
+        
+    
+    
     dVec = loadvar('rVec');
+   
+    dVec = linspace(0,dend,500);
     
-    % numerically calculate integral
-    k = Jbar/tau;
-    blah = dVec.^(gamma+1)./(tau.*dVec.^2 + 2);
-    blah = 2*k./tau^(k-1).*sum(blah);
     
-    expectederror = expectederror + priorityVec(ipriority)*blah;
+    % numerically calculate integral of dpdf
+    
+    blah = dVec.^(gamma+1)./((dVec.^2).*tau + 2).^(k+1)/ddiff;
+    plot(blah)
+    
+   
+    ddiff = diff(dVec(1: 2));
+%     sum(blah)*constantt
+%     
+%     
+%     priorityVec(ipriority)*sum(blah)*constantt
+    expectederror = expectederror + priorityVec(ipriority)*sum(blah)*constantt;
     
     
 %     % get x-axis of J and distance d 
@@ -45,3 +68,5 @@ for ipriority = 1:nPriorities
 %     expectederror = expectederror + priorityVec(ipriority).*sum((dVec.^gamma) .* dpdf);
     
 end
+% allocatedpriorityVec
+% expectederror
