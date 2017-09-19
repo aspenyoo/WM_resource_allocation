@@ -69,14 +69,14 @@ switch testmodel
         plb = [plb 0.3 1e-10];
         pub = [pub 0.7 0.3];
         logflag = [logflag 0 0];
-        nonbcon = @(x) sum(x(:,end-1:end),2) >= 1;
+        nonbcon = @(x) sum(x(:,end-1:end),2) >= 1; % violates if p_high + p_med >= 1
     case 4
         lb = [lb 1e-10];
         ub = [ub 100];
         plb = [plb 1e-3];
         pub = [pub 10];
         logflag = [logflag 0];
-        nonbcon = []; % Jbar_total must be at least three times tau
+        nonbcon = @(x) (x(1)/x(2)) <= (x(end)/2); % violates if Jbar/tau - psi/2 <=0 
     otherwise
         nonbcon = [];
 end

@@ -3,7 +3,7 @@ function expectederror = calc_expectederror_analytical(Theta,allocatedpriorityVe
 % getting parameters
 Jbar_total = Theta(1);
 tau = Theta(2);
-gamma = Theta(end);
+psi = Theta(end);
 
 priorityVec = [0.6 0.3 0.1];
 nPriorities = length(allocatedpriorityVec);
@@ -15,58 +15,9 @@ expectederror = 0;
 for ipriority = 1:nPriorities
     Jbar = Jbar_total*allocatedpriorityVec(ipriority);
 
-    
-    Jbar = .5
-    % constants
     k = Jbar/tau;
-    constantt = 2^(k+1) .* Jbar; 
-    
-    % get distance d
-    dend = 10;
-    while (dend^(gamma+1)./((dend^2)*tau + 2).^(k+1)) > 1e-3
-        dend = dend + 1;
-    end
-    dend
-        
-    
-    
-    dVec = loadvar('rVec');
-   
-    dVec = linspace(0,dend,500);
-    
-    
-    % numerically calculate integral of dpdf
-    
-    blah = dVec.^(gamma+1)./((dVec.^2).*tau + 2).^(k+1)/ddiff;
-    plot(blah)
-    
-   
-    ddiff = diff(dVec(1: 2));
-%     sum(blah)*constantt
-%     
-%     
-%     priorityVec(ipriority)*sum(blah)*constantt
-    expectederror = expectederror + priorityVec(ipriority)*sum(blah)*constantt;
-    
-    
-%     % get x-axis of J and distance d 
-%     [JVec,dVec] = loadvar('JVec',{Jbar,tau},'rVec');
-%     JVec = JVec';
-%     
-%     % get Jpdf: p(J|Jbar,tau). 500 x 1 vector
-%     Jpdf = gampdf(JVec,Jbar/tau,tau); % probability of that J value
-%     Jpdf = Jpdf./sum(Jpdf);
-%     
-%     % get dpdf given J: p(d|1/J). will be nJs (500) x nds (500) vector
-%     d_given_J = bsxfun(@(x,y) x.*y.*exp(-x^2.*y/2),dVec,JVec);
-%     
-%     % get dpdf (marginalize over J)
-%     dpdf = bsxfunandsum(@times,d_given_J,Jpdf);
-%     dpdf = dpdf./sum(dpdf);
-%     
-%     % \int d^blah p(d) dd
-%     expectederror = expectederror + priorityVec(ipriority).*sum((dVec.^gamma) .* dpdf);
+    bleh = prod(gamma([(psi/2 + 1) (k-(psi/2))]))/gamma(k) .* (2/tau)^(psi/2);
+
+    expectederror = expectederror + priorityVec(ipriority).*bleh;
     
 end
-% allocatedpriorityVec
-% expectederror
