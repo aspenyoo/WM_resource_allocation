@@ -128,8 +128,8 @@ for irun = 1:length(runlist)
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
     try runlist_completed*2; catch; runlist_completed = []; end % seeing if runlist_completed exists yet
     
-    ML_parameters = [ML_parameters; bfp]
-    nLLVec = [nLLVec fval]
+    ML_parameters = [ML_parameters; bfp];
+    nLLVec = [nLLVec fval];
     runlist_completed = [runlist_completed runlist(irun)];
     save(filename,'ML_parameters','nLLVec','runlist_completed')
 end
