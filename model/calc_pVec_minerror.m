@@ -37,15 +37,3 @@ else
     pVec = pVec(1,:);  % in case multiple entries have the nEU == min(nEU)
 end
 
-% end
-% 
-% % function for expected squared error
-% function sqerror = calc_E_squarederror(x,Jbar_total,tau)
-%     
-%     if any((Jbar_total.*x - tau) < 0)
-%         sqerror = Inf;
-%     else
-%         sqerror = 0.6/(x(1)*Jbar_total - tau) + 0.3/(x(2)*Jbar_total - tau) + 0.1/(x(3)*Jbar_total - tau);
-%     end
-% end
-

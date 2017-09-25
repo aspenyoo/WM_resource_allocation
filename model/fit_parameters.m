@@ -53,7 +53,7 @@ end
 lb = [1e-5 1e-3]; % Jbar_total, tau
 ub = [50 10];
 plb = [0.5 0.01];
-pub = [20 5];
+pub = [10 1];
 logflag = [1 1];
 if expnumber == 2 % alpha beta
     lb = [lb 1e-5 1e-5];
@@ -74,9 +74,9 @@ switch testmodel
         lb = [lb 1e-10];
         ub = [ub 100];
         plb = [plb 1e-3];
-        pub = [pub 10];
-        logflag = [logflag 0];
-        nonbcon = @(x) (x(1)/x(2)) <= (x(end)/2); % violates if Jbar/tau - psi/2 <=0 
+        pub = [pub 1];
+        logflag = [logflag 1];
+        nonbcon = @(x) (exp(x(1))/exp(x(2))) <= (exp(x(end))/2); % violates if Jbar/tau - psi/2 <=0 
     otherwise
         nonbcon = [];
 end

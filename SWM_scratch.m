@@ -317,6 +317,7 @@ plot(JVec./Jbar,Jpdf,'k-'); defaultplot
 subplot(3,1,3) % sigma
 plot(1./sqrt(JVec),Jpdf,'k-'); defaultplot
 
+
 %% look at typical max for J/Jbar gamma distribution
 
 expnumber = 2;
@@ -487,8 +488,8 @@ blah
 
 clear all
 
-expnumber = 1;
-subjVec = 1:14;
+expnumber = 2;
+subjVec = 1:11;
 imodel = 4;
 
 
@@ -915,9 +916,9 @@ ylabel(['\Delta ' MCM ' (favoring ' modcomplabel ' model)'])
 %% simulate data
 
 clear all
-expnumber = 2;
+expnumber = 1;
 imodel = 1;
-nSubj = 11;
+nSubj = 14;
 
 % switch model
 %     case 1
@@ -1195,7 +1196,7 @@ clear all
 
 % ========= simulating a bunch of data per subject =========
 
-expnumber = 1;
+expnumber = 2;
 imodel = 4;
 fixedrisk = [];%'_fixedrisk';
 loadpreddata = 0;

@@ -29,12 +29,11 @@ if nargin < 4; fixparams = []; end
 expnumber = size(data{1},2);
 
 % exponentiating appropriate parameters
-switch model
-    case {1,3,4}  % optimal or fixed model
-        logflag = logical([1 1 0 0]);
-    case 2 % not optimal model
-        logflag = logical([1 1 0 0 0 0]);
-end
+logflag = [1 1];
+if (expnumber == 2); logflag = [logflag 0 0]; end
+if (model == 2); logflag = [logflag 0 0]; end
+if (model == 4); logflag = [logflag 1]; end
+logflag = logical(logflag);
 
 % if there are fixed parameters
 if ~isempty(fixparams)
