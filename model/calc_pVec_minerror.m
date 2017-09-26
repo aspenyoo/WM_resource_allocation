@@ -3,7 +3,6 @@ function [pVec, fval] = calc_pVec_minerror(Theta)
 % 
 % calculates the proportion allocated to each priority condition that
 % minimizes the squared error of target and response. 
-Theta
 
 % function for expected squared error
 calc_E_error = @(x) calc_expectederror_analytical(Theta,x);
@@ -22,7 +21,7 @@ nStartVals = 10;  % tried with different parameters and lowest value showed up 3
 x0 = rand(nStartVals,2);
 x0 = [x0 1-sum(x0,2)];
 
-while any((x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))') % make sure it satisfies Aeq beq constraints
+while any((x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))') % make sure it satisfies linear constraints
     idx = (x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))';
     x0(idx,1:2) = rand(sum(idx),2);
     x0(idx,3) = 1 - sum(x0(idx,1:2),2);

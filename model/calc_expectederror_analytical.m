@@ -1,6 +1,13 @@
 function expectederror = calc_expectederror_analytical(Theta,allocatedpriorityVec)
-
-% allocatedpriorityVec
+% CALC_EXPECTEDERROR_ANALYTICAL(THETA,ALLOCATEDPRIORITYVEC) calculates the
+% expected cost (euclidean error ^ psi) for a given parameter vector THETA
+% and resource allocation across consitions ALLOCATEDPRIORITYVEC.
+% 
+% ===== INPUT VARIABLES =====
+% THETA: Jbar_total, tau, (alpha, beta,) psi (alpha and beta are only in
+%   experiment 2)
+% ALLOCATEDPRIORITYVEC: 1 x 3 vector of allocated priority.
+%   sum(allocatedpriorityVec) = 1
 
 % getting parameters
 Jbar_total = Theta(1);
@@ -19,7 +26,12 @@ for ipriority = 1:nPriorities
 
     k = Jbar/tau;
     
-    bleh = exp(gammaln(psi/2 + 1) + gammaln(k-(psi/2)) - gammaln(k)).* (2/tau)^(psi/2);
+    if any([psi/2+1 k-(psi/2) k] <=0)
+        expectederror = Inf;
+        return
+    else
+        bleh = exp(gammaln(psi/2 + 1) + gammaln(k-(psi/2)) - gammaln(k)).* (2/tau)^(psi/2);
+    end
     
     expectederror = expectederror + priorityVec(ipriority).*bleh;
     
