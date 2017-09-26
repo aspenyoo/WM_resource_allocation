@@ -4,6 +4,7 @@ function [pVec, fval] = calc_pVec_minerror(Theta)
 % calculates the proportion allocated to each priority condition that
 % minimizes the squared error of target and response. 
 
+
 % function for expected squared error
 calc_E_error = @(x) calc_expectederror_analytical(Theta,x);
 

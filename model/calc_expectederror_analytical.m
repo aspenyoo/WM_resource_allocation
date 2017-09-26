@@ -9,6 +9,7 @@ function expectederror = calc_expectederror_analytical(Theta,allocatedpriorityVe
 % ALLOCATEDPRIORITYVEC: 1 x 3 vector of allocated priority.
 %   sum(allocatedpriorityVec) = 1
 
+
 % getting parameters
 Jbar_total = Theta(1);
 tau = Theta(2);
