@@ -1,5 +1,7 @@
 function expectederror = calc_expectederror_analytical(Theta,allocatedpriorityVec)
 
+% allocatedpriorityVec
+
 % getting parameters
 Jbar_total = Theta(1);
 tau = Theta(2);
@@ -16,8 +18,9 @@ for ipriority = 1:nPriorities
     Jbar = Jbar_total*allocatedpriorityVec(ipriority);
 
     k = Jbar/tau;
-    bleh = prod(gamma([(psi/2 + 1) (k-(psi/2))]))/gamma(k) .* (2/tau)^(psi/2);
-
+    
+    bleh = exp(gammaln(psi/2 + 1) + gammaln(k-(psi/2)) - gammaln(k)).* (2/tau)^(psi/2);
+    
     expectederror = expectederror + priorityVec(ipriority).*bleh;
     
 end

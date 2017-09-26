@@ -72,11 +72,11 @@ switch testmodel
         nonbcon = @(x) sum(x(:,end-1:end),2) >= 1; % violates if p_high + p_med >= 1
     case 4
         lb = [lb 1e-10];
-        ub = [ub 100];
+        ub = [ub 10];
         plb = [plb 1e-3];
         pub = [pub 1];
         logflag = [logflag 1];
-        nonbcon = @(x) (exp(x(1))/exp(x(2))) <= (exp(x(end))/2); % violates if Jbar/tau - psi/2 <=0 
+        nonbcon = @model4nonbcon; % violates if Jbar/tau - psi/2 <=0 
     otherwise
         nonbcon = [];
 end
@@ -133,5 +133,11 @@ for irun = 1:length(runlist)
     runlist_completed = [runlist_completed runlist(irun)];
     save(filename,'ML_parameters','nLLVec','runlist_completed')
 end
+end
 
+function countt = model4nonbcon(x)
+    countt = 0;
+    countt = countt + (exp(x(:,1))./exp(x(:,2))) <= (exp(x(:,end))./2);
+    countt = countt + (exp(x(:,end)).*3 > exp(x(:,1)));
+end
 
