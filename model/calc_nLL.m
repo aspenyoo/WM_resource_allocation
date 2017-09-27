@@ -26,6 +26,7 @@ if nargin < 4; fixparams = []; end
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
+
 expnumber = size(data{1},2);
 
 % exponentiating appropriate parameters
