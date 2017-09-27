@@ -23,8 +23,8 @@ if nargin < 7; fixparams = []; end
 
 % filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
 if isempty(fixparams)
- filepath = ['fits/exp' num2str(expnumber) '/'];
-% filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
+% filepath = ['fits/exp' num2str(expnumber) '/'];
+ filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
 else
 filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '_fixedrisk/'];
 end
