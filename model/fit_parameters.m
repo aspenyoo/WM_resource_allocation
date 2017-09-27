@@ -139,6 +139,6 @@ function countt = model4nonbcon(x)
     countt = 0;
     countt = countt + (exp(x(:,1))./exp(x(:,2))) <= (exp(x(:,end))./2); % k > psi/2
     countt = countt + (exp(x(:,end)).*3 > exp(x(:,1))); % Jbar_total > psi*3
-    countt = countt + exp(x(:,1)) <= 3.*exp(x(:,2)); % Jbar_total > 3*tau
+    countt = countt + (exp(x(:,1)) <= 3.*exp(x(:,2))); % Jbar_total > 3*tau
 end
 
