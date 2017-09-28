@@ -100,22 +100,19 @@ if ~(isempty(fixparams))
 end
 
 % create list of all x0s
-
 nParams = length(logflag);
-x0_list = [];
-constantt = 0;
-while size(x0_list,1) < runmax
-    rng(0);
-    x0_list = lhs(runmax + constantt,nParams,plb,pub,[],1e3);
-%     blah = nonbcon(x0_list);
-    x = x0_list;
-    countt = 0;
-    countt = countt + (exp(x(:,1))./exp(x(:,2))) <= 3.*(exp(x(:,end))./2); % k > psi/2
-    countt = countt + (exp(x(:,end)).*3 > exp(x(:,1))); % Jbar_total > psi*3
-    countt = countt + (exp(x(:,1)) <= 3.*exp(x(:,2))); % Jbar_total > 3*tau
-    blah = countt;
-    x0_list(logical(countt),:) =[];
-    constantt = constantt + sum(blah);
+if ~isempty(nonbcon)
+    x0_list = [];
+    constantt = 0;
+    while size(x0_list,1) < runmax
+        rng(0);
+        x0_list = lhs(runmax + constantt,nParams,plb,pub,[],1e3);
+        countt = nonbcon(x0_list);
+        x0_list(logical(countt),:) =[];
+        constantt = constantt + sum(countt);
+    end
+else
+    x0_list = lhs(runmax,nParams,plb,pub,[],1e3);
 end
 
 % optimize for starting values in RUNLIST

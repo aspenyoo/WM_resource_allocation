@@ -18,14 +18,31 @@ lb = [1e-3 1e-3 1e-3];
 ub = [1 1 1];
 nStartVals = 10;  % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
 
-x0 = rand(nStartVals,2);
-x0 = [x0 1-sum(x0,2)];
+lbb = ones(1,2).*(Theta(3)*Theta(2)/Theta(1)/2);
+ubb = 1-2*lbb;
 
-while any((x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))') % make sure it satisfies linear constraints
-    idx = (x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))';
-    x0(idx,1:2) = rand(sum(idx),2);
-    x0(idx,3) = 1 - sum(x0(idx,1:2),2);
+x0 = [];
+constantt = 0;
+while size(x0,1) < nStartVals
+    x0 = lhs(nStartVals+constantt,2,lbb,ubb,[],1e3);
+    x0 = [x0 1-sum(x0,2)];
+    idx = (x0(:,3) < lbb(1));
+    x0(logical(idx),:) =[];
+    constantt = constantt + sum(idx);
 end
+
+% 
+% x0 = rand(nStartVals,2);
+% x0 = [x0 1-sum(x0,2)];
+% 
+% 
+% 
+% while any((x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))') % make sure it satisfies linear constraints
+%     idx = (x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))';
+%     x0(idx,1:2) = rand(sum(idx),2);
+%     x0(idx,3) = 1 - sum(x0(idx,1:2),2);
+%     fprintf('%d ',sum(idx))
+% end
 
 % optimizing
 pVec = nan(nStartVals,3);
