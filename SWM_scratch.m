@@ -445,9 +445,9 @@ clear all; clc
 
 % 2 1 3 subj 8 then done!
  
-expnumber = 2;
+expnumber = 1;
 imodel = 4;
-nSubj = 11;
+nSubj = 14;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
