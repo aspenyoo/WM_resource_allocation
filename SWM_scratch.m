@@ -445,9 +445,9 @@ clear all; clc
 
 % 2 1 3 subj 8 then done!
  
-expnumber = 2;
+expnumber = 1;
 imodel = 4;
-nSubj = 11;
+nSubj = 14;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
@@ -824,7 +824,7 @@ hlabels=terlabel('high','medium','low');
 
 clear all
 expnumber = 2;
-modVec = [3 1 2];
+modVec = [1 2 3 4];
 nModels = length(modVec);
 modcompidx = 2;
 fixedrisk = 0;
@@ -855,7 +855,7 @@ end
 
 
 % labels and index stuff
-modlabels = {'max points','flexible','fixed','min error'};
+modlabels = {'max points','flexible','proportional','min error'};
 modcomplabel = modlabels{modcompidx};
 modlabels = modlabels(modVec(modVec ~= modcompidx));
 
@@ -1197,10 +1197,10 @@ clear all
 % ========= simulating a bunch of data per subject =========
 
 expnumber = 2;
-imodel = 4;
+imodel = 2;
 fixedrisk = [];%'_fixedrisk';
 loadpreddata = 0;
-indvlplot = 1;
+indvlplot = 0;
 
 nPriorities = 3;
 nTrials = 1e3*ones(1,3); % how many trials to simulate per priority
@@ -1220,7 +1220,6 @@ if (loadpreddata)
 else
     preddata = cell(1,nSubj);
     for isubj = 1:nSubj
-        isubj
         Theta = ML_parameters(isubj,:);
         preddata{isubj} = simulate_data(imodel,expnumber,Theta,nTrials);
     end
@@ -1392,6 +1391,7 @@ for isubj = 1:11
     if (indvlplot); pause; end
     
 end
+
 
 % ================ group plot ====================
 
