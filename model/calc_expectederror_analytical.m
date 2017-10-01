@@ -30,9 +30,7 @@ for ipriority = 1:nPriorities
         expectederror = Inf;
         return
     else
-        exp(gammaln(psi/2 + 1) + gammaln(k-(psi/2)) - gammaln(k))
-        (2/tau)^(psi/2)
-        bleh = exp(gammaln(psi/2 + 1) + gammaln(k-(psi/2)) - gammaln(k)).* (2/tau)^(psi/2)
+        bleh = exp(gammaln(psi/2 + 1) + gammaln(k-(psi/2)) - gammaln(k)).* (2/tau)^(psi/2);
     end
     
     expectederror = expectederror + priorityVec(ipriority).*bleh;
