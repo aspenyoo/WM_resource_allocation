@@ -1,6 +1,7 @@
 function nLL = calc_nLL(model,Theta,data,fixparams)
 if nargin < 4; fixparams = []; end
 
+
 % CALC_NLL(JBAR_TOTAL,TAU,BETA)
 %
 % CALC_NLL: calculates negative log likelihood of parameter combination for

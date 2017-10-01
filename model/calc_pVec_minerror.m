@@ -8,27 +8,27 @@ function [pVec, fval] = calc_pVec_minerror(Theta)
 calc_E_error = @(x) calc_expectederror_analytical(Theta,x);
 
 % parameters for optimization
-Aeq = [1 1 1];
-beq = 1;
-A = diag(ones(1,3).*(-Theta(1)/Theta(2)));
-b = -Theta(end)/2.*ones(3,1);
-nonlcon = deal([]);
-options = optimset('Display','none');
-lb = [1e-3 1e-3 1e-3];
-ub = [1 1 1];
+Aeq = [1 1 1]; 
+beq = 1; 
+A = diag(ones(1,3).*(-Theta(1)/Theta(2))); 
+b = -Theta(end)/2.*ones(3,1); 
+nonlcon = deal([]); 
+options = optimset('Display','none'); 
+lb = [1e-3 1e-3 1e-3]; 
+ub = [1 1 1]; 
 nStartVals = 10;  % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
 
-lbb = ones(1,2).*(Theta(3)*Theta(2)/Theta(1)/2);
-ubb = 1-2*lbb;
+lbb = ones(1,2).*(Theta(end)*Theta(2)/Theta(1)/2); 
+ubb = 1-2*lbb; 
 
-x0 = [];
-constantt = 0;
+x0 = []; 
+constantt = 0; 
 while size(x0,1) < nStartVals
     x0 = lhs(nStartVals+constantt,2,lbb,ubb,[],1e3);
-    x0 = [x0 1-sum(x0,2)];
-    idx = (x0(:,3) < lbb(1));
-    x0(logical(idx),:) =[];
-    constantt = constantt + sum(idx);
+    x0 = [x0 1-sum(x0,2)]; 
+    idx = (x0(:,3) < lbb(1)); 
+    x0(logical(idx),:) =[]; 
+    constantt = constantt + sum(idx); 
 end
 
 % 
