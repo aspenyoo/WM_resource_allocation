@@ -443,15 +443,13 @@ EU = calc_EU(rVec,JVec,alpha);
 %% see what runlist idxs you need to do still
 clear all; clc
 
-% 2 1 3 subj 8 then done!
- 
 expnumber = 2;
 imodel = 4;
 nSubj = 11;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
-for isubj = 1:nSubj
+for isubj = 1:nSubjh
     load([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
 
     blah = 1:50;
