@@ -917,8 +917,8 @@ ylabel(['\Delta ' MCM ' (favoring ' modcomplabel ' model)'])
 
 clear all
 expnumber = 1;
-imodel = 1;
-nSubj = 14;
+imodel = 4;
+nSubj = 1;
 
 % switch model
 %     case 1
