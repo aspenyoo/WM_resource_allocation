@@ -21,27 +21,23 @@ function [Theta, data] = simulate_data(model,expnumber,nSubj,nTrials)
 if nargin < 3; nSubj = 10; end
 if nargin < 4; nTrials = [250 120 70]; end % mean number of trials across actual participants
 
-logflag = [1 1];
-if expnumber == 2; logflag = [logflag 0 0]; end
-if model == 2; logflag = [logflag 0 0]; end
-if model == 4; logflag = [logflag 1]; end
-logflag = logical(logflag);
+% load bound and nonbound constraints and logflag
+[logflag, lb, ub] = loadconstraints(model,expnumber);
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(model) '.mat'],'ML_parameters')
 ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
-MU = mean(ML_parameters);
-SIGMA = cov(ML_parameters);
 
 Theta = [];
 constantt = 10;
 while size(Theta,1) < nSubj
-    Theta = [Theta; abs(mvnrnd(MU,SIGMA,constantt))];
-    countt = nonbcon(Theta);
-    Theta(logical(countt),:) = [];
+    newTheta = gensimtheta(ML_parameters,lb,ub,constantt);
+    newTheta(:,logflag) = exp(newTheta(:,logflag));
+    countt = nonbcon(newTheta);
+    newTheta(logical(countt),:) = [];
+    Theta = [Theta; newTheta];
     constantt = nSubj - size(Theta,1);
 end
-Theta(:,logflag) = exp(Theta(:,logflag));
 
 nPriorities = 3;
 data = cell(1,nSubj);

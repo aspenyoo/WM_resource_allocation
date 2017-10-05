@@ -443,13 +443,13 @@ EU = calc_EU(rVec,JVec,alpha);
 %% see what runlist idxs you need to do still
 clear all; clc
 
-expnumber = 2;
+expnumber = 1;
 imodel = 4;
-nSubj = 11;
+nSubj = 14;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
-for isubj = 1:nSubjh
+for isubj = 1:nSubj
     load([filepath 'fits_model' num2str(imodel) '_subj' num2str(isubj) '.mat'])
 
     blah = 1:50;
@@ -486,8 +486,8 @@ blah
 
 clear all
 
-expnumber = 2;
-subjVec = 1:11;
+expnumber = 1;
+subjVec = 1:14;
 imodel = 4;
 
 
@@ -911,38 +911,40 @@ ylabel(['\Delta ' MCM ' (favoring ' modcomplabel ' model)'])
 % parameter recovery plot
 
 
+%% kernel estimation with 
+clear
+
+expnumber = 1;
+model = 2;
+
+logflag = [1 1];
+if expnumber == 2; logflag = [logflag 0 0]; end
+if model == 2; logflag = [logflag 0 0]; end
+if model == 4; logflag = [logflag 1]; end
+logflag = logical(logflag);
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'fits_model' num2str(model) '.mat'],'ML_parameters')
+ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
+
+figure
+pdSix = fitdist(ML_parameters(:,4),'Kernel','BandWidth',.4);
+x = linspace(0,5,100);
+ySix = pdf(pdSix,x);
+plot(x,ySix,'k-','LineWidth',2)
+
 %% simulate data
 
 clear all
-expnumber = 1;
+expnumber = 2;
 imodel = 4;
-nSubj = 1;
+nSubj = 10;
 
-% switch model
-%     case 1
-%         logflag = logical([1 1 0]);
-%     case 2
-%         logflag = logical([1 1 0 0 0]);
-% end
+[simtheta,simdata] = simulate_data(imodel,expnumber,nSubj);
+
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
-load([filepath 'fits_model' num2str(imodel) '.mat'])
-% ML_parameters(logflag) = log(ML_parameters(logflag));
-MU = mean(ML_parameters);
-SIGMA = cov(ML_parameters);
-
-simtheta = mvnrnd(MU,SIGMA,nSubj);
-simtheta = abs(simtheta); % hacky way to enforce positive parameter values
-
-% simtheta(:,logflag) = exp(simtheta(:,logflag));
-
-nTrials = [250 120 70]; % mean number of trials across actual participants
-for isubj = 1:nSubj
-    isubj
-    simdata{isubj} = simulate_data(imodel,expnumber, simtheta(isubj,:),nTrials);
-end
 save([filepath 'simdata_model' num2str(imodel) '.mat'],'simdata','simtheta')
-
 
 %% check that none of the subjects have nans
 
@@ -954,8 +956,6 @@ end
 %% see what runlist idxs you need to do still
 clear all; clc
 
-% 2 1 3 subj 8 then done!
- 
 expnumber = 2;
 testmodel = 1;
 truemodel = 3;
@@ -977,7 +977,7 @@ end
 clear all
 
 expnumber = 2;
-imodel = 2;
+imodel = 4;
 
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'simdata_model' num2str(imodel) '.mat'])

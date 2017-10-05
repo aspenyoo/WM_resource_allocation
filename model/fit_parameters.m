@@ -49,42 +49,7 @@ else
     end
 end
 
-% lower and upper bounds, logflags
-lb = [1e-5 1e-3]; % Jbar_total, tau
-ub = [50 10];
-plb = [0.5 0.01];
-pub = [10 1];
-logflag = [1 1];
-if expnumber == 2 % alpha beta
-    lb = [lb 1e-5 1e-5];
-    ub = [ub 5 5];
-    plb = [plb 0.7 0.5];
-    pub = [pub 1.3 1.5];
-    logflag = [logflag 0 0];
-end
-switch testmodel
-    case 2 % define p_high p_med for flexible model
-        lb = [lb 1e-10 1e-10];
-        ub = [ub 1 1];
-        plb = [plb 0.3 1e-10];
-        pub = [pub 0.7 0.3];
-        logflag = [logflag 0 0];
-        nonbcon = @(x) sum(x(:,end-1:end),2) >= 1; % violates if p_high + p_med >= 1
-    case 4
-        lb = [lb 1e-10];
-        ub = [ub 10];
-        plb = [plb 1e-3];
-        pub = [pub 1];
-        logflag = [logflag 1];
-        nonbcon = @model4nonbcon; % violates if Jbar/tau - psi/2 <=0 
-    otherwise
-        nonbcon = [];
-end
-logflag = logical(logflag); 
-lb(logflag) = log(lb(logflag)); 
-ub(logflag) = log(ub(logflag)); 
-plb(logflag) = log(plb(logflag)); 
-pub(logflag) = log(pub(logflag)); 
+[logflag, lb, ub, plb, pub] = loadconstraints(testmodel,expnumber);
 
 if ~(isempty(fixparams))
     % vector of non-fixed parameter indices
@@ -101,19 +66,19 @@ end
 
 % create list of all x0s
 nParams = length(logflag);
-if ~isempty(nonbcon)
+% if ~isempty(nonbcon)
     x0_list = [];
     constantt = 0;
     while size(x0_list,1) < runmax
         rng(0);
         x0_list = lhs(runmax + constantt,nParams,plb,pub,[],1e3);
-        countt = nonbcon(x0_list);
+        countt = nonbcon(testmodel,x0_list);
         x0_list(logical(countt),:) =[];
         constantt = constantt + sum(countt);
     end
-else
-    x0_list = lhs(runmax,nParams,plb,pub,[],1e3);
-end
+% else
+%     x0_list = lhs(runmax,nParams,plb,pub,[],1e3);
+% end
 
 % optimize for starting values in RUNLIST
 for irun = 1:length(runlist)
@@ -124,7 +89,7 @@ for irun = 1:length(runlist)
     x0 = x0_list(runlist(irun),:);
     fun = @(x) calc_nLL(testmodel,x,subjdata,fixparams);
     
-    x = bads(fun,x0,lb,ub,plb,pub,nonbcon);
+    x = bads(fun,x0,lb,ub,plb,pub,@(y) nonbcon(testmodel,y));
     fval = fun(x);
     
     x(logflag) = exp(x(logflag));
@@ -144,12 +109,5 @@ for irun = 1:length(runlist)
     runlist_completed = [runlist_completed runlist(irun)];
     save(filename,'ML_parameters','nLLVec','runlist_completed')
 end
-end
-
-function countt = model4nonbcon(x)
-    countt = 0;
-    countt = countt | (exp(x(:,1))./exp(x(:,2))) <= 3.*(exp(x(:,end))./2); % k > 3*psi/2
-    countt = countt | (exp(x(:,end)).*3 > exp(x(:,1))); % Jbar_total > psi*3
-    countt = countt | (exp(x(:,1)) <= 3.*exp(x(:,2))); % Jbar_total > 3*tau
 end
 
