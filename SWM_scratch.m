@@ -911,28 +911,6 @@ ylabel(['\Delta ' MCM ' (favoring ' modcomplabel ' model)'])
 % parameter recovery plot
 
 
-%% kernel estimation with 
-clear
-
-expnumber = 1;
-model = 2;
-
-logflag = [1 1];
-if expnumber == 2; logflag = [logflag 0 0]; end
-if model == 2; logflag = [logflag 0 0]; end
-if model == 4; logflag = [logflag 1]; end
-logflag = logical(logflag);
-
-filepath = ['fits/exp' num2str(expnumber) '/'];
-load([filepath 'fits_model' num2str(model) '.mat'],'ML_parameters')
-ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
-
-figure
-pdSix = fitdist(ML_parameters(:,4),'Kernel','BandWidth',.4);
-x = linspace(0,5,100);
-ySix = pdf(pdSix,x);
-plot(x,ySix,'k-','LineWidth',2)
-
 %% simulate data
 
 clear all
