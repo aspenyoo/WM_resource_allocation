@@ -487,12 +487,12 @@ blah
 clear all
 
 expnumber = 1;
-subjVec = 1:14;
+subjVec = 1:10;
 imodel = 4;
 
 
 testmodel = imodel;
-fakedata = 0;
+fakedata = 1;
 isriskfixed = 0;
 nSubj = length(subjVec);
 
@@ -1091,8 +1091,8 @@ fprintf('\n')
 %% parameter recovery plot
 
 clear all
-expnumber = 2;
-imodel = 3;
+expnumber = 1;
+imodel = 4;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
@@ -1100,16 +1100,42 @@ bfp = ML_parameters;
 
 load([filepath 'simdata_model' num2str(imodel) '.mat'])
 nParams = size(bfp,2);
+nSubj = size(bfp,1);
 
 figure;
 for iparam = 1:nParams
-    subplot(2,3,iparam);
-    plot(bfp(:,iparam),simtheta(:,iparam),'ko'); hold on;
+    subplot(2,3,iparam); hold on;
+    for isubj = 1:nSubj;
+        plot(bfp(isubj,iparam),simtheta(isubj,iparam),'o'); hold on;
+    end
+    
     plot([min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],...
         [min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],'k-')
     xlabel('estimated'); ylabel('actual')
     defaultplot
 end
+
+% %% parameter recovery: relationshtip between Jbar and tau
+% 
+% clear all
+% expnumber = 1;
+% imodel = 4;
+% filepath = ['fits/exp' num2str(expnumber) '/'];
+% 
+% load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
+% bfp = ML_parameters;
+% 
+% load([filepath 'simdata_model' num2str(imodel) '.mat'])
+% nParams = size(bfp,2);
+% nSubj = size(bfp,1);
+% 
+% figure;hold on
+% plot([simtheta(:,1) bfp(:,1)]',[simtheta(:,2) bfp(:,2)]','-o');
+% 
+% figure;
+% plot(simtheta(:,1)./simtheta(:,2),bfp(:,1)./bfp(:,2),'o')
+% axis([0 50 0 50])
+
 
 %% make nLL landscape
 
