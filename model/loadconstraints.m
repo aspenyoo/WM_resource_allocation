@@ -26,7 +26,7 @@ switch model
         plb = [plb 1e-3];
         pub = [pub 1];
         logflag = [logflag 1];
-        nonbcon = @model4nonbcon; % violates if Jbar/tau - psi/2 <=0 
+        nonbcon = @model4nonbcon; % violates if Jbar/tau - psi/2 <= 0 
     otherwise
         nonbcon = [];
 end
