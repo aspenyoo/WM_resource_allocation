@@ -125,7 +125,7 @@ set(hter,'marker','o','markerfacecolor','k','markersize',4','markeredgecolor','k
 
 
 
-% =======================
+%% =======================
 % EXP 2
 % =======================
 expnumber = 2;
@@ -283,7 +283,7 @@ end
 set(gca,'XTickLabel',[0 3 6]); 
 xlabel('error');
 
-% ------------ ternary plot ------------
+%% ------------ ternary plot ------------
 load([filepath 'fits_model' num2str(imodel) '.mat'])
 
 pMat = ML_parameters(:,end-1:end);
