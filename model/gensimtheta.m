@@ -26,3 +26,39 @@ for iparam = 1:nParams
     
     % plot(x,ySix,'k-','LineWidth',2)
 end
+
+
+%% stuff that i copied in afterward!!
+
+% load bound and nonbound constraints and logflag
+[logflag, lb, ub] = loadconstraints(model,expnumber);
+
+filepath = ['fits/exp' num2str(expnumber) '/'];
+load([filepath 'fits_model' num2str(model) '.mat'],'ML_parameters')
+ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
+
+constantt = 10;
+while size(simtheta,1) < nSamps
+    newTheta = gensimtheta(ML_parameters,lb,ub,constantt);
+    newTheta(:,logflag) = exp(newTheta(:,logflag));
+    countt = nonbcon(newTheta);
+    newTheta(logical(countt),:) = [];
+    simtheta = [simtheta; newTheta];
+    constantt = nSubj - size(simtheta,1);
+end
+
+function countt = nonbcon(x)
+
+countt = 0;
+countt = countt | (exp(x(:,1)) <= 3.*exp(x(:,2))); % Jbar_total > 3*tau
+
+if model == 2;
+    countt = countt | (sum(x(:,end-1:end),2) >= 1);
+end
+
+if model == 4;
+    countt = countt | (exp(x(:,1))./exp(x(:,2))) <= 3.*(exp(x(:,end))./2); % k > 3*psi/2
+    countt = countt | (exp(x(:,end)).*3 > exp(x(:,1))); % Jbar_total > psi*3
+end
+
+end

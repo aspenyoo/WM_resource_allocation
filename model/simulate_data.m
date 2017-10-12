@@ -1,4 +1,4 @@
-function [Theta, data] = simulate_data(model,expnumber,nSubj,nTrials)
+function [data] = simulate_data(model,expnumber,Theta,nTrials)
 % SIMULATE_DATA simulates data for the optimal observer in the [0.6 0.3
 %   0.1] priority task.
 %
@@ -18,31 +18,14 @@ function [Theta, data] = simulate_data(model,expnumber,nSubj,nTrials)
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
-if nargin < 3; nSubj = 10; end
 if nargin < 4; nTrials = [250 120 70]; end % mean number of trials across actual participants
 
-% load bound and nonbound constraints and logflag
-[logflag, lb, ub] = loadconstraints(model,expnumber);
-
-filepath = ['fits/exp' num2str(expnumber) '/'];
-load([filepath 'fits_model' num2str(model) '.mat'],'ML_parameters')
-ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
-
-Theta = [];
-constantt = 10;
-while size(Theta,1) < nSubj
-    newTheta = gensimtheta(ML_parameters,lb,ub,constantt);
-    newTheta(:,logflag) = exp(newTheta(:,logflag));
-    countt = nonbcon(newTheta);
-    newTheta(logical(countt),:) = [];
-    Theta = [Theta; newTheta];
-    constantt = nSubj - size(Theta,1);
-end
-
 nPriorities = 3;
+nSubj = size(Theta,1);
+
 data = cell(1,nSubj);
 for isubj = 1:nSubj
-    theta = Theta(isubj,:)
+    theta = Theta(isubj,:);
     
     Jbar_total = theta(1);
     tau = theta(2);
@@ -94,19 +77,5 @@ for isubj = 1:nSubj
     end
 end
 
-function countt = nonbcon(x)
 
-countt = 0;
-countt = countt | (exp(x(:,1)) <= 3.*exp(x(:,2))); % Jbar_total > 3*tau
-
-if model == 2;
-    countt = countt | (sum(x(:,end-1:end),2) >= 1);
-end
-
-if model == 4;
-    countt = countt | (exp(x(:,1))./exp(x(:,2))) <= 3.*(exp(x(:,end))./2); % k > 3*psi/2
-    countt = countt | (exp(x(:,end)).*3 > exp(x(:,1))); % Jbar_total > psi*3
-end
-
-end
 end

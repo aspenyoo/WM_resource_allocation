@@ -821,8 +821,8 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 2;
-modVec = [1 2 3 4];
+expnumber = 1;
+modVec = [3 4 2];
 nModels = length(modVec);
 modcompidx = 2;
 fixedrisk = 0;
@@ -1198,8 +1198,8 @@ clear all
 
 % ========= simulating a bunch of data per subject =========
 
-expnumber = 2;
-imodel = 2;
+expnumber = 1;
+imodel = 4;
 fixedrisk = [];%'_fixedrisk';
 loadpreddata = 0;
 indvlplot = 0;
@@ -1220,11 +1220,9 @@ load([filepath 'fits_model' num2str(imodel) '.mat'])
 if (loadpreddata)
     load([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'])
 else
-    preddata = cell(1,nSubj);
-    for isubj = 1:nSubj
-        Theta = ML_parameters(isubj,:);
-        preddata{isubj} = simulate_data(imodel,expnumber,Theta,nTrials);
-    end
+
+    preddata = simulate_data(imodel,expnumber,ML_parameters,nTrials);
+
     
     try
         save([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(imodel) fixedrisk '.mat'],'preddata','pMat')
