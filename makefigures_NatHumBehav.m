@@ -799,7 +799,7 @@ expnumber = 2;
 fixedrisk = [];  
 colorMat = [1 0 0; 0 0 1; 0 0 0; 0 1 0];
 nModelsPossible = 4; % how many total models there are
-modelorderVec = [3 1 4 2]; % the order the models should be plotted
+modelorderVec = [3]; % the order the models should be plotted
 nModels = length(modelorderVec); % how many models you want to plot now
 modelnameVec = {'max points','free','proportional','min error'};
 
@@ -945,7 +945,7 @@ for ipriority = 1:nPriorities
     
         axes(ha(imodel))
     hold on;
-    errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineStyle','none','LineWidth',1);
+    errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineWidth',1);
     defaultplot
     axis([0 10 0 0.4])
     
@@ -972,7 +972,7 @@ for ipriority = 1:nPriorities
     if (expnumber == 2)
         axes(ha(nModels+imodel))
         hold on;
-        errorbar(xlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color',colorMat(ipriority,:),'LineStyle','none','LineWidth',1);
+        errorbar(xlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color',colorMat(ipriority,:),'LineWidth',1);
         defaultplot
         axis([0 10 0 0.4])
         set(ha(nModels+imodel),'XTick',[0 5 10],'YTick',[0 0.2 0.4],...

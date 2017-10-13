@@ -486,12 +486,12 @@ blah
 
 clear all
 
-expnumber = 1;
+expnumber = 2;
 subjVec = 1:10;
 imodel = 4;
 
 
-testmodel = imodel;
+testmodel = 4;
 fakedata = 1;
 isriskfixed = 0;
 nSubj = length(subjVec);
@@ -707,13 +707,30 @@ nSubj = size(ML_parameters,1);
 
 pMat = nan(nSubj,3);
 for isubj = 1:nSubj;
-    pMat(isubj,:) = calc_pVec_optimalerror(ML_parameters(isubj,:));
+    pMat(isubj,:) = calc_pVec_minerror(ML_parameters(isubj,:));
 end
 
 % plot(pMat)
 figure
 plot(bsxfun(@times,pMat,ML_parameters(:,1)))
 hold on;
+
+
+%% compare flexible model LL with parameters from other model 
+
+load(['exp' num2str(expnumber) '_cleandata.mat'])
+[logflag] = loadconstraints(imodel,expnumber);
+
+ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
+
+for isubj = 1:14;
+    isubj
+    subjdata = data{isubj};
+    theta = [ML_parameters(isubj,:) pMat(isubj,1:2)];
+    
+    flexnLLVec(2,isubj) = calc_nLL(2,theta,subjdata);
+    realnLLVec(2,isubj) = calc_nLL(imodel,ML_parameters(isubj,:),subjdata);
+end
 
 %% plot triangle (ternary) plot with lines indicating 0.6 0.3 0.1
 
@@ -821,8 +838,8 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 1;
-modVec = [3 4 2];
+expnumber = 2;
+modVec = [3 2 4 1];
 nModels = length(modVec);
 modcompidx = 2;
 fixedrisk = 0;
@@ -1033,7 +1050,7 @@ clear all
 
 % things to change
 expnumber = 2;
-modelVec = [1 2 3];
+modelVec = [1 2 3 4];
 
 % things not to change
 nSubj = 10;
@@ -1064,35 +1081,40 @@ AICMat = cellfun(@(x,y) bsxfun(@plus,2*x,2*y),nLLMat,nParamMat,'UniformOutput',f
 AICcMat = cellfun(@(x,y) bsxfun(@plus,x,(2.*y.*(y+1))./(nTrials-y-1)),AICMat,nParamMat,'UniformOutput',false);
 BICMat = cellfun(@(x,y) bsxfun(@plus,2*x,y.*(log(nTrials) - log(2*pi))),nLLMat,nParamMat,'UniformOutput',false);
 
-% which one wins
-fprintf('AIC: ')
-[M,I] = cellfun(@(x) min(x),AICMat,'UniformOutput',false);
-for imodel = 1:length(modelVec)
-    fprintf('%d ',sum(I{imodel} == imodel))
+% confusion matrices
+[~,I] = cellfun(@(x) min(x),AICMat,'UniformOutput',false);
+AICconfusionMat = nan(nModels);
+for itruemodel = 1:nModels
+    for itestmodel = 1:nModels
+        AICconfusionMat(itruemodel,itestmodel) = sum(I{itruemodel} == itestmodel);
+    end
 end
-fprintf('\n')
+AICconfusionMat
 
-fprintf('AICc: ')
-[M,I] = cellfun(@(x) min(x),AICcMat,'UniformOutput',false);
-for imodel = 1:length(modelVec)
-    fprintf('%d ',sum(I{imodel} == imodel))
+[~,I] = cellfun(@(x) min(x),AICcMat,'UniformOutput',false);
+AICcconfusionMat = nan(nModels);
+for itruemodel = 1:nModels
+    for itestmodel = 1:nModels
+        AICcconfusionMat(itruemodel,itestmodel) = sum(I{itruemodel} == itestmodel);
+    end
 end
-fprintf('\n')
+AICcconfusionMat
 
-fprintf('BIC: ')
-[M,I] = cellfun(@(x) min(x),BICMat,'UniformOutput',false);
-for imodel = 1:length(modelVec)
-    fprintf('%d ',sum(I{imodel} == imodel))
+[~,I] = cellfun(@(x) min(x),BICMat,'UniformOutput',false);
+BICconfusionMat = nan(nModels);
+for itruemodel = 1:nModels
+    for itestmodel = 1:nModels
+        BICconfusionMat(itruemodel,itestmodel) = sum(I{itruemodel} == itestmodel);
+    end
 end
-fprintf('\n')
-
+BICconfusionMat
 
 
 %% parameter recovery plot
 
 clear all
 expnumber = 1;
-imodel = 4;
+imodel = 2;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
@@ -1101,6 +1123,11 @@ bfp = ML_parameters;
 load([filepath 'simdata_model' num2str(imodel) '.mat'])
 nParams = size(bfp,2);
 nSubj = size(bfp,1);
+
+% put things back in log space if they were optimized in log space
+[logflag] = loadconstraints(imodel,expnumber);
+bfp(:,logflag) = log(bfp(:,logflag));
+simtheta(:,logflag) = log(simtheta(:,logflag));
 
 figure;
 for iparam = 1:nParams
