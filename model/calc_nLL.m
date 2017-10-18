@@ -27,14 +27,10 @@ if nargin < 4; fixparams = []; end
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
-expnumber = size(data{1},2);
+expnumber = size(data{1},2); % experiment number
 
 % exponentiating appropriate parameters
-logflag = [1 1];
-if (expnumber == 2); logflag = [logflag 0 0]; end
-if (model == 2); logflag = [logflag 0 0]; end
-if (model == 4); logflag = [logflag 1]; end
-logflag = logical(logflag);
+logflag = loadconstraints(model,expnumber);
 
 % if there are fixed parameters
 if ~isempty(fixparams)
