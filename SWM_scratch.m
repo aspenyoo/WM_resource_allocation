@@ -201,6 +201,7 @@ for ipriority = 1:nPriorities
     plot_summaryfit(centers,[],[],M,SEM,aspencolors('booger'));
 
 end
+
 %% nTrials for each subject
 clear all
 expnumber = 1;
@@ -1013,6 +1014,7 @@ end
 truemodel = 4;
 expnumber = 2;
 
+
 testmodelVec = [1 2 3 4];
 nModels = length(testmodelVec);
 
@@ -1024,7 +1026,7 @@ logflag = loadconstraints(truemodel,expnumber);
 simtheta(:,logflag) = log(simtheta(:,logflag));
 
 nSubj = 10;
-nLLCell = cell(1,nModels);
+nLLCell = cell(1,nModels+1);
 % calculate true nLL
 for isubj = 1:nSubj
     nLLCell{1}(isubj) = calc_nLL(truemodel,simtheta(isubj,:),simdata{isubj});
@@ -1040,6 +1042,7 @@ for itestmodel = 1:nModels
     logflag = loadconstraints(testmodel,expnumber);
     ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
     
+
     for isubj = 1:nSubj
         % calculate nLL
         nLLCell{itestmodel+1}(isubj) = calc_nLL(testmodel,ML_parameters(isubj,:),simdata{isubj});

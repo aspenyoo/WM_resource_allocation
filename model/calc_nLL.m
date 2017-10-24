@@ -27,7 +27,7 @@ if nargin < 4; fixparams = []; end
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
-expnumber = size(data{1},2);
+expnumber = size(data{1},2); % experiment number
 
 % exponentiating appropriate parameters
 logflag = loadconstraints(model,expnumber);
