@@ -700,7 +700,7 @@ hold on;
 
 clear all
 imodel = 4;
-expnumber = 1;
+expnumber = 2;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(imodel) '.mat'])
 nSubj = size(ML_parameters,1);
@@ -1008,24 +1008,26 @@ end
 
 %% double chek NLL is good for parameter/model recovery
 
-clear all
+% clear all
 
-truemodel = 3;
+truemodel = 4;
 expnumber = 2;
 
-testmodelVec = [3];
+testmodelVec = [1 2 3 4];
 nModels = length(testmodelVec);
 
 % load true model stuff
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'simdata_model' num2str(truemodel) '.mat'])
 
+logflag = loadconstraints(truemodel,expnumber);
+simtheta(:,logflag) = log(simtheta(:,logflag));
 
 nSubj = 10;
 nLLCell = cell(1,nModels);
 % calculate true nLL
 for isubj = 1:nSubj
-    nLLCell{1}(isubj) = calc_nLL(truemodel,[log(simtheta(isubj,1:2)) simtheta(isubj,3:end)],simdata{isubj});
+    nLLCell{1}(isubj) = calc_nLL(truemodel,simtheta(isubj,:),simdata{isubj});
 end
 
 for itestmodel = 1:nModels
@@ -1034,15 +1036,20 @@ for itestmodel = 1:nModels
     
     % load relevant dataset
     load([filepath 'modelrecov_truemodel' num2str(truemodel) '_testmodel' num2str(testmodel) '.mat'])
+    
+    logflag = loadconstraints(testmodel,expnumber);
+    ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
+    
     for isubj = 1:nSubj
         % calculate nLL
-        nLLCell{itestmodel+1}(isubj) = calc_nLL(testmodel,[log(ML_parameters(isubj,1:2)) ML_parameters(isubj,3:end)],simdata{isubj});
+        nLLCell{itestmodel+1}(isubj) = calc_nLL(testmodel,ML_parameters(isubj,:),simdata{isubj});
     end
     
     
 end
 
-[nLLCell{1}; nLLCell{2}]
+% [nLLCell{1}; nLLCell{2}]
+[nLLCell{1}; nLLCell{2}; nLLCell{3}; nLLCell{4}; nLLCell{5}]
 
 %% model recovery
 
