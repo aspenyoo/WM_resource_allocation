@@ -86,7 +86,7 @@ nSubj = length(data);
 
 priorityVec = [0.1 0.3 0.6];
 nPriorities = 3;
-colorMat = [0.5 0.5 0.5; 0.5 0.5 1; 1 0.5 0.5];
+colorMat = [0 0 0; 0 0 1; 1 0 0];
 markerMat = {'.','x','s'};
 
 modelnameVec = {'optimal','free','fixed'}';
@@ -116,29 +116,29 @@ defaultplot;
 xlabel('priority'); ylabel('error');
 set(gca,'XTick',1:3,'XTickLabel',{'low','medium','high'})
 title('error')
-axis([0.5 3.5 1.6 2.4])
-set(gca,'YTick',1.6:.4:2.4,'YTickLabel',1.6:.4:2.4);
+axis([0.5 3.5 0 2.4])
+set(gca,'YTick',0:.4:2.4,'YTickLabel',0:.4:2.4);
 
 for ipriority = 1:nPriorities
-    errorbar(ipriority,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
-        'k','Marker',markerMat{ipriority},'LineWidth',1);
+%     errorbar(ipriority,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
+%         'LineColor',colorMat(ipriority,:),'LineWidth',1);
     errorb(ipriority,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
-        'LineWidth',1);
+        'LineWidth',1,'Color',colorMat(ipriority,:));
 end
 
 
 subplot(1,2,2); hold on;
 defaultplot;
-axis([0.5 3.5 2.2 3.8])
-set(gca,'YTick',[2.2 3 3.8],'YTickLabel',[2.2 3 3.8]);
+axis([0.5 3.5 0 3.6])
+set(gca,'YTick',0:0.6:3.6,'YTickLabel',0:0.6:3.6);
 xlabel('priority'); ylabel('error');
 set(gca,'XTick',1:3,'XTickLabel',{'low','medium','high'})
 title('disc size')
 for ipriority = 1:nPriorities
-    errorbar(ipriority,dataMdiscsize(nPriorities+1-ipriority),dataSEMdiscsize(nPriorities+1-ipriority),...
-        'k','Marker',markerMat{ipriority},'LineWidth',1);
+%     errorbar(ipriority,dataMdiscsize(nPriorities+1-ipriority),dataSEMdiscsize(nPriorities+1-ipriority),...
+%         'k','Marker',markerMat{ipriority},'LineWidth',1);
     errorb(ipriority,dataMdiscsize(nPriorities+1-ipriority),dataSEMdiscsize(nPriorities+1-ipriority),...
-        'LineWidth',1);
+        'LineWidth',1,'Color',colorMat(ipriority,:));
 end
 
 %% correlation plot exp 2
@@ -351,7 +351,7 @@ xlabel('error');
 %% ==========   MAIN MODELING RESULTS  ==================
 
 clear all
-expnumber = 2;
+expnumber = 1;
 imodel = 3;
 fixedrisk = [];%'_fixedrisk';
 loadpreddata = 1;
@@ -631,8 +631,10 @@ set(htick(:,3),'color',axis3,'linewidth',3)
 
 % plot data
 hter=ternaryc(pMat(:,1),pMat(:,2),pMat(:,3));
-set(hter,'marker','o','markerfacecolor','k','markersize',4','markeredgecolor','k')
-
+colorMap = aspencolors(nSubj,'qualitative');
+for isubj = 1:nSubj
+set(hter(isubj),'marker','o','markerfacecolor',colorMap(isubj,:),'markersize',4','markeredgecolor',colorMap(isubj,:))
+end
 %% ====================================================
 %          EXP 1: MAIN EFFECT AND MODELING RESULTS
 % =====================================================
@@ -665,7 +667,7 @@ clear all
 expnumber = 1;
 fixedrisk = [];%'_fixedrisk';
 % colorMat = [aspencolors('dustyrose'); aspencolors('booger'); aspencolors('seacolored')];
-colorMat = [0 0 1; 1 0 0; 0 0 0];
+colorMat = [1 0 0; 0 0 1; 0 0 0];
 modelVec = [3 4 2];
 nModels = length(modelVec);
 
@@ -981,6 +983,254 @@ for ipriority = 1:nPriorities
         if (imodel == 1); 
             ylabel('proportion','FontSize',14); 
             set(ha(nModels+imodel),'YTickLabel',[0 0.2 0.4]);
+        end
+    end
+end
+
+if (expnumber == 2)
+    % ========== quantile correlation plot per subject ===========
+    nQuants = 6;
+    for isubj = 1:nSubj
+       
+        for ipriority = 1:nPriorities
+            currdata = data{isubj}{ipriority}(:,1);
+            [currdata,idx] = sort(currdata);
+            quantVec = round(linspace(0,length(currdata),nQuants+1));
+            
+            for iquant = 1:nQuants
+                meanquanterror{ipriority}(isubj,iquant) = mean(currdata(quantVec(iquant)+1:quantVec(iquant+1)));
+                meanquantdiscsize{ipriority}(isubj,iquant) = mean(data{isubj}{ipriority}(idx(quantVec(iquant)+1:quantVec(iquant+1)),2));
+            end
+        end
+    end
+    
+    % ================ correlation plot ====================
+    
+    meanmeanquanterror = cellfun(@mean,meanquanterror,'UniformOutput',false);
+    meanmeanquantdiscsize = cellfun(@mean,meanquantdiscsize,'UniformOutput',false);
+    semmeanquantdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantdiscsize,'UniformOutput',false);
+    
+    axes(ha(2*nModels+imodel))
+    for ipriority = 1:nPriorities
+        hold on
+        plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},semmeanquantdiscsize{ipriority},...
+            [],[],colorMat(ipriority,:))
+    end
+    
+    if (imodel == 1); 
+        ylabel('disc size','FontSize',14); 
+    end
+    axis([0 6 2 6])
+    set(ha(2*nModels+imodel),'XTick',[0 3 6],'YTick',[2 4 6],...
+        'XTickLabel',[0 3 6],'YTickLabel',[2 4 6]);
+   
+    if (expnumber == 1)
+%         set(ha(imodel),'XTickLabel',[0 3 6])
+%         xlabel('error');
+    end
+    
+    xlabel('error');
+end
+end
+
+%% ========================================================================
+%      MODELING RESULTS: COMBINED PRIORITIES CUMULATIVE DISTRIBUTIONS
+% =========================================================================
+
+clear all; close all
+expnumber = 2;
+fixedrisk = [];  
+colorMat = [1 0 0; 0 0 1; 0 0 0; 0 1 0];
+nModelsPossible = 4; % how many total models there are
+modelorderVec = [3 2 4 1]; % the order the models should be plotted
+nModels = length(modelorderVec); % how many models you want to plot now
+modelnameVec = {'max points','flexible','proportional','min error'};
+
+if (expnumber == 1)
+    nSubj = 14;
+else
+    nSubj = 11;
+end
+nPriorities = 3;
+xlims = linspace(0,10,100); % for histograms
+dataxlims = linspace(0,10,16);
+filepath = ['fits/exp' num2str(expnumber) fixedrisk '/'];
+
+figure;
+if (expnumber == 2)
+    % top down, left right, bottom and top margins, left and right margins
+    ha = tight_subplot(3,nModels,{[.1 .1],[.03 .03 .03]},[.08 .03],[.05 .03]);
+    set(gcf,'Position',[28 504 800 500])
+else
+    ha = tight_subplot(1,nModels,[.03 .03],[.2 .07],[.06 .01]);
+    set(gcf,'Position',[28 504 800 236])
+end
+
+% load and plot predicted data for each model
+for imodel = 1:nModels
+    model = modelorderVec(imodel);
+    
+    % load data
+    load([filepath 'modelpred_exp' num2str(expnumber) '_model' num2str(model) fixedrisk '.mat'],'preddata')
+    
+    % get model predictions
+    for isubj = 1:nSubj
+        for ipriority = 1:nPriorities
+            % histogram of euclidean error
+            simdatacounts = hist(preddata{isubj}{ipriority}(:,1),xlims);
+            simerror{ipriority}(isubj,:) = cumsum(simdatacounts)./sum(simdatacounts);
+            if (expnumber == 2)
+                % histogram of disc size
+                simdatacounts = hist(preddata{isubj}{ipriority}(:,2),xlims);
+                simdiscsize{ipriority}(isubj,:)  = cumsum(simdatacounts)./sum(simdatacounts);
+            end
+        end
+    end
+    
+    meansimerror = cellfun(@mean,simerror,'UniformOutput',false);
+    semsimerror = cellfun(@(x) std(x)./sqrt(size(x,1)),simerror,'UniformOutput',false);
+    
+    if (expnumber == 2)
+        meansimdiscsize = cellfun(@mean,simdiscsize,'UniformOutput',false);
+        semsimdiscsize = cellfun(@(x) std(x)./sqrt(size(x,1)),simdiscsize,'UniformOutput',false);
+    end
+    
+    % plot error (and disc size) model predictions
+    for ipriority = 1:nPriorities
+        
+            axes(ha(imodel))
+        fill([xlims fliplr(xlims)],[meansimerror{ipriority}-semsimerror{ipriority}...
+            fliplr(meansimerror{ipriority}+semsimerror{ipriority})],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+        hold on;
+        title(modelnameVec{model})
+        
+        if (expnumber == 2)
+            % discsize
+            axes(ha(nModels+imodel))
+            fill([xlims fliplr(xlims)],[meansimdiscsize{ipriority}-semsimdiscsize{ipriority}...
+                fliplr(meansimdiscsize{ipriority}+semsimdiscsize{ipriority})],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+            hold on;
+        end
+        
+    end
+    
+    if (expnumber == 2)
+        % ========== quantile correlation plot per subject ===========
+        nQuants = 6;
+        for isubj = 1:nSubj
+            
+            for ipriority = 1:nPriorities
+                currsimdata = preddata{isubj}{ipriority}(:,1);
+                [currsimdata,simidx] = sort(currsimdata);
+                simquantVec = round(linspace(0,length(currsimdata),nQuants+1));
+                
+                for iquant = 1:nQuants
+                    meanquantsimerror{ipriority}(isubj,iquant) = mean(currsimdata(simquantVec(iquant)+1:simquantVec(iquant+1)));
+                    meanquantsimdiscsize{ipriority}(isubj,iquant) = mean(preddata{isubj}{ipriority}(simidx(simquantVec(iquant)+1:simquantVec(iquant+1)),2));
+                end
+            end
+        end
+        
+        % ================ group correlation plot ====================
+        
+        meanmeanquantsimerror = cellfun(@nanmean,meanquantsimerror,'UniformOutput',false);
+        meanmeanquantsimdiscsize = cellfun(@mean,meanquantsimdiscsize,'UniformOutput',false);
+        semmeanquantsimdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantsimdiscsize,'UniformOutput',false);
+        
+        axes(ha(2*nModels+imodel)); hold on
+        for ipriority = 1:nPriorities
+            plot_summaryfit(meanmeanquantsimerror{ipriority},[],[],meanmeanquantsimdiscsize{ipriority},...
+                semmeanquantsimdiscsize{ipriority},[],colorMat(ipriority,:))
+        end
+    end
+    
+end
+
+% ============= PLOT REAL DATA ======================
+
+% load data
+load(['exp' num2str(expnumber) '_cleandata.mat'],'data')
+% load([filepath 'fits_model' num2str(model) '.mat'])
+
+
+% histograms per subjects
+for isubj = 1:nSubj
+    for ipriority = 1:nPriorities
+        
+        % histogram of euclidean error
+        datacounts = hist(data{isubj}{ipriority}(:,1),dataxlims);
+        error{ipriority}(isubj,:) = cumsum(datacounts)./sum(datacounts);
+        
+        if (expnumber == 2)
+            % histogram of disc size
+            datacounts = hist(data{isubj}{ipriority}(:,2),dataxlims);
+            discsize{ipriority}(isubj,:) = cumsum(datacounts)./sum(datacounts);
+        end
+    end
+    
+end
+
+% =========== group plot =====================
+
+for imodel = 1:nModels
+
+meanerror = cellfun(@mean,error,'UniformOutput',false);
+semerror = cellfun(@(x) std(x)./sqrt(size(x,1)),error,'UniformOutput',false);
+
+if (expnumber == 2)
+    meandiscsize = cellfun(@mean,discsize,'UniformOutput',false);
+    semdiscsize = cellfun(@(x) std(x)./sqrt(size(x,1)),discsize,'UniformOutput',false);
+end
+
+for ipriority = 1:nPriorities
+    
+    
+    % =========== ERROR ============
+    
+        axes(ha(imodel))
+    hold on;
+%     plot(xlims,meanerror{ipriority},'--','Color',colorMat(ipriority,:));
+%     plot(xlims,meanerror{ipriority}-semerror{ipriority},'Color',colorMat(ipriority,:));
+%     plot(xlims,meanerror{ipriority}+semerror{ipriority},'Color',colorMat(ipriority,:));
+    errorbar(dataxlims,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineWidth',1);
+    defaultplot
+    axis([0 10 0 1])
+    
+    if expnumber == 2
+        xlabel('error');
+        set(ha(imodel),'XTick',[0 5 10],'YTick',[0 0.5 1],...
+            'YTickLabel','','FontSize',10);
+        if (imodel == 1)
+        ylabel('proportion','FontSize',14);
+        set(ha(imodel),'YTickLabel',[0 0.5 1])
+        end
+    else
+        xlabel('error','FontSize',16)
+        set(ha(imodel),'YTick',[0 0.5 1],'XTick',[0 5 10]);
+        
+        if imodel == 2
+            ylabel('proportion','FontSize',16)
+        else
+            set(ha(imodel),'YTickLabel','');
+        end
+    end
+    
+    % ========= DISC SIZE ===========
+    if (expnumber == 2)
+        axes(ha(nModels+imodel))
+        hold on;
+%         plot(xlims,meandiscsize{ipriority},'--','Color',colorMat(ipriority,:));
+%         plot(xlims,meandiscsize{ipriority}-semdiscsize{ipriority},'Color',colorMat(ipriority,:));
+%         plot(xlims,meandiscsize{ipriority}+semdiscsize{ipriority},'Color',colorMat(ipriority,:));
+        errorbar(dataxlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color',colorMat(ipriority,:),'LineWidth',1);
+        defaultplot
+        axis([0 10 0 1])
+        set(ha(nModels+imodel),'XTick',[0 5 10],'YTick',[0 0.5 1],...
+            'FontSize',10,'YTickLabel','');
+        xlabel('disc size','FontSize',10);
+        if (imodel == 1); 
+            ylabel('proportion','FontSize',14); 
+            set(ha(nModels+imodel),'YTickLabel',[0 0.5 1]);
         end
     end
 end
