@@ -684,7 +684,7 @@ ylabel('Jbar_{[condition]}')
 clear all
 imodel = 2;
 expnumber = 2;
-fixedrisk = '_fixedrisk';
+fixedrisk = '';
 filepath = ['fits/exp' num2str(expnumber)  fixedrisk '/'];
 load([filepath 'fits_model' num2str(imodel) '.mat'])
 nSubj = size(ML_parameters,1);
@@ -701,7 +701,7 @@ hold on;
 
 clear all
 imodel = 4;
-expnumber = 2;
+expnumber = 1;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(imodel) '.mat'])
 nSubj = size(ML_parameters,1);
@@ -840,9 +840,9 @@ hlabels=terlabel('high','medium','low');
 
 clear all
 expnumber = 2;
-modVec = [3 2 4 1];
+modVec = [3 1 2 4];
 nModels = length(modVec);
-modcompidx = 2;
+modcompidx = 4;
 fixedrisk = 0;
 MCM = 'BIC';
 
@@ -1059,8 +1059,8 @@ end
 clear all
 
 % things to change
-expnumber = 2;
-modelVec = [1 2 3 4];
+expnumber = 1;
+modelVec = [3 4];
 
 % things not to change
 nSubj = 10;
