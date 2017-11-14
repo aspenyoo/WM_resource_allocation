@@ -839,8 +839,8 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 2;
-modVec = [3 2 4 1];
+expnumber = 1;
+modVec = [3 2 4];
 nModels = length(modVec);
 modcompidx = 2;
 fixedrisk = 0;
@@ -919,8 +919,33 @@ defaultplot
 
 ylabel(['\Delta ' MCM ' (favoring ' modcomplabel ' model)'])
 
+%% SUCCINCT MODEL COMPARISON
+fillx = 0.475;
+xthing = [];
 
+figure;
 
+if nModels == 2
+    fill([0 nSubj+1 nSubj+1 0],medCI([1 1 2 2]),...
+        0.8*ones(1,3),'EdgeColor','none'); hold on;
+    plot([0 nSubj+1],[mediancomp mediancomp],'Color',[0.1 0.1 0.1])
+    set(gca,'XTick',[],'XTickLabel',modlabels)
+else
+    for imodel = 1:(nModels-1)
+        fill([imodel-fillx imodel+fillx imodel+fillx imodel-fillx],medCI([imodel imodel imodel+nModels-1 imodel+nModels-1]),...
+            0.7*ones(1,3),'EdgeColor','none'); hold on;
+        plot([imodel-fillx imodel+fillx],mediancomp(imodel)*ones(1,2),'Color',[0.1 0.1 0.1])
+        set(gca,'XTick',[],'XTick',1:3,'XTickLabel',modlabels)
+        xthing = [xthing imodel*ones(nSubj,1)];
+    end
+end
+
+colorMap = aspencolors(nSubj,'qualitative');
+for isubj = 1:nSubj
+    plot(xthing(isubj,:),comparison(isubj,:),'o','Color',colorMat(isubj,:))
+end
+plot([1-fillx nModels-1+fillx],[0 0],'k-') % 0 axis line
+defaultplot
 %% % % % % % % % % % % % % % % % % % % % % %
 %       PARAMETER/MODEL RECOVERY
 % % % % % % % % % % % % % % % % % % % % % %
