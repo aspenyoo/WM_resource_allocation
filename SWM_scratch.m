@@ -840,9 +840,9 @@ hlabels=terlabel('high','medium','low');
 
 clear all
 expnumber = 2;
-modVec = [3 1 2 4];
+modVec = [3 2 4 1];
 nModels = length(modVec);
-modcompidx = 4;
+modcompidx = 2;
 fixedrisk = 0;
 MCM = 'BIC';
 
@@ -942,7 +942,7 @@ end
 
 colorMap = aspencolors(nSubj,'qualitative');
 for isubj = 1:nSubj
-    plot(xthing(isubj,:),comparison(isubj,:),'o','Color',colorMat(isubj,:))
+    plot(xthing(isubj,:),comparison(isubj,:),'o','Color',colorMap(isubj,:))
 end
 plot([1-fillx nModels-1+fillx],[0 0],'k-') % 0 axis line
 defaultplot

@@ -578,7 +578,7 @@ clear all
 % colorMat = [0.3 0.3 0.3; 0.3 0.3 1; 1 0.3 0.3];
 colorMat = [1 0 0; 0 0 1; 0 0 0];
 
-expnumber = 1;
+expnumber = 2;
 imodel = 2;
 
 % load data
@@ -633,7 +633,7 @@ set(htick(:,3),'color',axis3,'linewidth',3)
 hter=ternaryc(pMat(:,1),pMat(:,2),pMat(:,3));
 colorMap = aspencolors(nSubj,'qualitative');
 for isubj = 1:nSubj
-set(hter(isubj),'marker','o','markerfacecolor',colorMap(isubj,:),'markersize',4','markeredgecolor',colorMap(isubj,:))
+set(hter(isubj),'marker','o','markerfacecolor',colorMap(isubj,:),'markersize',8,'markeredgecolor',colorMap(isubj,:))
 end
 %% ====================================================
 %          EXP 1: MAIN EFFECT AND MODELING RESULTS
