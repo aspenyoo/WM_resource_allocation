@@ -20,7 +20,7 @@ bleh
 
 %% % % % % % % % % % % % % % % % % % % % % 
 %       DATA RELATED
-% % % % % % % % % % % % % % % % % % % % %
+% % % % % % % % % % % % % %  % % % % % % %
 
 %% looking at nTrials
 
@@ -294,15 +294,15 @@ idx = (group_data(:,1) == isubj) & (group_data(:,2) == target);
 
 %% understanding Jbar, tau, and sigma
 
-isubj = 1;
-ipriority = 3;
-Jbar = JbarMat(isubj,ipriority);
-tau = ML_parameters(isubj,2);
-beta = ML_parameters(isubj,end);
+% isubj = 1;
+% ipriority = 3;
+% Jbar = JbarMat(isubj,ipriority);
+% tau = ML_parameters(isubj,2);
+% beta = ML_parameters(isubj,end);
 
-% Jbar = 1;
-% tau = .1;
-% beta = 0.01;
+Jbar = .5;
+tau = .1;
+beta = 0.01;
 
 [JVec] = loadvar('JVec',{Jbar,tau});
 % JVec = linspace(1,2,100);
@@ -312,17 +312,86 @@ Jpdf = Jpdf./qtrapz(Jpdf); % normalize
 
 % figure;
 subplot(3,1,1) % JVec
-plot(JVec,Jpdf,'k-'); defaultplot
+plot(JVec,Jpdf,'k-'); % defaultplot
 subplot(3,1,2) % relative to mean, Jbar
-plot(JVec./Jbar,Jpdf,'k-'); defaultplot
+plot(JVec./Jbar,Jpdf,'k-'); % defaultplot
 subplot(3,1,3) % sigma
-plot(1./sqrt(JVec),Jpdf,'k-'); defaultplot
+plot(1./sqrt(JVec),Jpdf,'k-');%  defaultplot
+
+%% plot mean SD distribution across subjects
+
+clear all; close all
+expnumber = 2;
+imodel = 2; 
+
+load(['fits/exp' num2str(expnumber) '/fits_model' num2str(imodel) '.mat'])
+
+switch expnumber
+    case 1
+        nSubj = 14;
+    case 2
+        nSubj = 11;
+end
+
+% put into log space
+logflag = loadconstraints(imodel,expnumber);
+ML_parameters(:,logflag) = log(ML_parameters(:,logflag));
+theta = mean(ML_parameters); % get mean values
+theta(logflag) = exp(theta(logflag)); % exponentiate again
+
+switch imodel
+    case 1 % optimal
+        % calculate the proportions that maximize expected utility
+        pVec = calc_optimal_pVec(theta);
+    case 2 % not optimal
+        if sum(theta(end-1:end))>1 % reflect over pHigh + pMed = 1 line
+            pVec = [1-theta(end) 1-theta(end-1)];
+            pVec = [pVec 1-sum(pVec)];
+        else
+            pVec = [theta(end-1:end) 1-sum(theta(end-1:end))];
+        end
+    case 3 % fixed
+        pVec = [0.6 0.3 0.1];
+    case 4 % min error
+        pVec = calc_pVec_minerror(theta);
+end
+
+tau = theta(2);
+JVec = linspace(0,10,100);
+colorVec = {'r','b','k'};
+nSamples = 1e4;
+for iJbar = 1:3
+    Jbar = theta(1)*pVec(iJbar);
+    
+    sampless = gamrnd(Jbar/tau,tau,nSamples,1);
+    sampless = 1./sqrt(sampless);
+    
+    figure(1)
+    h = histogram(sampless,JVec);
+    
+    figure(2)
+    plot(JVec(1:end-1)+h.BinWidth,h.Values,'-','Color',colorVec{iJbar}); hold on;
+    
+    
+    %         [JVec] = loadvar({'JVec',Jbar,tau});
+    
+    %         Jpdf = gampdf(JVec,Jbar/tau,tau);
+%     Jpdf = gampdf(JVec*Jbar,Jbar/tau,tau);
+%     Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+%     
+%     %         JVecMax(isubj,iJbar) = JVec(end)/Jbar;
+%     
+%     plot(JVec,Jpdf,'-','Color',colorVec{iJbar}); hold on; %defaultplot;
+    %         plot(JVec./Jbar,Jpdf,'k-'); defaultplot;
+    %         pause;
+end
+
 
 
 %% look at typical max for J/Jbar gamma distribution
 
 expnumber = 2;
-imodel = 1;
+imodel = 3;
 
 load(['fits/exp' num2str(expnumber) '/fits_model' num2str(imodel) '.mat'])
 
@@ -366,7 +435,7 @@ for isubj = 1:nSubj
         
         %         JVecMax(isubj,iJbar) = JVec(end)/Jbar;
         
-        plot(JVec,Jpdf,'k-'); defaultplot;
+        plot(JVec,Jpdf,'k-'); %defaultplot;
         pause;
         %         plot(JVec./Jbar,Jpdf,'k-'); defaultplot;
         %         pause;
