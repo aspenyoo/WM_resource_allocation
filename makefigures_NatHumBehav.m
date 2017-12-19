@@ -1046,6 +1046,8 @@ modelorderVec = [3 2 4 1]; % the order the models should be plotted
 nModels = length(modelorderVec); % how many models you want to plot now
 modelnameVec = {'max points','flexible','proportional','min error'};
 
+datadisplay = 1; % how data is displayed. 0: line, 1: errorbars
+
 if (expnumber == 1)
     nSubj = 14;
 else
@@ -1157,13 +1159,21 @@ load(['exp' num2str(expnumber) '_cleandata.mat'],'data')
 for isubj = 1:nSubj
     for ipriority = 1:nPriorities
         
+        switch datadisplay
+            case 0
+                xx = xlims;
+            case 1
+                xx = dataxlims;
+                xdiff = diff(dataxlims(1:2));
+                plotx = [0 xdiff/2+xx];
+        end
         % histogram of euclidean error
-        datacounts = hist(data{isubj}{ipriority}(:,1),dataxlims);
+        datacounts = hist(data{isubj}{ipriority}(:,1),xx);
         error{ipriority}(isubj,:) = cumsum(datacounts)./sum(datacounts);
         
         if (expnumber == 2)
             % histogram of disc size
-            datacounts = hist(data{isubj}{ipriority}(:,2),dataxlims);
+            datacounts = hist(data{isubj}{ipriority}(:,2),xx);
             discsize{ipriority}(isubj,:) = cumsum(datacounts)./sum(datacounts);
         end
     end
@@ -1189,10 +1199,14 @@ for ipriority = 1:nPriorities
     
         axes(ha(imodel))
     hold on;
-%     plot(xlims,meanerror{ipriority},'--','Color',colorMat(ipriority,:));
-%     plot(xlims,meanerror{ipriority}-semerror{ipriority},'Color',colorMat(ipriority,:));
-%     plot(xlims,meanerror{ipriority}+semerror{ipriority},'Color',colorMat(ipriority,:));
-    errorbar(dataxlims,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineWidth',1);
+    switch datadisplay
+        case 0
+            plot(xlims,meanerror{ipriority},'--','Color',colorMat(ipriority,:));
+            plot(xlims,meanerror{ipriority}-semerror{ipriority},'Color',colorMat(ipriority,:));
+            plot(xlims,meanerror{ipriority}+semerror{ipriority},'Color',colorMat(ipriority,:));
+        case 1
+            errorbar(plotx,[0 meanerror{ipriority}],[0 semerror{ipriority}],'Color',colorMat(ipriority,:),'LineWidth',1);
+    end
     defaultplot
     axis([0 10 0 1])
     
@@ -1219,15 +1233,19 @@ for ipriority = 1:nPriorities
     if (expnumber == 2)
         axes(ha(nModels+imodel))
         hold on;
-%         plot(xlims,meandiscsize{ipriority},'--','Color',colorMat(ipriority,:));
-%         plot(xlims,meandiscsize{ipriority}-semdiscsize{ipriority},'Color',colorMat(ipriority,:));
-%         plot(xlims,meandiscsize{ipriority}+semdiscsize{ipriority},'Color',colorMat(ipriority,:));
-        errorbar(dataxlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color',colorMat(ipriority,:),'LineWidth',1);
+        switch datadisplay
+            case 0
+                plot(xlims,meandiscsize{ipriority},'--','Color',colorMat(ipriority,:));
+                plot(xlims,meandiscsize{ipriority}-semdiscsize{ipriority},'Color',colorMat(ipriority,:));
+                plot(xlims,meandiscsize{ipriority}+semdiscsize{ipriority},'Color',colorMat(ipriority,:));
+            case 1
+                errorbar(plotx,[0 meandiscsize{ipriority}],[0 semdiscsize{ipriority}],'Color',colorMat(ipriority,:),'LineWidth',1);
+        end
         defaultplot
         axis([0 10 0 1])
         set(ha(nModels+imodel),'XTick',[0 5 10],'YTick',[0 0.5 1],...
             'FontSize',10,'YTickLabel','');
-        xlabel('disc size','FontSize',10);
+        xlabel('circle size','FontSize',10);
         if (imodel == 1); 
             ylabel('proportion','FontSize',14); 
             set(ha(nModels+imodel),'YTickLabel',[0 0.5 1]);
