@@ -129,8 +129,8 @@ end
 
 subplot(1,2,2); hold on;
 defaultplot;
-axis([0.5 3.5 0 3.6])
-set(gca,'YTick',0:0.6:3.6,'YTickLabel',0:0.6:3.6);
+axis([0.5 3.5 0 4])
+set(gca,'YTick',0:0.5:4,'YTickLabel',0:0.5:4);
 xlabel('priority'); ylabel('error');
 set(gca,'XTick',1:3,'XTickLabel',{'low','medium','high'})
 title('disc size')
@@ -336,9 +336,9 @@ for ipriority = 1:nPriorities
         [],[],colorMat{ipriority})
     
     ylabel('disc size');
-    axis([0 6 2 4])
-    set(gca,'XTick',[0 3 6],'YTick',[2 3 4]);
-    set(gca,'YTickLabel',[2 3 4])
+    axis([0 6 0 4])
+    set(gca,'XTick',[0 3 6],'YTick',[0 2 4]);
+    set(gca,'YTickLabel',[0 2 4])
     if (expnumber == 1)
         set(gca,'XTickLabel',[0 3 6])
         xlabel('error');
