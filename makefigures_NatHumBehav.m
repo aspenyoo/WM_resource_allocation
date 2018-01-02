@@ -1798,13 +1798,12 @@ clear all
 close all
 
 nBins = 24;
-expnumber = 2; 
+expnumber = 1; 
 
 switch expnumber
     case 1
         load('exp1_zuzprocesseddata.mat')
-        dataa = sqrt((group_data(:,13) - group_data(:,11)).^2 +...
-            (group_data(:,14) - group_data(:,12)).^2);
+        finalerror = group_data(:,8);
         anglee = atand(group_data(:,14)./group_data(:,13));
 
         idx = (group_data(:,13) < 0) & (group_data(:,14) > 0); % second quadrant
@@ -1816,14 +1815,16 @@ switch expnumber
         idx = (group_data(:,13) > 0) & (group_data(:,14) < 0); % third quadrant
         anglee(idx) = anglee(idx) + 360;
 
-        group_data = [group_data(:,1) anglee dataa];
+        group_data = [group_data(:,1) anglee finalerror];
+        
+        subjVec = [1:9 11:15];
     case 2
         load('exp2_zuzprocesseddata.mat')
         group_data = group_data(:,[1 6 7 13]);
         subjVec = 4:14;
-        dataa = sqrt((10.*cosd(group_data(:,4)) - group_data(:,2)).^2 +...
+        finalerror = sqrt((10.*cosd(group_data(:,4)) - group_data(:,2)).^2 +...
             (10.*sind(group_data(:,4)) - group_data(:,3)).^2);
-        group_data = [group_data(:,[1 4]) dataa];
+        group_data = [group_data(:,[1 4]) finalerror];
 end
 nSubj = length(subjVec);
 
@@ -1838,14 +1839,14 @@ for isubj = 1:nSubj;
     nTrials = sum(idx);
     trialss = round(linspace(1,nTrials,nBins+1));
     
-    dataa = group_data(idx,2:3);
-    dataa = sortrows(dataa,1);
+    finalerror = group_data(idx,2:3);
+    finalerror = sortrows(finalerror,1);
     
     permuteidx = randperm(nTrials);
-    permutedataa = [dataa(:,1) dataa(permuteidx,2)];
+    permutedataa = [finalerror(:,1) finalerror(permuteidx,2)];
     
     for ibin = 1:nBins;
-        bindata = dataa(trialss(ibin):trialss(ibin+1),:);
+        bindata = finalerror(trialss(ibin):trialss(ibin+1),:);
         permdata = permutedataa(trialss(ibin):trialss(ibin+1),:);
         
         angleMat(isubj,ibin) = mean(bindata(:,1));
@@ -1872,8 +1873,16 @@ sempermerror = std(permerrorMat)./sqrt(nSubj);
 figure; hold on
 fill([meandataangle fliplr(meandataangle)],[meandataerror-semdataerror fliplr(meandataerror+semdataerror)],[1 0.8 0.1],'FaceAlpha',0.5,'EdgeColor','none')
 fill([meanpermangle fliplr(meanpermangle)],[meanpermerror-sempermerror fliplr(meanpermerror+sempermerror)],'k','FaceAlpha',0.2,'EdgeColor','none')
-plot([90 90; 180 180; 270 270],[1.5 2.6],'k--')
-ylim([1.5 2.6])
+
+switch expnumber
+    case 1
+        ylim([1 2])
+        plot([90 90; 180 180; 270 270],[1 2],'k--')
+    case 2
+        ylim([1.5 2.6])
+        plot([90 90; 180 180; 270 270],[1.5 2.6],'k--')
+end
+defaultplot
 
 figure; hold on
 fill([(meanpermerror+sempermerror).*cosd(meanpermangle) (meanpermerror(1)+sempermerror(1)).*cosd(meanpermangle(1)) ,...
@@ -1886,7 +1895,12 @@ fill([(meandataerror+semdataerror).*cosd(meandataangle) (meandataerror(1)+semdat
     fliplr([(meandataerror-semdataerror).*sind(meandataangle) (meandataerror(1)-semdataerror(1)).*sind(meandataangle(1))])],[1 0.8 0.1],'FaceAlpha',0.5,'EdgeColor','none')
 plot([-2.5 0; 2.5 0],[0 -2.5; 0 2.5],'k-')
 axis equal
+switch expnumber
+    case 1
+        axis([-2 2 -2 2])
+    case 2
 axis([-2.5 2.5 -2.5 2.5])
+end
 defaultplot
 
 %% PERMUTATION TEST FOR STIMULUS: EXP 2 (SEPARATED PRIORITIES)
@@ -1904,9 +1918,9 @@ switch expnumber
         load('exp2_zuzprocesseddata.mat')
         group_data = group_data(:,[1 2 6 7 13]);
         subjVec = 4:14;
-        dataa = sqrt((10.*cosd(group_data(:,5)) - group_data(:,3)).^2 +...
+        finalerror = sqrt((10.*cosd(group_data(:,5)) - group_data(:,3)).^2 +...
             (10.*sind(group_data(:,5)) - group_data(:,4)).^2);
-        group_data = [group_data(:,[1 2 5]) dataa];
+        group_data = [group_data(:,[1 2 5]) finalerror];
 end
 nSubj = length(subjVec);
 priorityVec = [0.6 0.3 0.1];
@@ -1930,14 +1944,14 @@ for isubj = 1:nSubj;
         nTrials = sum(idx);
         trialss = round(linspace(1,nTrials,nBins+1));
         
-        dataa = group_data(idx,3:4);
-        dataa = sortrows(dataa,1);
+        finalerror = group_data(idx,3:4);
+        finalerror = sortrows(finalerror,1);
         
         permuteidx = randperm(nTrials);
-        permutedataa = [dataa(:,1) dataa(permuteidx,2)];
+        permutedataa = [finalerror(:,1) finalerror(permuteidx,2)];
         
         for ibin = 1:nBins;
-            bindata = dataa(trialss(ibin):trialss(ibin+1),:);
+            bindata = finalerror(trialss(ibin):trialss(ibin+1),:);
             permdata = permutedataa(trialss(ibin):trialss(ibin+1),:);
             
             angleMat{ipriority}(isubj,ibin) = mean(bindata(:,1));
