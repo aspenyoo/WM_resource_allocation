@@ -250,6 +250,38 @@ save(['exp' num2str(expnumber) '_rawdata.mat'],'data','names');
 
 % names = {'subject'	'run'	'trial'	'accuracy'	'delay'	'disc_size'	'reward_at_stake'	'target_value'	'error'	'memorandum_x'	'memorandum_y'	'actual_location_x'	'actual_location_y'	'target_loc_quadrant'	'target_loc_angle'	'distractor1_value'	'distractor1_loc_quadrant'	'distractor1_loc_angle'	'distractor2_value'	'distractor2_loc_quadrant'	'distractor2_loc_angle'	'distractor3_value'	'distractor3_loc_quadrant'	'distractor3_loc_angle'};
 
+%% checking nTrials per subject. rawdata files vs. zuz_processeddata files
+
+clear all
+
+expnumber = 2;
+nSubj = 16; % a number higher than the number of subjects I thinka re in both experiments
+
+load(['exp' num2str(expnumber) '_rawdata.mat'])
+rawdatanames = names;
+rawdata = data;
+
+load(['exp' num2str(expnumber) '_zuzprocesseddata.mat'])
+
+for isubj = 1:nSubj;
+    isubj
+    sum(rawdata(:,1) == isubj)
+    sum(group_data(:,1) == isubj)
+end
+
+%% checking nTrials per subject. zuz_processddata vs. cleandata
+clear all
+
+expnumber = 2;
+nSubj = 16; % a number higher than the number of subjects I thinka re in both experiments
+
+load(['exp' num2str(expnumber) '_cleandata.mat'])
+cleannames = names;
+cleandata = data;
+
+load(['exp' num2str(expnumber) '_zuzprocesseddata.mat'])
+
+
 %% check bias as a function of distractor priority
 
 clear all

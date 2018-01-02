@@ -14,19 +14,19 @@ if expnumber == 2 % alpha beta
     logflag = [logflag 0 0];
 end
 switch model
-    case 2 % define p_high p_med for flexible modelc
+    case 2 % define p_high p_med for Flexible model
         lb = [lb 1e-10 1e-10];
         ub = [ub 1 1];
         plb = [plb 0.3 1e-10];
         pub = [pub 0.7 0.3];
         logflag = [logflag 0 0];
-    case 4
+    case 4 % gamma for Minimizing Error model
         lb = [lb 1e-10];
         ub = [ub 10];
         plb = [plb 1e-3];
         pub = [pub 1];
         logflag = [logflag 1];
-        nonbcon = @model4nonbcon; % violates if Jbar/tau - psi/2 <= 0 
+        nonbcon = @model4nonbcon; % violates if Jbar/tau - gamma/2 <= 0 
     otherwise
         nonbcon = [];
 end
