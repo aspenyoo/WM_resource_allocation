@@ -797,13 +797,13 @@ end
 % =====================================================
 
 clear all; close all
-expnumber = 2;
+expnumber = 1;
 fixedrisk = [];  
 colorMat = [1 0 0; 0 0 1; 0 0 0; 0 1 0];
 nModelsPossible = 4; % how many total models there are
-modelorderVec = [3]; % the order the models should be plotted
+modelorderVec = [3 2 4]; % the order the models should be plotted
 nModels = length(modelorderVec); % how many models you want to plot now
-modelnameVec = {'max points','free','proportional','min error'};
+modelnameVec = {'max points','flexible','proportional','min error'};
 
 if (expnumber == 1)
     nSubj = 14;
@@ -812,6 +812,7 @@ else
 end
 nPriorities = 3;
 xlims = linspace(0,10,16); % for histograms
+xdiff = diff(xlims(1:2));
 filepath = ['fits/exp' num2str(expnumber) fixedrisk '/'];
 
 figure;
@@ -857,16 +858,16 @@ for imodel = 1:nModels
     for ipriority = 1:nPriorities
         
             axes(ha(imodel))
-        fill([xlims fliplr(xlims)],[meansimerror{ipriority}-semsimerror{ipriority}...
-            fliplr(meansimerror{ipriority}+semsimerror{ipriority})],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+        fill( [0 xlims+xdiff fliplr(xlims)+xdiff 0],[0 meansimerror{ipriority}-semsimerror{ipriority}...
+            fliplr(meansimerror{ipriority}+semsimerror{ipriority}) 0],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
         hold on;
         title(modelnameVec{model})
         
         if (expnumber == 2)
             % discsize
             axes(ha(nModels+imodel))
-            fill([xlims fliplr(xlims)],[meansimdiscsize{ipriority}-semsimdiscsize{ipriority}...
-                fliplr(meansimdiscsize{ipriority}+semsimdiscsize{ipriority})],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+            fill([0 xlims fliplr(xlims) 0]+xdiff,[0 meansimdiscsize{ipriority}-semsimdiscsize{ipriority}...
+                fliplr(meansimdiscsize{ipriority}+semsimdiscsize{ipriority}) 0],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
             hold on;
         end
         
@@ -947,21 +948,21 @@ for ipriority = 1:nPriorities
     
         axes(ha(imodel))
     hold on;
-    errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineWidth',1);
+    errorbar(xlims+xdiff,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineStyle', 'none','LineWidth',1);
     defaultplot
     axis([0 10 0 0.4])
     
     if expnumber == 2
         xlabel('error');
-        set(ha(imodel),'XTick',[0 5 10],'YTick',[0 0.2 0.4],...
+        set(ha(imodel),'XTick',0:10,'YTick',0:0.1:0.4,...
             'YTickLabel','','FontSize',10);
         if (imodel == 1)
         ylabel('proportion','FontSize',14);
-        set(ha(imodel),'YTickLabel',[0 0.2 0.4])
+        set(ha(imodel),'YTickLabel',0:0.1:0.4)
         end
     else
         xlabel('error','FontSize',16)
-        set(ha(imodel),'YTick',[0 0.2 0.4],'XTick',[0 5 10]);
+        set(ha(imodel),'YTick',0:0.1:0.4,'XTick',0:10);
         
         if imodel == 2
             ylabel('proportion','FontSize',16)
@@ -974,15 +975,15 @@ for ipriority = 1:nPriorities
     if (expnumber == 2)
         axes(ha(nModels+imodel))
         hold on;
-        errorbar(xlims,meandiscsize{ipriority},semdiscsize{ipriority},'Color',colorMat(ipriority,:),'LineWidth',1);
+        errorbar(xlims+xdiff,meandiscsize{ipriority},semdiscsize{ipriority},'Color',colorMat(ipriority,:),'LineStyle','none','LineWidth',1);
         defaultplot
         axis([0 10 0 0.4])
-        set(ha(nModels+imodel),'XTick',[0 5 10],'YTick',[0 0.2 0.4],...
+        set(ha(nModels+imodel),'XTick',0:10,'YTick',0:0.1:0.4,...
             'FontSize',10,'YTickLabel','');
         xlabel('disc size','FontSize',10);
         if (imodel == 1); 
             ylabel('proportion','FontSize',14); 
-            set(ha(nModels+imodel),'YTickLabel',[0 0.2 0.4]);
+            set(ha(nModels+imodel),'YTickLabel',0:0.1:0.4);
         end
     end
 end
@@ -1010,19 +1011,20 @@ if (expnumber == 2)
     meanmeanquantdiscsize = cellfun(@mean,meanquantdiscsize,'UniformOutput',false);
     semmeanquantdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantdiscsize,'UniformOutput',false);
     
+    
     axes(ha(2*nModels+imodel))
+    axis([0 6 0 6])
     for ipriority = 1:nPriorities
         hold on
-        plot_summaryfit(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},semmeanquantdiscsize{ipriority},...
-            [],[],colorMat(ipriority,:))
+        errorb(meanmeanquanterror{ipriority},meanmeanquantdiscsize{ipriority},semmeanquantdiscsize{ipriority},'Color',colorMat(ipriority,:));
+%         plot_summaryfit(meanmeanquanterror{ipriority},...
+%             [],[],colorMat(ipriority,:))
     end
     
     if (imodel == 1); 
         ylabel('disc size','FontSize',14); 
     end
-    axis([0 6 2 6])
-    set(ha(2*nModels+imodel),'XTick',[0 3 6],'YTick',[2 4 6],...
-        'XTickLabel',[0 3 6],'YTickLabel',[2 4 6]);
+    set(ha(2*nModels+imodel),'XTick',0:6,'YTick',0:6,'XTickLabel',0:6,'YTickLabel',0:6);
    
     if (expnumber == 1)
 %         set(ha(imodel),'XTickLabel',[0 3 6])
@@ -1669,4 +1671,292 @@ if (expnumber == 2)
     
     
 end
+
+%% schematic of VP model
+
+% stimulus information
+angles = [50 150 240 300]; % locations in degrees
+variances = [.5 1 2]; % variance in dva
+
+mean_x = 10.*cosd(angles);
+mean_y = 10.*sind(angles);
+
+nGrids = 100;
+x = linspace(-12,12,nGrids);
+[xx, yy] = meshgrid(x,x);
+
+map = zeros(nGrids^2,1);
+for istim = 1:(length(angles)-1);
+    MU = [mean_x(istim) mean_y(istim)];
+    SIGMA = [variances(istim) 0; 0 variances(istim)];
+    
+    pdf = mvnpdf([xx(:) yy(:)], MU, SIGMA);
+    map = map + pdf(:);
+end
+
+contour3(reshape(map,nGrids,nGrids),50)
+% plot3(xx(:),yy(:),map)
+
+%% figure of how resource allocation changes as a function of Jbar_total
+clear all
+close all
+
+nJbars = 5;
+tau = 0.1;
+JbarVec = exp(linspace(log(3*tau+0.01),log(15),nJbars));
+alpha = 1; 
+beta = 2; 
+
+[pVec_MP, pVec_ME] = deal(nan(nJbars,3));
+for iJbar = 1:nJbars;
+    iJbar
+    
+    theta = [JbarVec(iJbar) tau alpha beta];
+    
+    % maxmimizing points
+    pVec_MP(iJbar,:) = calc_optimal_pVec(theta);
+    
+    % minimizing error
+    pVec_ME(iJbar,:) = calc_pVec_minerror(theta);
+    
+end
+
+
+% =============== TERNARY PLOT ========================
+colorMat = [1 0 0; 0 0 1; 0 0 0];
+
+% axis
+figure;
+[h,hg,htick]=terplot;
+c1 = [1 0.5 1/3];
+c2 = [0 0.5 1/3];
+c3 = [0 0 1/3];
+hlabels=terlabel('high','medium','low');
+set(h,'LineWidth',1)
+
+% define colors
+axis1 = colorMat(2,:);
+axis2 = colorMat(1,:);
+axis3 = colorMat(3,:);
+grey = 0.7*ones(1,3);
+
+% change the color of the grid lines
+set(hg(:,1),'color',axis1)
+set(hg(:,2),'color',axis2)
+set(hg(:,3),'color',axis3)
+
+% modify the label size and color
+set(hlabels,'fontsize',12)
+set(hlabels(1),'color',axis1)
+set(hlabels(2),'color',axis2)
+set(hlabels(3),'color',axis3)
+
+% modify the tick label colors
+set(htick(:,1),'color',axis1,'linewidth',3)
+set(htick(:,2),'color',axis2,'linewidth',3)
+set(htick(:,3),'color',axis3,'linewidth',3)
+
+% plot proportional model
+h = ternaryc(0.6,0.3,0.1);
+set(h,'marker','.','markerfacecolor',[1 0.5 0],'markersize',24,'markeredgecolor',[1 0.5 0])
+
+% plot MP 
+% colormap(aspencolors(9,'yellowgreen'));
+hter = ternaryc(pVec_MP(:,1),pVec_MP(:,2),pVec_MP(:,3),1:nJbars,'*');
+hold on
+for i = 1:(nJbars-1);
+    plot([hter(i).XData hter(i+1).XData], [hter(i).YData hter(i+1).YData],'k-')
+end
+
+% plot ME 
+hter = ternaryc(pVec_ME(:,1),pVec_ME(:,2),pVec_ME(:,3),1:nJbars,'o');
+hold on
+for i = 1:(nJbars-1);
+    plot([hter(i).XData hter(i+1).XData], [hter(i).YData hter(i+1).YData],'k-')
+end
+
+%% PERMUTATION TEST FOR STIMULUS: EXP 2
+clear all
+close all
+
+nBins = 24;
+expnumber = 2; 
+
+switch expnumber
+    case 1
+        load('exp1_zuzprocesseddata.mat')
+        dataa = sqrt((group_data(:,13) - group_data(:,11)).^2 +...
+            (group_data(:,14) - group_data(:,12)).^2);
+        anglee = atand(group_data(:,14)./group_data(:,13));
+
+        idx = (group_data(:,13) < 0) & (group_data(:,14) > 0); % second quadrant
+        anglee(idx) = anglee(idx) + 180;
+        
+        idx = (group_data(:,13) < 0) & (group_data(:,14) < 0); % third quadrant
+        anglee(idx) = anglee(idx) + 180;
+        
+        idx = (group_data(:,13) > 0) & (group_data(:,14) < 0); % third quadrant
+        anglee(idx) = anglee(idx) + 360;
+
+        group_data = [group_data(:,1) anglee dataa];
+    case 2
+        load('exp2_zuzprocesseddata.mat')
+        group_data = group_data(:,[1 6 7 13]);
+        subjVec = 4:14;
+        dataa = sqrt((10.*cosd(group_data(:,4)) - group_data(:,2)).^2 +...
+            (10.*sind(group_data(:,4)) - group_data(:,3)).^2);
+        group_data = [group_data(:,[1 4]) dataa];
+end
+nSubj = length(subjVec);
+
+group_data(any(isnan(group_data), 2), :) = [];
+
+[angleMat, errorMat, permerrorMat, permangleMat] = deal(nan(nSubj,nBins));
+
+for isubj = 1:nSubj;
+    subjnum = subjVec(isubj);
+    
+    idx = group_data(:,1) == subjnum;
+    nTrials = sum(idx);
+    trialss = round(linspace(1,nTrials,nBins+1));
+    
+    dataa = group_data(idx,2:3);
+    dataa = sortrows(dataa,1);
+    
+    permuteidx = randperm(nTrials);
+    permutedataa = [dataa(:,1) dataa(permuteidx,2)];
+    
+    for ibin = 1:nBins;
+        bindata = dataa(trialss(ibin):trialss(ibin+1),:);
+        permdata = permutedataa(trialss(ibin):trialss(ibin+1),:);
+        
+        angleMat(isubj,ibin) = mean(bindata(:,1));
+        errorMat(isubj,ibin) = mean(bindata(:,2));
+        permangleMat(isubj,ibin) = mean(permdata(:,1));
+        permerrorMat(isubj,ibin) = mean(permdata(:,2));
+    end
+    
+end
+
+meandataangle = mean(angleMat);
+meandataerror = mean(errorMat);
+meanpermangle = mean(permangleMat);
+meanpermerror = mean(permerrorMat);
+
+semdataangle = std(angleMat)./sqrt(nSubj);
+semdataerror = std(errorMat)./sqrt(nSubj);
+sempermangle = std(permangleMat)./sqrt(nSubj);
+sempermerror = std(permerrorMat)./sqrt(nSubj);
+
+% plot(angleMat',errorMat'); hold on
+% plot(mean(angleMat),mean(errorMat),'k-','LineWidth',3)
+
+figure; hold on
+fill([meandataangle fliplr(meandataangle)],[meandataerror-semdataerror fliplr(meandataerror+semdataerror)],[1 0.8 0.1],'FaceAlpha',0.5,'EdgeColor','none')
+fill([meanpermangle fliplr(meanpermangle)],[meanpermerror-sempermerror fliplr(meanpermerror+sempermerror)],'k','FaceAlpha',0.2,'EdgeColor','none')
+plot([90 90; 180 180; 270 270],[1.5 2.6],'k--')
+ylim([1.5 2.6])
+
+figure; hold on
+fill([(meanpermerror+sempermerror).*cosd(meanpermangle) (meanpermerror(1)+sempermerror(1)).*cosd(meanpermangle(1)) ,...
+    fliplr([(meanpermerror-sempermerror).*cosd(meanpermangle) (meanpermerror(1)-sempermerror(1)).*cosd(meanpermangle(1))])],...
+    [(meanpermerror+sempermerror).*sind(meanpermangle) (meanpermerror(1)+sempermerror(1)).*sind(meanpermangle(1)),...
+    fliplr([(meanpermerror-sempermerror).*sind(meanpermangle) (meanpermerror(1)-sempermerror(1)).*sind(meanpermangle(1))])],'k','FaceAlpha',0.2,'EdgeColor','none')
+fill([(meandataerror+semdataerror).*cosd(meandataangle) (meandataerror(1)+semdataerror(1)).*cosd(meandataangle(1)) ,...
+    fliplr([(meandataerror-semdataerror).*cosd(meandataangle) (meandataerror(1)-semdataerror(1)).*cosd(meandataangle(1))])],...
+    [(meandataerror+semdataerror).*sind(meandataangle) (meandataerror(1)+semdataerror(1)).*sind(meandataangle(1)),...
+    fliplr([(meandataerror-semdataerror).*sind(meandataangle) (meandataerror(1)-semdataerror(1)).*sind(meandataangle(1))])],[1 0.8 0.1],'FaceAlpha',0.5,'EdgeColor','none')
+plot([-2.5 0; 2.5 0],[0 -2.5; 0 2.5],'k-')
+axis equal
+axis([-2.5 2.5 -2.5 2.5])
+defaultplot
+
+%% PERMUTATION TEST FOR STIMULUS: EXP 2 (SEPARATED PRIORITIES)
+clear all
+% close all
+
+nBins = 20;
+expnumber = 2; 
+
+switch expnumber
+    case 1
+        load('exp1_zuzprocesseddata.mat')
+%         group_data = group_data(:,[1 6 7 13]);
+    case 2
+        load('exp2_zuzprocesseddata.mat')
+        group_data = group_data(:,[1 2 6 7 13]);
+        subjVec = 4:14;
+        dataa = sqrt((10.*cosd(group_data(:,5)) - group_data(:,3)).^2 +...
+            (10.*sind(group_data(:,5)) - group_data(:,4)).^2);
+        group_data = [group_data(:,[1 2 5]) dataa];
+end
+nSubj = length(subjVec);
+priorityVec = [0.6 0.3 0.1];
+
+group_data(any(isnan(group_data), 2), :) = [];
+
+[angleMat, errorMat, permerrorMat, permangleMat] = deal(cell(1,3));
+
+for isubj = 1:nSubj;
+    subjnum = subjVec(isubj);
+    
+    for ipriority = 1:3;
+        if isubj == 1;
+        [angleMat{ipriority}, errorMat{ipriority}, permerrorMat{ipriority},...
+            permangleMat{ipriority}] = deal(nan(nSubj,nBins));
+        end
+        
+        priority = priorityVec(ipriority);
+        
+        idx = (group_data(:,1) == subjnum) & (group_data(:,2) == priority);
+        nTrials = sum(idx);
+        trialss = round(linspace(1,nTrials,nBins+1));
+        
+        dataa = group_data(idx,3:4);
+        dataa = sortrows(dataa,1);
+        
+        permuteidx = randperm(nTrials);
+        permutedataa = [dataa(:,1) dataa(permuteidx,2)];
+        
+        for ibin = 1:nBins;
+            bindata = dataa(trialss(ibin):trialss(ibin+1),:);
+            permdata = permutedataa(trialss(ibin):trialss(ibin+1),:);
+            
+            angleMat{ipriority}(isubj,ibin) = mean(bindata(:,1));
+            errorMat{ipriority}(isubj,ibin) = mean(bindata(:,2));
+            permangleMat{ipriority}(isubj,ibin) = mean(permdata(:,1));
+            permerrorMat{ipriority}(isubj,ibin) = mean(permdata(:,2));
+        end
+    end
+    
+end
+
+colorMat = {'r','b','k'};
+figure; hold on
+for ipriority = 1:3;
+meandataangle = mean(angleMat{ipriority});
+meandataerror = mean(errorMat{ipriority});
+meanpermangle = mean(permangleMat{ipriority});
+meanpermerror = mean(permerrorMat{ipriority});
+
+semdataangle = std(angleMat{ipriority})./sqrt(nSubj);
+semdataerror = std(errorMat{ipriority})./sqrt(nSubj);
+sempermangle = std(permangleMat{ipriority})./sqrt(nSubj);
+sempermerror = std(permerrorMat{ipriority})./sqrt(nSubj);
+
+fill([(meanpermerror+sempermerror).*cosd(meanpermangle) (meanpermerror(1)+sempermerror(1)).*cosd(meanpermangle(1)) ,...
+    fliplr([(meanpermerror-sempermerror).*cosd(meanpermangle) (meanpermerror(1)-sempermerror(1)).*cosd(meanpermangle(1))])],...
+    [(meanpermerror+sempermerror).*sind(meanpermangle) (meanpermerror(1)+sempermerror(1)).*sind(meanpermangle(1)),...
+    fliplr([(meanpermerror-sempermerror).*sind(meanpermangle) (meanpermerror(1)-sempermerror(1)).*sind(meanpermangle(1))])],'k','FaceAlpha',0.0,'EdgeColor',colorMat{ipriority})
+fill([(meandataerror+semdataerror).*cosd(meandataangle) (meandataerror(1)+semdataerror(1)).*cosd(meandataangle(1)) ,...
+    fliplr([(meandataerror-semdataerror).*cosd(meandataangle) (meandataerror(1)-semdataerror(1)).*cosd(meandataangle(1))])],...
+    [(meandataerror+semdataerror).*sind(meandataangle) (meandataerror(1)+semdataerror(1)).*sind(meandataangle(1)),...
+    fliplr([(meandataerror-semdataerror).*sind(meandataangle) (meandataerror(1)-semdataerror(1)).*sind(meandataangle(1))])],colorMat{ipriority},'FaceAlpha',0.3,'EdgeColor','none')
+
+end
+plot([-4 0; 4 0],[0 -4; 0 4],'k-')
+axis equal
+axis([-4 4 -4 4])
+
+
 

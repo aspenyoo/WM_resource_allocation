@@ -357,36 +357,64 @@ switch imodel
 end
 
 tau = theta(2);
-JVec = linspace(0,10,100);
+JVec = linspace(0,5,100);
 colorVec = {'r','b','k'};
 nSamples = 1e4;
 for iJbar = 1:3
     Jbar = theta(1)*pVec(iJbar);
     
-    sampless = gamrnd(Jbar/tau,tau,nSamples,1);
-    sampless = 1./sqrt(sampless);
-    
-    figure(1)
-    h = histogram(sampless,JVec);
-    
-    figure(2)
-    plot(JVec(1:end-1)+h.BinWidth,h.Values,'-','Color',colorVec{iJbar}); hold on;
-    
-    
-    %         [JVec] = loadvar({'JVec',Jbar,tau});
-    
-    %         Jpdf = gampdf(JVec,Jbar/tau,tau);
-%     Jpdf = gampdf(JVec*Jbar,Jbar/tau,tau);
-%     Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+%     sampless = gamrnd(Jbar/tau,tau,nSamples,1);
+%     sampless = 1./sqrt(sampless);
 %     
-%     %         JVecMax(isubj,iJbar) = JVec(end)/Jbar;
+%     figure(1)
+%     h = histogram(sampless,JVec);
 %     
-%     plot(JVec,Jpdf,'-','Color',colorVec{iJbar}); hold on; %defaultplot;
-    %         plot(JVec./Jbar,Jpdf,'k-'); defaultplot;
-    %         pause;
+%     figure(2)
+%     plot(JVec(1:end-1)+h.BinWidth,h.Values,'-','Color',colorVec{iJbar}); hold on;
+%     
+    
+%             [JVec] = loadvar('JVec',{Jbar,tau});
+    
+            Jpdf = gampdf(JVec,Jbar/tau,tau);
+    Jpdf = gampdf(JVec*Jbar,Jbar/tau,tau);
+    Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+    
+    %         JVecMax(isubj,iJbar) = JVec(end)/Jbar;
+    
+    plot(JVec,Jpdf,'-','Color',colorVec{iJbar}); hold on; %defaultplot;
+%             plot(JVec./Jbar,Jpdf,'k-'); defaultplot;
+%             pause;
 end
 
 
+%%
+pVec = [.65 .3 .15];
+
+for iJbar = 1:3
+    Jbar = theta(1)*pVec(iJbar);
+    
+%     sampless = gamrnd(Jbar/tau,tau,nSamples,1);
+%     sampless = 1./sqrt(sampless);
+%     
+%     figure(1)
+%     h = histogram(sampless,JVec);
+%     
+%     figure(2)
+%     plot(JVec(1:end-1)+h.BinWidth,h.Values,'-','Color',colorVec{iJbar}); hold on;
+%     
+    
+%             [JVec] = loadvar('JVec',{Jbar,tau});
+    
+            Jpdf = gampdf(JVec,Jbar/tau,tau);
+    Jpdf = gampdf(JVec*Jbar,Jbar/tau,tau);
+    Jpdf = Jpdf./qtrapz(Jpdf); % normalize
+    
+    %         JVecMax(isubj,iJbar) = JVec(end)/Jbar;
+    
+    plot(JVec,Jpdf,'-','Color',colorVec{iJbar}); hold on; %defaultplot;
+%             plot(JVec./Jbar,Jpdf,'k-'); defaultplot;
+%             pause;
+end
 
 %% look at typical max for J/Jbar gamma distribution
 
@@ -770,7 +798,7 @@ hold on;
 
 clear all
 imodel = 4;
-expnumber = 1;
+expnumber = 2;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 load([filepath 'fits_model' num2str(imodel) '.mat'])
 nSubj = size(ML_parameters,1);
@@ -908,10 +936,10 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 2;
-modVec = [3 2 4 1];
+expnumber = 1;
+modVec = [3 2 4];
 nModels = length(modVec);
-modcompidx = 2;
+modcompidx = 4;
 fixedrisk = 0;
 MCM = 'BIC';
 
