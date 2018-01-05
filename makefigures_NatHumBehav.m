@@ -1991,4 +1991,231 @@ axis equal
 axis([-4 4 -4 4])
 
 
+%% CORRELATION
+
+clear all; close all
+clc
+
+subjVec = 4:14;
+priorityVec = [0.6 0.3 0.1];
+
+load('exp2_zuzprocesseddata.mat')
+finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
+    (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
+group_data = [group_data(:,[1 2 13]) finalerror group_data(:,4)];
+group_data(any(isnan(group_data), 2), :) = [];
+% subject, priority, angle, error, circle size
+        
+angleVec = unique(group_data(:,3));
+
+nPerms = 100;
+nSubj = length(subjVec);
+nAngles = length(angleVec);
+nPriorities = length(priorityVec);
+
+groupzscoredata = group_data;
+% subjdata = group_data;
+for isubj = 1:nSubj;
+    subjnum = subjVec(isubj);
+    
+    idx = group_data(:,1) == subjnum;
+    subjdata = group_data(idx,:);
+    
+    groupzscoredata(idx,4:5) = [zscore(subjdata(:,4)) zscore(subjdata(:,5))];
+    
+%     for iangle = 1:nAngles
+%         angle = angleVec(iangle);
+%         
+%         idx = subjdata(:,3) == angle;
+%         currbindata = subjdata(idx,:);
+%     end
+    
+end
+
+for ipriority = 1:nPriorities
+    priority = priorityVec(ipriority);
+    
+    idx = groupzscoredata(:,2) == priority;
+    prioritydata = groupzscoredata(idx,:);
+    
+    [r, p] = corrcoef(prioritydata(:,4),prioritydata(:,5));
+    disp('priority')
+    disp([priority r(2) p(2)])
+    [RHO,PVAL] = corr(prioritydata(:,4),prioritydata(:,5),'type','Spearman')
+end
+
+%% PERMUTATION TEST
+
+clear all; close all
+clc
+
+rng(0)
+
+subjVec = 4:14;
+priorityVec = [0.6 0.3 0.1];
+
+load('exp2_zuzprocesseddata.mat')
+finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
+    (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
+group_data = [group_data(:,[1 2 13]) finalerror group_data(:,4)];
+group_data(any(isnan(group_data), 2), :) = [];
+% subject, priority, angle, error, circle size
+        
+angleVec = unique(group_data(:,3));
+
+nPerms = 1000;
+nSubj = length(subjVec);
+nAngles = length(angleVec)/2;
+nPriorities = length(priorityVec);
+
+% put each subject's data in terms of z-scores
+groupzscoredata = group_data;
+for isubj = 1:nSubj;
+    subjnum = subjVec(isubj);
+    
+    idx = group_data(:,1) == subjnum;
+    subjdata = group_data(idx,:);
+    
+    groupzscoredata(idx,4:5) = [zscore(subjdata(:,4)) zscore(subjdata(:,5))];
+end
+
+% permute cicle size data for each bin for each subject
+permdata = nan(size(groupzscoredata,1),nPerms);
+for isubj = 1:nSubj;
+    subjnum = subjVec(isubj);
+    idx = groupzscoredata(:,1) == subjnum;
+    
+    for ipriority = 1:nPriorities
+        priority = priorityVec(ipriority);
+        idxx = idx & (groupzscoredata(:,2) == priority);
+
+        for iangle = 1:nAngles;
+            angle1 = angleVec(2*iangle-1);
+            angle2 = angleVec(2*iangle);
+            idxxx = idxx & ((groupzscoredata(:,3) == angle1) | ...
+                (groupzscoredata(:,3) == angle2));
+            
+            nTrials = sum(idxxx);
+            
+            % make a permutation matrix
+            permMat = nan(nTrials,nPerms);
+            for iperm = 1:nPerms;
+                permMat(:,iperm) = randperm(nTrials)';
+            end
+            
+            circlesizedata = group_data(idxxx,5);
+            permdata(idxxx,:) = circlesizedata(permMat);
+        end
+    end
+    
+end
+
+[corrMat, pMat] = deal(nan(nPerms,nPriorities));
+for ipriority = 1:nPriorities
+    priority = priorityVec(ipriority);
+    idx = groupzscoredata(:,2) == priority;
+    
+    [r, p] = corrcoef([groupzscoredata(idx,4:5), permdata(idx,:)]);
+    corrVec(ipriority) = r(2,1);
+    pVec(ipriority) = p(2,1);
+    corrMat(:,ipriority) = r(3:end,1);
+    pMat(:,ipriority) = p(3:end,1);
+end
+
+
+w1 = quantile(corrMat,0.025);
+w2 = quantile(corrMat,0.975);
+
+figure;
+hold on;
+plot(1:3,corrVec,'ok')
+plot([0.5 3.5],[0 0],'k-')
+
+boxplot(corrMat,'Colors','k','Symbol','k')
+uw = findobj(gca,'tag','Upper Whisker');
+lw = findobj(gca,'tag','Lower Whisker');
+uav = findobj(gca,'tag','Upper Adjacent Value');
+lav = findobj(gca,'tag','Lower Adjacent Value');
+for ipriority = 1:nPriorities
+    uw(nPriorities+1-ipriority).LineStyle = '-';
+    lw(nPriorities+1-ipriority).LineStyle = '-';
+    uw(nPriorities+1-ipriority).YData(2) = w2(ipriority);
+    lw(nPriorities+1-ipriority).YData(1) = w1(ipriority);
+    uav(nPriorities+1-ipriority).YData = w2(ipriority)*ones(1,2);
+    lav(nPriorities+1-ipriority).YData = w1(ipriority)*ones(1,2);
+end
+ylim([-0.1 0.5])
+set(gca,'XTickLabel',{0.6, 0.3, 0.1})
+defaultplot
+
+%% for each subject for each priority
+
+[corrVec, pVec] = deal(nan(1,4*nSubj));
+[corrMat, pMat] = deal(nan(nPerms,4*nSubj));
+
+for isubj = 1:nSubj;
+    subjnum = subjVec(isubj);
+    idx = groupzscoredata(:,1) == subjnum;
+
+    for ipriority = 1:nPriorities
+        priority = priorityVec(ipriority);
+         idxx = idx & (groupzscoredata(:,2) == priority);
+         
+         [r, p] = corrcoef([groupzscoredata(idxx,4:5), permdata(idxx,:)]);
+         corrVec(4*(isubj-1) + ipriority) = r(2,1);
+         pVec(4*(isubj-1) +ipriority) = p(2,1);
+         corrMat(:,4*(isubj-1) +ipriority) = r(3:end,1);
+         pMat(:,4*(isubj-1) +ipriority) = p(3:end,1);
+    end
+end
+
+boxplot(corrMat,'Colors','k','Symbol','k')
+
+w1 = quantile(corrMat,0.025);
+w2 = quantile(corrMat,0.975);
+
+figure;
+hold on;
+plot(corrVec,'ok')
+plot([0.5 (nSubj*4)+0.5],[0 0],'k-')
+
+boxplot(corrMat,'Colors','k','Symbol','k')
+uw = findobj(gca,'tag','Upper Whisker');
+lw = findobj(gca,'tag','Lower Whisker');
+uav = findobj(gca,'tag','Upper Adjacent Value');
+lav = findobj(gca,'tag','Lower Adjacent Value');
+for isubj = 1:nSubj
+    for ipriority = 1:nPriorities
+        uw((nSubj*4)+1-(4*(isubj-1)+ipriority)).LineStyle = '-';
+        lw((nSubj*4)+1-(4*(isubj-1)+ipriority)).LineStyle = '-';
+        uw((nSubj*4)+1-(4*(isubj-1)+ipriority)).YData(2) = w2(4*(isubj-1)+ipriority);
+        lw((nSubj*4)+1-(4*(isubj-1)+ipriority)).YData(1) = w1(4*(isubj-1)+ipriority);
+        uav((nSubj*4)+1-(4*(isubj-1)+ipriority)).YData = w2(4*(isubj-1)+ipriority)*ones(1,2);
+        lav((nSubj*4)+1-(4*(isubj-1)+ipriority)).YData = w1(4*(isubj-1)+ipriority)*ones(1,2);
+    end
+end
+
+set(gca,'XTick',2:4:(nSubj*4),'XTickLabel',[])
+defaultplot
+
+
+%% KS test of percentiles of actual correlation compared to null distribution
+
+percentiles = bsxfun(@(x,y) x > y,corrVec,corrMat);
+percentiles(:,4:4:44) = [];
+percentiles = sum(percentiles)./nPerms;
+
+pd = makedist('uniform');
+[h,p] = kstest(percentiles,'cdf',pd);
+
+
+%% check that this would not be true if it was actually random
+randMat = rand(nPerms,nSubj*nPriorities);
+randVec = rand(1,nSubj*nPriorities);
+
+pcntiles = bsxfun(@(x,y) x > y,randVec,randMat);
+pcntiles = sum(pcntiles)./nPerms; 
+
+[h1,p1] = kstest(pcntiles,'cdf',pd)
+
 

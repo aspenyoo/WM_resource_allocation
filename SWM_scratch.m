@@ -968,12 +968,12 @@ hlabels=terlabel('high','medium','low');
 %% model comparison
 
 clear all
-expnumber = 1;
-modVec = [3 2 4];
+expnumber = 2;
+modVec = [3 2 4 1];
 nModels = length(modVec);
-modcompidx = 4;
+modcompidx = 1;
 fixedrisk = 0;
-MCM = 'BIC';
+MCM = 'AICc';
 
 filename = ['exp' num2str(expnumber) '_cleandata.mat'];
 load(filename,'nTrials')
@@ -1214,7 +1214,7 @@ clear all
 
 % things to change
 expnumber = 1;
-modelVec = [3 4];
+modelVec = [3 2 4];
 
 % things not to change
 nSubj = 10;
@@ -1277,8 +1277,8 @@ BICconfusionMat
 %% parameter recovery plot
 
 clear all
-expnumber = 1;
-imodel = 2;
+expnumber = 2;
+imodel = 4;
 filepath = ['fits/exp' num2str(expnumber) '/'];
 
 load([filepath 'modelrecov_truemodel' num2str(imodel) '_testmodel' num2str(imodel) '.mat'])
@@ -1293,15 +1293,19 @@ nSubj = size(bfp,1);
 bfp(:,logflag) = log(bfp(:,logflag));
 simtheta(:,logflag) = log(simtheta(:,logflag));
 
-figure;
+clf;
 for iparam = 1:nParams
-    subplot(2,3,iparam); hold on;
+    subplot(2,1+expnumber,iparam); hold on;
     for isubj = 1:nSubj;
-        plot(bfp(isubj,iparam),simtheta(isubj,iparam),'o'); hold on;
+        plot(bfp(isubj,iparam),simtheta(isubj,iparam),'ok'); hold on;
     end
     
-    plot([min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],...
-        [min([bfp(:,iparam);simtheta(:,iparam)]),max([bfp(:,iparam);simtheta(:,iparam)])],'k-')
+    minn = min([get(gca,'XLim') get(gca,'YLim')]);
+    maxx = max([get(gca,'XLim') get(gca,'YLim')]);
+    
+    plot([minn maxx],[minn maxx],'k-')
+    axis equal
+    axis([minn maxx minn maxx])
     xlabel('estimated'); ylabel('actual')
     defaultplot
 end
