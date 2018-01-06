@@ -1,31 +1,50 @@
 function nLL = calc_nLL(model,Theta,data,fixparams)
-if nargin < 4; fixparams = []; end
+%CALC_NLL calculates negative log-likelihood
+% 
+%   NLL = CALC_NLL(MODEL, THETA, DATA) calculates the negative
+%     likelihood of DATA given MODEL and THETA.
+% 
+%   NLL = CALC_NLL(MODEL, THETA, DATA, FIXPARAMS) calculates the negative
+%     likelihood, where THETA are free parameters and FIXPARAMS indicates
+%     which parameters are fixed and what value they are fixed to. 
+%
+%   ================= INPUT VARIABLES ======================
+% 
+%   MODEL / THETA: 
+%         M1, MAXIMIZING POINTS: [Jbar_total tau alpha beta]
+%         M2, FLEXIBLE: [Jbar_total tau alpha beta p_high p_med]
+%         M3, PROPORTIONAL: [Jbar_total tau alpha beta]
+%         M4, MINIMIZING ERROR: [Jbar_total tau alpha beta gamma]
+% 
+%     parameter descriptions: 
+%           JBAR_TOTAL: mean total amount of resources across priorities
+%           TAU: second parameter of gamma noise distribution
+%           ALPHA: risk preferences for post-decision wager
+%           BETA: inverse noise temperature on post-decision wager
+%           GAMMA: exponent for loss in Minimizing Error model
+%           P_HIGH: proportion allocated to high-priority stimulus
+%           P_MED: proportion allocated to medium-priority stimulus
+%
+%   DATA: 1 x 3 cell each containing nTrials x (1 or 2) matrix.
+%     struct organization: high-, med-, low-priority stimulus trials
+%     1st column: distance between target and final saccade
+%     2nd column: radius of disc (ONLY IN EXP 2)
+% 
+%   FIXPARAMS: 2 x (number of fixed parameters) matrix, where the 1st row
+%     corresponds to the linear index of each parameter to be fixed, and
+%     the second row is the value of the corresponding index. default = [];
+%
+% 
+%   ================= OUTPUT VARIABLES ================
+% 
+%   NLL: negative log-likelihood
 
-
-% CALC_NLL(JBAR_TOTAL,TAU,BETA)
-%
-% CALC_NLL: calculates negative log likelihood of parameter combination for
-% the optimal model
-%
-% ================= INPUT VARIABLES ======================
-% MODEL: 1 (optimal) or 2 (not optimal) or 3 (fixed to actual priorities)
-%
-% THETA = vector of parameters. For model 1, [ Jbar_total tau beta].
-%   For model 2, [Jbar_total tau beta p_high p_med]
-%       JBAR_TOTAL: total amount of resources across priorities
-%       TAU: second parameter of gamma noise distribution
-%
-% DATA: 1 x 3 cell each containing nTrials x (1 or 2) matrix.
-%   struct organization: high, med, low priority trials
-%   1st column: distance between target and final saccade
-%   2nd column: radius of disc (ONLY IN EXP 2)
-%
-% ================= OUTPUT VARIABLES ================
-% NLL: -L(\Theta|data,model)
-%
-% -----------------------
+% ---------------------
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
+% ---------------------
+
+if nargin < 4; fixparams = []; end
 
 expnumber = size(data{1},2); % experiment number
 

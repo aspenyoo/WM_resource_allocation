@@ -1715,27 +1715,32 @@ end
 contour3(reshape(map,nGrids,nGrids),50)
 % plot3(xx(:),yy(:),map)
 
-%% figure of how resource allocation changes as a function of Jbar_total
+%% figure of how resource allocation changes as a function of different parameter values
 clear all
-close all
+% close all
 
-nJbars = 5;
+nSamps = 5;
+Jbar = 2;
 tau = 0.1;
-JbarVec = exp(linspace(log(3*tau+0.01),log(15),nJbars));
-alpha = 1; 
-beta = 2; 
+% alpha = 1; 
+beta = 1; 
+gamma = 1;
 
-[pVec_MP, pVec_ME] = deal(nan(nJbars,3));
-for iJbar = 1:nJbars;
-    iJbar
+Vec = linspace(0.01,3,nSamps);
+% JbarVec = exp(linspace(log(3*tau+0.01),log(15),nJbars));
+
+[pVec_MP, pVec_ME] = deal(nan(nSamps,3));
+for isamp = 1:nSamps;
+    alpha = Vec(isamp)
     
-    theta = [JbarVec(iJbar) tau alpha beta];
+    MPtheta = [Jbar tau alpha beta];
+    MEtheta = [MPtheta gamma];
     
     % maxmimizing points
-    pVec_MP(iJbar,:) = calc_optimal_pVec(theta);
+    pVec_MP(isamp,:) = calc_optimal_pVec(MPtheta);
     
     % minimizing error
-    pVec_ME(iJbar,:) = calc_pVec_minerror(theta);
+    pVec_ME(isamp,:) = calc_pVec_minerror(MEtheta);
     
 end
 
@@ -1780,16 +1785,16 @@ set(h,'marker','.','markerfacecolor',[1 0.5 0],'markersize',24,'markeredgecolor'
 
 % plot MP 
 % colormap(aspencolors(9,'yellowgreen'));
-hter = ternaryc(pVec_MP(:,1),pVec_MP(:,2),pVec_MP(:,3),1:nJbars,'*');
+hter = ternaryc(pVec_MP(:,1),pVec_MP(:,2),pVec_MP(:,3),1:nSamps,'*');
 hold on
-for i = 1:(nJbars-1);
+for i = 1:(nSamps-1);
     plot([hter(i).XData hter(i+1).XData], [hter(i).YData hter(i+1).YData],'k-')
 end
 
 % plot ME 
-hter = ternaryc(pVec_ME(:,1),pVec_ME(:,2),pVec_ME(:,3),1:nJbars,'o');
+hter = ternaryc(pVec_ME(:,1),pVec_ME(:,2),pVec_ME(:,3),1:nSamps,'o');
 hold on
-for i = 1:(nJbars-1);
+for i = 1:(nSamps-1);
     plot([hter(i).XData hter(i+1).XData], [hter(i).YData hter(i+1).YData],'k-')
 end
 
@@ -2049,7 +2054,7 @@ end
 clear all; close all
 clc
 
-rng(0)
+rng(1)
 
 subjVec = 4:14;
 priorityVec = [0.6 0.3 0.1];
@@ -2057,7 +2062,17 @@ priorityVec = [0.6 0.3 0.1];
 load('exp2_zuzprocesseddata.mat')
 finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
     (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
-group_data = [group_data(:,[1 2 13]) finalerror group_data(:,4)];
+
+% collapsing all data onto first quadrant
+collapsedangle = group_data(:,13);
+idx = (collapsedangle < 180) & (collapsedangle > 90); % second quadrant
+collapsedangle(idx) = 180 - collapsedangle(idx);
+idx = (collapsedangle < 270) & (collapsedangle > 180); % third quadrant
+collapsedangle(idx) = collapsedangle(idx) - 180;
+idx = (collapsedangle < 360) & (collapsedangle > 270); % second quadrant
+collapsedangle(idx) = 360 - collapsedangle(idx);
+
+group_data = [group_data(:,1:2) collapsedangle finalerror group_data(:,4)];
 group_data(any(isnan(group_data), 2), :) = [];
 % subject, priority, angle, error, circle size
         
@@ -2090,6 +2105,8 @@ for isubj = 1:nSubj;
         idxx = idx & (groupzscoredata(:,2) == priority);
 
         for iangle = 1:nAngles;
+%             angle = angleVec(iangle);
+%             idxxx = idxx & (groupzscoredata(:,3) == angle);
             angle1 = angleVec(2*iangle-1);
             angle2 = angleVec(2*iangle);
             idxxx = idxx & ((groupzscoredata(:,3) == angle1) | ...
@@ -2169,10 +2186,9 @@ for isubj = 1:nSubj;
     end
 end
 
-boxplot(corrMat,'Colors','k','Symbol','k')
-
 w1 = quantile(corrMat,0.025);
 w2 = quantile(corrMat,0.975);
+
 
 figure;
 hold on;
@@ -2206,10 +2222,10 @@ percentiles(:,4:4:44) = [];
 percentiles = sum(percentiles)./nPerms;
 
 pd = makedist('uniform');
-[h,p] = kstest(percentiles,'cdf',pd);
+[h,p] = kstest(percentiles,'cdf',pd)
 
 
-%% check that this would not be true if it was actually random
+%% check KS test if it was actually random
 randMat = rand(nPerms,nSubj*nPriorities);
 randVec = rand(1,nSubj*nPriorities);
 
@@ -2219,3 +2235,32 @@ pcntiles = sum(pcntiles)./nPerms;
 [h1,p1] = kstest(pcntiles,'cdf',pd)
 
 
+%% number of trials per bin
+
+
+nTrials = nan(nAngles,4*nSubj);
+for isubj = 1:nSubj;
+    subjnum = subjVec(isubj);
+    idx = groupzscoredata(:,1) == subjnum;
+    
+    for ipriority = 1:nPriorities
+        priority = priorityVec(ipriority);
+        idxx = idx & (groupzscoredata(:,2) == priority);
+        
+        for iangle = 1:nAngles;
+            %             angle = angleVec(iangle);
+            %             idxxx = idxx & (groupzscoredata(:,3) == angle);
+            
+            angle1 = angleVec(2*iangle-1);
+            angle2 = angleVec(2*iangle);
+            idxxx = idxx & ((groupzscoredata(:,3) == angle1) | ...
+                (groupzscoredata(:,3) == angle2));
+
+            nTrials(iangle,(4*(isubj-1))+ipriority) = sum(idxxx);
+
+        end
+    end
+    
+end
+
+nTrials

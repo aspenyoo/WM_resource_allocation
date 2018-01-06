@@ -1,24 +1,46 @@
 function fit_parameters(testmodel,subjnum,runlist,runmax,truemodel,expnumber,fixparams)
+%FIT_PARAMETERS
+% 
+%   FIT_PARAMETERS(TESTMODEL, SUBJNUM, RUNLIST) estimates and saves
+%     maximum-likelihood parameter estimate for TESTMODEL and SUBJNUM and
+%     RUNLIST.
+% 
+%   FIT_PARAMETERS(TESTMODEL, SUBJNUM, RUNLIST, RUNMAX) estimates and saves
+%     maximum-likelihood parameter estimate for TESTMODEL and SUBJNUM and
+%     RUNLIST.
+% 
+%   ================= INPUT VARIABLES ==================
+% 
+%   TESTMODEL: 1 (Maximizing Points), 2 (Flexible), 3 (Proportional),
+%     4 (Minimizing Error)
+% 
+%   SUBJNUM: Subject number. For Exp 1, can take values 1 to 14. For Exp 2,
+%     can take values 1 to 11. 
+% 
+%   RUNLIST: scalar or vector containing indexes 1 to RUNMAX.
+% 
+%   RUNMAX: total number of optimizations you plan to start for a given
+%     TESTMODEL and SUBJNUM. used in seed, necessary for replicability. 
+% 
+%   TRUEMODEL (optional): model that actually generated data. only used
+%     saving purposes for model recovery.
+% 
+%   EXPNUMBER: Experiment number. 1 or 2. 
+% 
+%   FIXPARAMS: fixed parameters. 2 x (number of fixed parameters), where
+%     first row corresponds to the index and second row corresponds to the
+%     value of the fixed parameter. 
+
+% -----------------------
+%      Aspen H. Yoo
+%   aspen.yoo@nyu.edu
+% -----------------------
+
 if nargin < 4; runmax = 50; end
 if nargin < 5; truemodel = testmodel; end % for model recovery
 if isempty(truemodel); truemodel = testmodel; end
 if nargin < 6; expnumber = 2; end
 if nargin < 7; fixparams = []; end
-
-
-% ================= INPUT VARIABLES ==================
-% MODEL: 1 (optimal priority placement) or 2 (not optimal) or 3 (fixed)
-% SUBJNUM: subject number. 1 - 11
-% NSTARTVALS: optimization starting vals
-% TESTMODEL: 1 (optimal priority placement) or 2 (not optimal) or 3 (fixed). 
-% this is used only for model recovery.
-% EXPNUMBER: 1 (experiment with just priority manipulation) or 2
-% (experiment with disc size response also). 
-% 
-% -----------------------
-%      Aspen H. Yoo
-%   aspen.yoo@nyu.edu
-%     April 10, 2017
 
 
 % filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
