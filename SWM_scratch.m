@@ -971,9 +971,9 @@ clear all
 expnumber = 2;
 modVec = [3 2 4 1];
 nModels = length(modVec);
-modcompidx = 1;
+modcompidx = 4;
 fixedrisk = 0;
-MCM = 'AICc';
+MCM = 'BIC';
 
 filename = ['exp' num2str(expnumber) '_cleandata.mat'];
 load(filename,'nTrials')
@@ -1852,6 +1852,21 @@ end
 
 figure
 plot(angless,biasVec,'o')
+
+%% MIXED ANOVA
+% % fixed effect: between subject
+% % random effect: within subject
+% clear all
+% 
+% load('exp2_zuzprocesseddata.mat')
+% finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
+%     (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
+% 
+% blah = [group_data(:,1:2),finalerror group_data(:,4)];
+% blah(any(isnan(blah), 2), :) = [];
+% 
+% tbl = table(blah(:,1),blah(:,2),blah(:,3),'VariableNames',{'Subject','Priority','Error'});
+% lme2 = fitlme(tbl,'Error~Subject+(Priority)');
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 %       CLUSTER RELATED

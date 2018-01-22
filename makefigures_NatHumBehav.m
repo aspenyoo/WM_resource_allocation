@@ -1719,33 +1719,8 @@ contour3(reshape(map,nGrids,nGrids),50)
 clear all
 % close all
 
-nSamps = 5;
-Jbar = 2;
-tau = 0.1;
-% alpha = 1; 
-beta = 1; 
-gamma = 1;
 
-Vec = linspace(0.01,3,nSamps);
-% JbarVec = exp(linspace(log(3*tau+0.01),log(15),nJbars));
-
-[pVec_MP, pVec_ME] = deal(nan(nSamps,3));
-for isamp = 1:nSamps;
-    alpha = Vec(isamp)
-    
-    MPtheta = [Jbar tau alpha beta];
-    MEtheta = [MPtheta gamma];
-    
-    % maxmimizing points
-    pVec_MP(isamp,:) = calc_optimal_pVec(MPtheta);
-    
-    % minimizing error
-    pVec_ME(isamp,:) = calc_pVec_minerror(MEtheta);
-    
-end
-
-
-% =============== TERNARY PLOT ========================
+% SET UP TERNARY PLOT
 colorMat = [1 0 0; 0 0 1; 0 0 0];
 
 % axis
@@ -1781,22 +1756,75 @@ set(htick(:,3),'color',axis3,'linewidth',3)
 
 % plot proportional model
 h = ternaryc(0.6,0.3,0.1);
-set(h,'marker','.','markerfacecolor',[1 0.5 0],'markersize',24,'markeredgecolor',[1 0.5 0])
-
-% plot MP 
-% colormap(aspencolors(9,'yellowgreen'));
-hter = ternaryc(pVec_MP(:,1),pVec_MP(:,2),pVec_MP(:,3),1:nSamps,'*');
+propcolor = [0.1 0.7 0.3];
+set(h,'marker','.','markerfacecolor',propcolor,'markersize',24,'markeredgecolor',propcolor)
 hold on
-for i = 1:(nSamps-1);
-    plot([hter(i).XData hter(i+1).XData], [hter(i).YData hter(i+1).YData],'k-')
+
+
+% CALCULATE AND PLOT MIN-ERROR AND MAX-PTS MODEL PREDICTIONS
+nSamps = 10;
+
+% Jbar = 2;
+% tau = 0.1;
+alpha = 1; 
+beta = 1; 
+gamma = 1;
+
+Vec1 = linspace(0.01,3,nSamps); % tau
+Vec2 = linspace(3,15,nSamps); % multiplier to use for Jbar
+
+
+blah = .9:-.2:.1;
+[pVec_MP, pVec_ME] = deal(cell(1,nSamps));
+for isamp1 = 3;%1:nSamps
+    tau = Vec1(isamp1);
+    
+    [pVec_MP{isamp1}, pVec_ME{isamp1}] = deal(nan(nSamps,3));
+    for isamp2 = 1:nSamps
+        Jbar = Vec2(isamp2)*tau + 0.01
+        
+        MPtheta = [Jbar tau alpha beta];
+        MEtheta = [MPtheta gamma];
+        
+        % maximizing points
+        pVec_MP{isamp1}(isamp2,:) = calc_optimal_pVec(MPtheta);
+        
+        % minimizing error
+        pVec_ME{isamp1}(isamp2,:) = calc_pVec_minerror(MEtheta);
+    end
+    
+    % plot max points
+    h = ternaryc(pVec_MP{isamp1}(:,1),pVec_MP{isamp1}(:,2),pVec_MP{isamp1}(:,3));
+    set(h,'marker','.','markerfacecolor',[blah(isamp1) blah(isamp1) 1],'markersize',24,'markeredgecolor',[blah(isamp1) blah(isamp1) 1])
+    hold on
+    for i = 1:(nSamps-1);
+        plot([h(i).XData h(i+1).XData], [h(i).YData h(i+1).YData],'k-')
+    end
+    
+    % plot min error
+    h = ternaryc(pVec_ME{isamp1}(:,1),pVec_ME{isamp1}(:,2),pVec_ME{isamp1}(:,3));
+    set(h,'marker','.','markerfacecolor',[1 blah(isamp1) blah(isamp1)],'markersize',24,'markeredgecolor',[1 blah(isamp1) blah(isamp1)])
+    hold on
+    for i = 1:(nSamps-1);
+        plot([h(i).XData h(i+1).XData], [h(i).YData h(i+1).YData],'k-')
+    end
 end
 
-% plot ME 
-hter = ternaryc(pVec_ME(:,1),pVec_ME(:,2),pVec_ME(:,3),1:nSamps,'o');
-hold on
-for i = 1:(nSamps-1);
-    plot([hter(i).XData hter(i+1).XData], [hter(i).YData hter(i+1).YData],'k-')
-end
+
+% % plot MP 
+% % colormap(aspencolors(9,'yellowgreen'));
+% hter = ternaryc(pVec_MP(:,1),pVec_MP(:,2),pVec_MP(:,3),1:nSamps,'*');
+% hold on
+% for i = 1:(nSamps-1);
+%     plot([hter(i).XData hter(i+1).XData], [hter(i).YData hter(i+1).YData],'k-')
+% end
+% 
+% % plot ME 
+% hter = ternaryc(pVec_ME(:,1),pVec_ME(:,2),pVec_ME(:,3),1:nSamps,'o');
+% hold on
+% for i = 1:(nSamps-1);
+%     plot([hter(i).XData hter(i+1).XData], [hter(i).YData hter(i+1).YData],'k-')
+% end
 
 %% PERMUTATION TEST FOR STIMULUS: EXP 2
 clear all
@@ -2051,7 +2079,7 @@ end
 
 %% PERMUTATION TEST
 
-clear all; close all
+clear all; % close all
 clc
 
 rng(1)
@@ -2080,7 +2108,7 @@ angleVec = unique(group_data(:,3));
 
 nPerms = 1000;
 nSubj = length(subjVec);
-nAngles = length(angleVec)/2;
+nAngles = length(angleVec);
 nPriorities = length(priorityVec);
 
 % put each subject's data in terms of z-scores
@@ -2105,12 +2133,12 @@ for isubj = 1:nSubj;
         idxx = idx & (groupzscoredata(:,2) == priority);
 
         for iangle = 1:nAngles;
-%             angle = angleVec(iangle);
-%             idxxx = idxx & (groupzscoredata(:,3) == angle);
-            angle1 = angleVec(2*iangle-1);
-            angle2 = angleVec(2*iangle);
-            idxxx = idxx & ((groupzscoredata(:,3) == angle1) | ...
-                (groupzscoredata(:,3) == angle2));
+            angle = angleVec(iangle);
+            idxxx = idxx & (groupzscoredata(:,3) == angle);
+%             angle1 = angleVec(2*iangle-1);
+%             angle2 = angleVec(2*iangle);
+%             idxxx = idxx & ((groupzscoredata(:,3) == angle1) | ...
+%                 (groupzscoredata(:,3) == angle2));
             
             nTrials = sum(idxxx);
             
@@ -2234,6 +2262,36 @@ pcntiles = sum(pcntiles)./nPerms;
 
 [h1,p1] = kstest(pcntiles,'cdf',pd)
 
+%% get z-scores of each subject each priority
+% problematic bc it assumes normality
+
+zscoreMat = nan(nSubj,nPriorities);
+for isubj = 1:nSubj;
+    for ipriority = 1:nPriorities
+        
+        mu = mean(corrMat(:,4*(isubj-1)+ipriority));
+        sigma = std(corrMat(:,4*(isubj-1)+ipriority));
+        zscoreMat(isubj,ipriority) = (corrVec(4*(isubj-1)+ipriority) - mu)./sigma;
+    end
+end
+
+zscoreMat
+mean(zscoreMat)
+std(zscoreMat)./sqrt(nSubj)
+
+%% get numerical p-values from data
+
+pvalMat = reshape(percentiles,nPriorities,nSubj)';
+pvalMat = 1 - pvalMat
+mean(pvalMat)
+std(pvalMat)./sqrt(nSubj)
+
+%% wilcoxon signed-rank test on p-values of actual correlations
+fishMat = reshape(pVec,nPriorities+1,nSubj);
+fishMat = fishMat(1:3,:)';
+
+fisherMat = 0.5.*(log(1+fishMat)-log(1-fishMat)); % fisher transform variables (so range is (-inf inf) instead of [0 1])
+p = signrank(fisherMat)
 
 %% number of trials per bin
 
