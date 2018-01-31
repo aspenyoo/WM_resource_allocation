@@ -1,11 +1,8 @@
 function E_EU = calc_E_EU(Theta)
 % CALC_E_EU calculates expected value of the expected utility for a given 
-% Theta = [Jbar, tau, beta]. 
+% Theta = [Jbar, tau, beta]. for Maximizing Points model
 %
 % aspen yoo -- 02.08.2016
-
-% % input parameters
-% Theta = [15 1 1];
 
 Jbar = Theta(1);
 tau = Theta(2);
