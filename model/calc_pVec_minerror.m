@@ -1,8 +1,9 @@
 function [pVec, fval] = calc_pVec_minerror(Theta)
-% PVEC = calc_pVec_optimalerror(THETA)
-% 
-% calculates the proportion allocated to each priority condition that
-% minimizes the squared error of target and response. 
+%calc_pVec_optimalerror calculates the proportion allocated to each priority 
+%condition that minimizes loss
+%
+%   PVEC = CALC_PVEC_MAXPOINTS(THETA) returns the optimal proportion
+%   allocation for THETA = [Jbar_total, tau, [alpha, beta,] gamma]. 
 
 % function for expected squared error
 calc_E_error = @(x) calc_expectederror_analytical(Theta,x);
@@ -30,19 +31,6 @@ while size(x0,1) < nStartVals
     x0(logical(idx),:) =[]; 
     constantt = constantt + sum(idx); 
 end
-
-% 
-% x0 = rand(nStartVals,2);
-% x0 = [x0 1-sum(x0,2)];
-% 
-% 
-% 
-% while any((x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))') % make sure it satisfies linear constraints
-%     idx = (x0(:,3) < 0) | sum(A*x0' > -(Theta(end)/2))';
-%     x0(idx,1:2) = rand(sum(idx),2);
-%     x0(idx,3) = 1 - sum(x0(idx,1:2),2);
-%     fprintf('%d ',sum(idx))
-% end
 
 % optimizing
 pVec = nan(nStartVals,3);

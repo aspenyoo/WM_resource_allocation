@@ -11,10 +11,10 @@ function nLL = calc_nLL(model,Theta,data,fixparams)
 %   ================= INPUT VARIABLES ======================
 % 
 %   MODEL / THETA: 
-%         M1, MAXIMIZING POINTS: [Jbar_total tau alpha beta]
-%         M2, FLEXIBLE: [Jbar_total tau alpha beta p_high p_med]
-%         M3, PROPORTIONAL: [Jbar_total tau alpha beta]
-%         M4, MINIMIZING ERROR: [Jbar_total tau alpha beta gamma]
+%         1, MAXIMIZING POINTS / [Jbar_total tau alpha beta]
+%         2, FLEXIBLE / [Jbar_total tau alpha beta p_high p_med]
+%         3, PROPORTIONAL / [Jbar_total tau alpha beta]
+%         4, MINIMIZING ERROR / [Jbar_total tau alpha beta gamma]
 % 
 %     parameter descriptions: 
 %           JBAR_TOTAL: mean total amount of resources across priorities
@@ -76,20 +76,13 @@ nPriorities = length(priorityVec);
 
 switch model
     case 1 % optimal: maximizing points (exp 2 only)
-        % calculate the proportions that maximize expected utility
-        pVec = calc_optimal_pVec(Theta);
-    case 2 % not optimal
-        %         if sum(Theta(end-1:end))>1 % reflect over pHigh + pMed = 1 line
-        %             pVec = [1-Theta(end) 1-Theta(end-1)];
-        %             pVec = [pVec 1-sum(pVec)];
-        %         else
+        pVec = calc_pVec_maxpoints(Theta);
+    case 2 % flexible
         pVec = [Theta(end-1:end) 1-sum(Theta(end-1:end))];
-        %         end
     case 3 % fixed
         pVec = [0.6 0.3 0.1];
-    case 4 % optimal: minimizing squared error
+    case 4 % minimizing error^\gamma
         pVec = calc_pVec_minerror(Theta);
-        %         pVec = [0.4727 0.3343 0.1930];
 end
 
 % loading vector of disc radii
@@ -169,7 +162,7 @@ else
             % \int p(Shat|S,J) p(J) dJ
             pTrials = sum(bsxfun(@times,p_Shat,Jpdf')); % 1 x nTrials
         end
-        %     if ipriority == 3; Jpdf, end
+        
         nLL = nLL - sum(log(pTrials));
         
     end

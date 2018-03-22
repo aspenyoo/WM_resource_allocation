@@ -48,7 +48,7 @@ if isempty(fixparams)
 filepath = ['fits/exp' num2str(expnumber) '/'];
 %  filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '/'];
 else
-filepath = ['/home/ay963/spatialWM/fits/exp' num2str(expnumber) '_fixedrisk/'];
+filepath = ['fits/exp' num2str(expnumber) '_fixedrisk/'];
 end
 
 if (expnumber == 1)
