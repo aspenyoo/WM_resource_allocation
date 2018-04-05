@@ -1,20 +1,23 @@
-function expectederror = calc_expectederror_analytical(Theta,allocatedpriorityVec)
-% CALC_EXPECTEDERROR_ANALYTICAL(THETA,ALLOCATEDPRIORITYVEC) calculates the
+function expectederror = calc_expectederror_analytical(Theta,allocatedpriorityVec,exppriorityVec)
+%CALC_EXPECTEDERROR_ANALYTICAL(THETA,ALLOCATEDPRIORITYVEC) calculates the
 % expected cost (euclidean error ^ psi) for a given parameter vector THETA
 % and resource allocation across consitions ALLOCATEDPRIORITYVEC.
 % 
 % ===== INPUT VARIABLES =====
-% THETA: Jbar_total, tau, (alpha, beta,) psi (alpha and beta are only in
+% THETA: Jbar_total, tau, [alpha, beta,] gamma. (alpha and beta are only in
 %   experiment 2)
-% ALLOCATEDPRIORITYVEC: 1 x 3 vector of allocated priority.
+% ALLOCATEDPRIORITYVEC: row vector of allocated priority.
 %   sum(allocatedpriorityVec) = 1
+% EXPPRIORITYVEC: row vector of experimental priority.
+%   sum(exppriorityVec) = 1
+
+%if nargin < 3; exppriorityVec = [0.6 0.3 0.1]; end
 
 % getting parameters
 Jbar_total = Theta(1);
 tau = Theta(2);
 gamma = Theta(end);
 
-priorityVec = [0.6 0.3 0.1];
 nPriorities = length(allocatedpriorityVec);
 
 % E[d^gamma] = \int d^blah \int p(d|J)p(J) dd dJ
@@ -26,13 +29,15 @@ for ipriority = 1:nPriorities
 
     k = Jbar/tau;
     
-    if any([gamma/2+1 k-(gamma/2) k] <=0)
+    if any([gamma/2+1 k-(gamma/2) k] <= 0) % this constraint must be met for expected error to be analytical
+        % ASPEN, why not do something not analytical here? 
         expectederror = Inf;
         return
     else
-        bleh = exp(gammaln(gamma/2 + 1) + gammaln(k-(gamma/2)) - gammaln(k)).* (2/tau)^(gamma/2);
+        bleh = exp(gammaln(gamma/2 + 1) + gammaln(k-(gamma/2)) - gammaln(k)) .* (2/tau)^(gamma/2);
     end
     
-    expectederror = expectederror + priorityVec(ipriority).*bleh;
+    expectederror = expectederror + exppriorityVec(ipriority).*bleh;
     
 end
+

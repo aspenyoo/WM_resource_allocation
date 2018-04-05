@@ -1,4 +1,12 @@
-function [logflag, lb, ub, plb, pub, nonbcon] = loadconstraints(model,expnumber)
+function [logflag, lb, ub, plb, pub, nonbcon] = loadconstraints(model,expnumber,exppriorityVec)
+%loadconstraints loads optimization constraints for each model
+%
+% EXPPRIORITYVEC: row vector of experimental priority.
+%   sum(exppriorityVec) = 1
+
+% if nargin < 3; exppriorityVec = [0.6 0.3 0.1]; end
+
+nPriorities = length(exppriorityVec); 
 
 % lower and upper bounds, logflags
 lb = [1e-5 1e-3]; % Jbar_total, tau
@@ -6,6 +14,7 @@ ub = [50 10];
 plb = [0.5 0.01];
 pub = [10 1];
 logflag = [1 1];
+
 if expnumber == 2 % alpha beta
     lb = [lb 1e-5 1e-5];
     ub = [ub 5 5];
@@ -13,13 +22,14 @@ if expnumber == 2 % alpha beta
     pub = [pub 1.3 1.5];
     logflag = [logflag 0 0];
 end
+
 switch model
     case 2 % define p_high p_med for Flexible model
-        lb = [lb 1e-10 1e-10];
-        ub = [ub 1 1];
-        plb = [plb 0.3 1e-10];
-        pub = [pub 0.7 0.3];
-        logflag = [logflag 0 0];
+        lb = [lb 1e-10.*ones(1,nPriorities-1)];
+        ub = [ub ones(1,nPriorities-1)];
+        plb = [plb max([1e-10.*ones(1,nPriorities-1); exppriorityVec(1:end-1).*0.5])];
+        pub = [pub min([ones(1,nPriorities-1); exppriorityVec(1:end-1).*1.5])];
+        logflag = [logflag zeros(1,nPriorities-1)];
     case 4 % gamma for Minimizing Error model
         lb = [lb 1e-10];
         ub = [ub 10];
@@ -30,6 +40,7 @@ switch model
     otherwise
         nonbcon = [];
 end
+
 logflag = logical(logflag); 
 lb(logflag) = log(lb(logflag)); 
 ub(logflag) = log(ub(logflag)); 

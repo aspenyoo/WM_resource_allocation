@@ -1,4 +1,4 @@
-function nLL = calc_nLL(model,Theta,data,fixparams)
+function nLL = calc_nLL(model,Theta,data,fixparams,exppriorityVec)
 %CALC_NLL calculates negative log-likelihood
 % 
 %   NLL = CALC_NLL(MODEL, THETA, DATA) calculates the negative
@@ -49,7 +49,7 @@ if nargin < 4; fixparams = []; end
 expnumber = size(data{1},2); % experiment number
 
 % exponentiating appropriate parameters
-logflag = loadconstraints(model,expnumber);
+logflag = loadconstraints(model,expnumber,exppriorityVec);
 
 % if there are fixed parameters
 if ~isempty(fixparams)
@@ -71,18 +71,18 @@ if (expnumber == 2); alpha = Theta(3); beta = Theta(4); end
 
 
 % data stuff
-priorityVec = [0.6 0.3 0.1];
-nPriorities = length(priorityVec);
+nPriorities = length(exppriorityVec);
 
 switch model
     case 1 % optimal: maximizing points (exp 2 only)
-        pVec = calc_pVec_maxpoints(Theta);
+        pVec = calc_pVec_maxpoints(Theta,exppriorityVec);
     case 2 % flexible
-        pVec = [Theta(end-1:end) 1-sum(Theta(end-1:end))];
+        pp = Theta(end-(nPriorities-2):end);
+        pVec = [pp 1-sum(pp)];
     case 3 % fixed
-        pVec = [0.6 0.3 0.1];
+        pVec = exppriorityVec;
     case 4 % minimizing error^\gamma
-        pVec = calc_pVec_minerror(Theta);
+        pVec = calc_pVec_minerror(Theta,exppriorityVec);
 end
 
 % loading vector of disc radii

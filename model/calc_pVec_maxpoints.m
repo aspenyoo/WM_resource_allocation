@@ -1,4 +1,4 @@
-function pVec = calc_pVec_maxpoints(Theta)
+function pVec = calc_pVec_maxpoints(Theta,exppriorityVec)
 %calc_pVec_maxpoints calculates the proportion allocation that maximizes
 %points
 % 
@@ -8,44 +8,63 @@ function pVec = calc_pVec_maxpoints(Theta)
 %       tau: scale parameter of memory precision gamma distribution
 %       alpha: risk preferences for post-decision wager
 %       beta: inverse noise temperature on post-decision wager
+%
+%   EXPPRIORITYVEC: row vector of experimental priority.
+%       sum(exppriorityVec) = 1
 
 % ---------------------
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 % ---------------------
 
-
-Jbar_total = Theta(1);
-tau = Theta(2);
-alpha = Theta(3);w
-beta = Theta(4);
+%if nargin < 2; exppriorityVec = [0.6 0.3 0.1]; end
 
 % data stuff
-priorityVec = [0.6 0.3 0.1];
-nPriorities = length(priorityVec);
+nPriorities = length(exppriorityVec);
 
 % calculate the optimal proportions given the parameters
-calc_ntotalEU = @(x) -(0.6*calc_E_EU([Jbar_total*x(1),tau,alpha,beta]) ...
-    + 0.3*calc_E_EU([Jbar_total*x(2),tau,alpha,beta])...
-    + 0.1*calc_E_EU([Jbar_total*x(3),tau,alpha,beta]));
+% calc_ntotalEU = @(x) -(0.6*calc_E_EU([Jbar_total*x(1),tau,alpha,beta]) ...
+%     + 0.3*calc_E_EU([Jbar_total*x(2),tau,alpha,beta])...
+%     + 0.1*calc_E_EU([Jbar_total*x(3),tau,alpha,beta]));
+objfunc = @(x) calc_ntotalEU(Theta,x,exppriorityVec);
 
 % optimization-related variables
-Aeq = [1 1 1];
+Aeq = ones(1,nPriorities);
 beq = 1;
 [A,b,nonlcon] = deal([]);
 options = optimset('Display','none');
-lb = [1e-5 1e-5 1e-5];
-ub = [1 1 1];
+lb = 1e-5.*ones(1,nPriorities); 
+ub = ones(1,nPriorities);
 nStartVals = 10; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
 
+% get starting values
+plb = 0.1.*ones(1,nPriorities);
+pub = 0.9.*ones(1,nPriorities);
+x0 = lhs(nStartVals,nPriorities,plb,pub,[],1e3);
+x0 = bsxfun(@rdivide,x0,sum(x0,2)); % normalize
+
 % running optimization nStartVals times
-pVec = nan(nStartVals,3);
+pVec = nan(nStartVals,nPriorities);
 nEU = nan(1,nStartVals);
 for istartval = 1:nStartVals
-    [pVec(istartval,:), nEU(istartval)] = fmincon(calc_ntotalEU,rand(1,3),A,b,Aeq,beq,lb,ub,nonlcon,options);
+    [pVec(istartval,:), nEU(istartval)] = fmincon(objfunc,x0(istartval,:),A,b,Aeq,beq,lb,ub,nonlcon,options);
 end
 
 % pick the pVec that corresponded to highest EU
 pVec = pVec(nEU == min(nEU),:);
 pVec = pVec(1,:); % necessary if multiple entries have nEU == min(nEU)
 
+end
+
+function EU = calc_ntotalEU(Theta,x,exppriorityVec)
+Jbar_total = Theta(1);
+tau = Theta(2);
+alpha = Theta(3);
+beta = Theta(4);
+
+EU = 0;
+for ipriority = 1:length(exppriorityVec);
+    EU = EU - exppriorityVec(ipriority)*calc_E_EU([Jbar_total*x(ipriority),tau,alpha,beta]);
+end
+
+end
