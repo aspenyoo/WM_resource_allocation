@@ -11,10 +11,10 @@ function nLL = calc_nLL(model,Theta,data,fixparams,exppriorityVec)
 %   ================= INPUT VARIABLES ======================
 % 
 %   MODEL / THETA: 
-%         1, MAXIMIZING POINTS / [Jbar_total tau alpha beta]
-%         2, FLEXIBLE / [Jbar_total tau alpha beta p_high p_med]
-%         3, PROPORTIONAL / [Jbar_total tau alpha beta]
-%         4, MINIMIZING ERROR / [Jbar_total tau alpha beta gamma]
+%         'max_points', MAXIMIZING POINTS / [Jbar_total tau alpha beta]
+%         'flexible', FLEXIBLE / [Jbar_total tau alpha beta p_high p_med]
+%         'proportional', PROPORTIONAL / [Jbar_total tau alpha beta]
+%         'min_error', MINIMIZING ERROR / [Jbar_total tau alpha beta gamma]
 % 
 %     parameter descriptions: 
 %           JBAR_TOTAL: mean total amount of resources across priorities
@@ -74,14 +74,14 @@ if (expnumber == 2); alpha = Theta(3); beta = Theta(4); end
 nPriorities = length(exppriorityVec);
 
 switch model
-    case 1 % optimal: maximizing points (exp 2 only)
+    case 'max_points' % optimal: maximizing points (exp 2 only)
         pVec = calc_pVec_maxpoints(Theta,exppriorityVec);
-    case 2 % flexible
+    case 'flexible' % flexible
         pp = Theta(end-(nPriorities-2):end);
         pVec = [pp 1-sum(pp)];
-    case 3 % fixed
+    case 'proportional' % proportional
         pVec = exppriorityVec;
-    case 4 % minimizing error^\gamma
+    case 'min_error' % minimizing error^\gamma
         pVec = calc_pVec_minerror(Theta,exppriorityVec);
 end
 

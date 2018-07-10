@@ -1,10 +1,11 @@
 function [p_Hit] = calc_p_Hit(r,J)
 % calculates the probability that the saccade target lands within the disk
 % 
+% ====== INPUT VARIABLES =====
 % R: radius of disk. can be a scalar or vector
 % J: memory precision. can be a scalar or vector
 % 
-% ============ OUTPUT VARIABLES ===========
+% ===== OUTPUT VARIABLES =====
 % P_HIT: an nR x nJ vector of p(Hit) for each combination of r and J. 
 
 r = r(:); % r is vertical

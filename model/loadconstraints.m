@@ -1,10 +1,16 @@
-function [logflag, lb, ub, plb, pub, nonbcon] = loadconstraints(model,expnumber,exppriorityVec)
+function [logflag, lb, ub, plb, pub, nonbcon] = loadconstraints(model,exppriorityVec,is_wagerdata)
 %loadconstraints loads optimization constraints for each model
-%
+% 
+% LOADCONSTRAINTS(MODEL,EXPPRIORITYVEC) loads optimization constraint for 
+% 
+% ===== INPUT VARIABLES =====
+% 
+% MODEL: 'max_points', 'flexible', 'proportional', or 'min_error'
+% 
 % EXPPRIORITYVEC: row vector of experimental priority.
 %   sum(exppriorityVec) = 1
 
-% if nargin < 3; exppriorityVec = [0.6 0.3 0.1]; end
+if nargin < 3; is_wagerdata = 0; end
 
 nPriorities = length(exppriorityVec); 
 
@@ -15,7 +21,7 @@ plb = [0.5 0.01];
 pub = [10 1];
 logflag = [1 1];
 
-if expnumber == 2 % alpha beta
+if (is_wagerdata) % alpha beta
     lb = [lb 1e-5 1e-5];
     ub = [ub 5 5];
     plb = [plb 0.7 0.5];
@@ -24,13 +30,13 @@ if expnumber == 2 % alpha beta
 end
 
 switch model
-    case 2 % define p_high p_med for Flexible model
+    case 'flexible' % define p_high p_med for Flexible model
         lb = [lb 1e-10.*ones(1,nPriorities-1)];
         ub = [ub ones(1,nPriorities-1)];
         plb = [plb max([1e-10.*ones(1,nPriorities-1); exppriorityVec(1:end-1).*0.5])];
         pub = [pub min([ones(1,nPriorities-1); exppriorityVec(1:end-1).*1.5])];
         logflag = [logflag zeros(1,nPriorities-1)];
-    case 4 % gamma for Minimizing Error model
+    case 'min_error' % gamma for Minimizing Error model
         lb = [lb 1e-10];
         ub = [ub 10];
         plb = [plb 1e-3];

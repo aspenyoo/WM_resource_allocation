@@ -1,4 +1,4 @@
-function [data] = simulate_data(model,expnumber,Theta,nTrials)
+function [data] = simulate_data(model,expnumber,Theta,nTrials,expPriorityVec)
 % SIMULATE_DATA simulates data for the optimal observer in the [0.6 0.3
 %   0.1] priority task.
 %
@@ -19,8 +19,9 @@ function [data] = simulate_data(model,expnumber,Theta,nTrials)
 %   aspen.yoo@nyu.edu
 
 if nargin < 4; nTrials = [250 120 70]; end % mean number of trials across actual participants
+if nargin < 5; expPriorityVec = [0.6 0.3 0.1]; end
 
-nPriorities = 3;
+nPriorities = length(expPriorityVec);
 nSubj = size(Theta,1);
 
 data = cell(1,nSubj);
@@ -37,13 +38,14 @@ for isubj = 1:nSubj
     
     switch model
         case 1
-            pVec = calc_optimal_pVec(theta);
+            pVec = calc_optimal_pVec(theta,expPriorityVec);
         case 2
-            pVec = [theta(end-1:end) 1-sum(theta(end-1:end))];
+            pp = Theta(end-(nPriorities-2):end);
+            pVec = [pp 1-sum(pp)];
         case 3
-            pVec = [0.6 0.3 0.1];
+            pVec = expPriorityVec;
         case 4 % optimal: minimizing squared error
-            pVec = calc_pVec_minerror(theta);
+            pVec = calc_pVec_minerror(theta,expPriorityVec);
     end
     
     % make data

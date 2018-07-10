@@ -2,7 +2,11 @@ function totalEU = calc_totalEU(Theta, model)
 % CALC_TOTALEU calculates expected value of the expected utility across the
 % entire experiment
 %
-% aspen yoo -- 08.21.2017
+
+% ---------------------
+%      Aspen H. Yoo
+%   aspen.yoo@nyu.edu
+% ---------------------
 
 Jbar_total = Theta(1);
 tau = Theta(2);

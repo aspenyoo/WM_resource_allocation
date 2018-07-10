@@ -1,22 +1,22 @@
 function [ML_parameters, nLLVec, runlist_completed] = fit_parameters(model,data,exppriorityVec,runlist,runmax,fixparams)
 %FIT_PARAMETERS
 % 
-%   FIT_PARAMETERS(TESTMODEL, SUBJNUM, RUNLIST) estimates and saves
-%     maximum-likelihood parameter estimate for TESTMODEL and SUBJNUM and
+%   FIT_PARAMETERS(MODEL, DATA, EXPPRIORITYVEC) estimates and saves
+%     maximum-likelihood parameter estimate for MODEL, DATA, EXPPRIORITYVEC, and
 %     RUNLIST.
 % 
-%   FIT_PARAMETERS(TESTMODEL, SUBJNUM, RUNLIST, RUNMAX) estimates and saves
-%     maximum-likelihood parameter estimate for TESTMODEL and SUBJNUM and
-%     RUNLIST.
+%   FIT_PARAMETERS(MODEL, DATA, EXPPRIORITYVEC, RUNLIST, RUNMAX) estimates and saves
+%     maximum-likelihood parameter estimate for TESTMODEL, SUBJNUM,
+%     EXPPRIORITYVEC, and RUNLIST.
 % 
-%   ================= INPUT VARIABLES ==================
+%   ===== INPUT VARIABLES =====
 % 
-%   MODEL: 1 (Maximizing Points), 2 (Flexible), 3 (Proportional),
-%     4 (Minimizing Error)
+%   MODEL: 'max_points', 'flexible', 'proportional', or 'min_error'
 % 
-%   DATA: struct of length nPriorities, with column vector(s) of data. 
+%   DATA: struct of length nPriorities, with column vector(s) of data (in decreasing order of priority) 
 %
-%   EXPPRIORITYVEC: vector of priority values
+%   EXPPRIORITYVEC: vector of priority values (in decreasing order of
+%   priority) e.g., [0.6 0.3 0.1]
 % 
 %   RUNLIST: scalar or vector containing indexes 1 to RUNMAX.
 % 
@@ -32,6 +32,7 @@ function [ML_parameters, nLLVec, runlist_completed] = fit_parameters(model,data,
 %   aspen.yoo@nyu.edu
 % -----------------------
 
+if nargin < 4; runlist = 1; end
 if nargin < 5; runmax = 50; end
 if nargin < 6; fixparams = []; end
 
