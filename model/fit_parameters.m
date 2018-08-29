@@ -56,19 +56,15 @@ end
 
 % create list of all x0s
 nParams = length(logflag);
-% if ~isempty(nonbcon)
-    x0_list = [];
-    constantt = 0;
-    while size(x0_list,1) < runmax
-        rng(0);
-        x0_list = lhs(runmax + constantt,nParams,plb,pub,[],1e3);
-        countt = nonbcon(model,x0_list);
-        x0_list(logical(countt),:) =[];
-        constantt = constantt + sum(countt);
-    end
-% else
-%     x0_list = lhs(runmax,nParams,plb,pub,[],1e3);
-% end
+x0_list = [];
+constantt = 0;
+while size(x0_list,1) < runmax
+    rng(0);
+    x0_list = lhs(runmax + constantt,nParams,plb,pub,[],1e3);
+    isviolated = check_nonbcon(model,x0_list);
+    x0_list(logical(isviolated),:) =[];
+    constantt = constantt + sum(isviolated);
+end
 
 % optimize for starting values in RUNLIST
 ML_parameters = [];
@@ -82,7 +78,7 @@ for irun = 1:length(runlist)
     x0 = x0_list(runlist(irun),:);
     fun = @(x) calc_nLL(model,x,data,fixparams,exppriorityVec);
     
-    x = bads(fun,x0,lb,ub,plb,pub,@(y) nonbcon(model,y));
+    x = bads(fun,x0,lb,ub,plb,pub,@(y) check_nonbcon(model,y));
     fval = fun(x);
     
     x(logflag) = exp(x(logflag));

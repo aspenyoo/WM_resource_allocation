@@ -1,5 +1,6 @@
 function [p_Hit] = calc_p_Hit(r,J)
-% calculates the probability that the saccade target lands within the disk
+% calculates the probability that the saccade target lands within the
+% circle wager. 
 % 
 % ====== INPUT VARIABLES =====
 % R: radius of disk. can be a scalar or vector
