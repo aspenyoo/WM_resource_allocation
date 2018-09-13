@@ -12,9 +12,10 @@ This folder contains all the functions necessary to estimate model parameters, g
 **calc_pVec_maxpoints.m**: calculates the proportion to allocate to each target that maximizes points
 **calc_pVec_minerror.m**: calculates the proportion to allocate to each target that minimizes loss
 **calc_totalEU**: calculates expected value of the expected utility across the entire experiment. ASPEN: HOW IS THIS DIFFERENT FRM CALC_E_EU.m1?
+**check_nonbcon.m**: contains non-bound constrains to the model.
 **fit_parameters.m**: estimate parameters given model and data
 **gensimtheta.m**: generate data from particular parameter combination
 **loadconstraints.m**: contains optimization contraints for each model. is loaded when estimating parameters in fit_parameters.m
 **loadvar.m**: contains variables used for calculating things using sampling. 
-**nonbcon.m**: contains non-bound constrains to the model. ASPEN: COMBINE WITH LOADCONSTRAINGS
+
 
