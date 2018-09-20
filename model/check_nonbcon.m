@@ -10,4 +10,6 @@ switch model
         isviolated = isviolated | (exp(x(:,end)).*3 > exp(x(:,1))); % Jbar_total > psi*3
         isviolated = isviolated | (exp(x(:,1)) <= 3.*exp(x(:,2))); % Jbar_total > 3*tau
 end
+
 end
+

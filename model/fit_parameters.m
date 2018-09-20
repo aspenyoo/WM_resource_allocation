@@ -13,7 +13,7 @@ function [ML_parameters, nLLVec, runlist_completed] = fit_parameters(model,data,
 % 
 %   MODEL: 'max_points', 'flexible', 'proportional', or 'min_error'
 % 
-%   DATA: struct of length nPriorities, with column vector(s) of data (in decreasing order of priority) 
+%   DATA: cell of length nPriorities, with column vector(s) of data (in decreasing order of priority) 
 %
 %   EXPPRIORITYVEC: vector of priority values (in decreasing order of
 %   priority) e.g., [0.6 0.3 0.1]
@@ -39,7 +39,10 @@ if nargin < 6; fixparams = []; end
 % exppriorityVec = [0.6 0.3 0.1];
 expnumber = size(data{1},2);
 assert(length(data) == length(exppriorityVec));
-[logflag, lb, ub, plb, pub] = loadconstraints(model,expnumber,exppriorityVec);
+if strcmp(model,'max_points')
+    assert(expnumber == 2, 'maximizing points model only works with wager data')
+end
+[logflag, lb, ub, plb, pub] = loadconstraints(model,exppriorityVec,expnumber-1);
 
 if ~(isempty(fixparams))
     % vector of non-fixed parameter indices

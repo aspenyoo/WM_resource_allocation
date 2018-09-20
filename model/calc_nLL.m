@@ -48,8 +48,8 @@ if nargin < 4; fixparams = []; end
 
 expnumber = size(data{1},2); % experiment number
 
-% exponentiating appropriate parameters
-logflag = loadconstraints(model,expnumber,exppriorityVec);
+% exponentiating appropriate 
+logflag = loadconstraints(model,exppriorityVec,expnumber-1);
 
 % if there are fixed parameters
 if ~isempty(fixparams)
@@ -68,7 +68,6 @@ Theta(logflag) = exp(Theta(logflag));
 Jbar_total = Theta(1);
 tau = Theta(2);
 if (expnumber == 2); alpha = Theta(3); beta = Theta(4); end
-
 
 % data stuff
 nPriorities = length(exppriorityVec);
