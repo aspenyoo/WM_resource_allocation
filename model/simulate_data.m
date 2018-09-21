@@ -3,7 +3,7 @@ function [data] = simulate_data(model,expnumber,Theta,nTrials,expPriorityVec)
 %   0.1] priority task.
 %
 % ===================== INPUT VARIABLES ========================
-% THETA: 1 x 3 vector of parameters [Jbar_total, tau, beta]
+% THETA: 1 x N vector of parameters: Jbar_total, tau[, alpha, beta, gamma]
 % EXPNUMBER: 1 (no disc). 2 (with disc).
 % NTRIALS: 1 x 3 vector of number of trials for each priority value [0.6
 %   0.3 0.1]
@@ -18,8 +18,8 @@ function [data] = simulate_data(model,expnumber,Theta,nTrials,expPriorityVec)
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 
-if nargin < 4; nTrials = [250 120 70]; end % mean number of trials across actual participants
-if nargin < 5; expPriorityVec = [0.6 0.3 0.1]; end
+% if nargin < 4; nTrials = [250 120 70]; end % mean number of trials across actual participants
+% if nargin < 5; expPriorityVec = [0.6 0.3 0.1]; end
 
 nPriorities = length(expPriorityVec);
 nSubj = size(Theta,1);
@@ -37,14 +37,14 @@ for isubj = 1:nSubj
     end
     
     switch model
-        case 1
+        case 'max_points'
             pVec = calc_optimal_pVec(theta,expPriorityVec);
-        case 2
+        case 'flexible'
             pp = Theta(end-(nPriorities-2):end);
             pVec = [pp 1-sum(pp)];
-        case 3
+        case 'proportional'
             pVec = expPriorityVec;
-        case 4 % optimal: minimizing squared error
+        case 'min_error' 
             pVec = calc_pVec_minerror(theta,expPriorityVec);
     end
     
