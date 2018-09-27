@@ -16,8 +16,8 @@ error_f = all_data.s_all.f_sacc_err;
 
 % indicate which subject, condition, and hemifield to use
 subjnum = 9; % 1-9
-TMScond = 1; % 1 = no tms, 2 = ips2, 3 = spcs
-hemifield = 2; % 1: left hemi. 2: right hemi. 0: both hemi
+TMScond = 2; % 1 = no tms, 2 = ips2, 3 = spcs
+hemifield = 1; % 1: left hemi. 2: right hemi. 0: both hemi
 
 % get data from a particular subject and condition (and hemifield?)
 idx = all_data.use_trial;
@@ -37,6 +37,7 @@ data{2}(isnan(data{2})) = [];
 
 data
 
+
 %% FIT MODEL
 
 filepath = 'fits/grace/';
@@ -45,8 +46,8 @@ runlist = 1:50;
 runmax = 50;
 fixparams = [];
 
-filename = [filepath 'fits_model_' num2str(model) '_subj' num2str(subjnum) ...
-    '_TMScond_' num2str(TMScond) '_hemi' num2str(hemifield) '.mat'];
+filename = [filepath 'fits_model_' num2str(model) '_TMScond_' num2str(TMScond) ...
+     '_hemi' num2str(hemifield) '_subj' num2str(subjnum) '.mat'];
 
 try load(filename); catch; ML_parameters = []; nLLVec = []; end
 try runlist_completed*2; catch; runlist_completed = []; end % seeing if runlist_completed exists yet
@@ -71,8 +72,8 @@ filepath = 'fits/grace/';
 
 subjVec = 1:9;
 model = 'flexible';
-TMScond = 1;
-hemifield = 0;
+TMScond = 2;
+hemifield = 1;
 
 switch model
     case 'proportional'
@@ -86,8 +87,8 @@ nSubj = length(subjVec);
 nll = nan(1,nSubj);
 bfp = nan(nSubj,nParams);
 for isubj = 1:nSubj;
-    filename = [filepath 'fits_model_' num2str(model) '_subj' num2str(isubj) ...
-        '_TMScond_' num2str(TMScond) '_hemi' num2str(hemifield) '.mat'];
+    filename = [filepath 'fits_model_' num2str(model) '_TMScond_' num2str(TMScond) ...
+        '_hemi' num2str(hemifield) '_subj' num2str(isubj) '.mat'];
     load(filename)
     
     blah = min(nLLVec);
@@ -104,16 +105,16 @@ save([filepath 'fits_model_' num2str(model) '_TMScond_' num2str(TMScond) ...
 
 %% PLOTS OF PARAMETER FITS!
 
-clear all
+clear all; close all
 
 % ======== LOAD DATA =======
 
 expnumber = 1;
 model = 'flexible';
 TMScond = 1; % 1 = no tms, 2 = ips2, 3 = spcs
-hemifield = 0; % 1: left hemi. 2: right hemi. 0: both hemi
+hemifield = 2; % 1: left hemi. 2: right hemi. 0: both hemi
 
-loadpreddata = 0;
+loadpreddata = 1;
 indvlplot = 1;
 % nTrials = [100 50];
 expPriorityVec = [2/3 1/3];
@@ -166,8 +167,13 @@ end
 % histograms per subjects
 xlims = linspace(0,10,16);
 
+colorMat = [1 0 0; 0 0 1];
+
+if (indvlplot); figure; end;
 for isubj = 1:nSubj
-    if (indvlplot); figure; end;
+   
+    subplot(3,3,isubj);
+    
     for ipriority = 1:nPriorities
         
         % histogram of euclidean error
@@ -177,16 +183,14 @@ for isubj = 1:nSubj
         simerror{ipriority}(isubj,:) = simdatacounts./sum(simdatacounts);
         
         if (indvlplot)
-            subplot(3,2,2*ipriority-1)
-            plot(xlims,error{ipriority}(isubj,:),'k')
+            plot(xlims,error{ipriority}(isubj,:),'Color',colorMat(ipriority,:));
             hold on;
-            plot(xlims,simerror{ipriority}(isubj,:),'Color',aspencolors('booger'));
+            plot(xlims,simerror{ipriority}(isubj,:),':','Color',colorMat(ipriority,:));
             defaultplot
-            if ipriority == 1; title('euclidean error'); end
+            if mod(isubj,1) == 1; xlabel('euclidean error'); end
         end
         
     end
-    %     pause;
 end
 
 % =========== group plot =====================

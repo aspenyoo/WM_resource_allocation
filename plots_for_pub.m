@@ -151,7 +151,7 @@ end
 %% fig 2c: exp 1 ternary plot
 
 
-clear all; 
+clear all;
 colorMat = [1 0 0; 0 0 1; 0 0 0];
 
 % load data
@@ -612,7 +612,7 @@ set(htick(:,2),'color',axis2,'linewidth',3)
 set(htick(:,3),'color',axis3,'linewidth',3)
 
 % get probe probabilities that will be investigated
-x = 0:0.1:1;
+x = 0:0.2:1;
 [X,Y] = meshgrid(x,x);
 X = X(:);
 Y = Y(:);
@@ -639,52 +639,26 @@ v = 0.866-pVec_ME(:,1).*sin(pi/3)-pVec_ME(:,2).*cot(pi/6)/2;
 
 u = u-x;
 v = v-y;
-quiver(x,y,u,v,'k')
-
+quiver(x,y,u,v,Scale(0),'k')
 
 %% how proportion allocation changes with probe probability
-% for MP model
-% (not actually in supplementary!)
+% for MP model for each subject
+% (not actually in supplementary...yet)
 
 clear all
 close all
 clc
 
-% theta
-theta = [1 0.09 2 0.85];
-% ------ SET UP TERNARY PLOT -----
-colorMat = [1 0 0; 0 0 1; 0 0 0];
+model = 'max_points';
 
-% axis
-figure;
-[h,hg,htick]=terplot;
-c1 = [1 0.5 1/3];
-c2 = [0 0.5 1/3];
-c3 = [0 0 1/3];
-hlabels=terlabel('high','medium','low');
-set(h,'LineWidth',1)
-
-% define colors
-axis1 = colorMat(2,:);
-axis2 = colorMat(1,:);
-axis3 = colorMat(3,:);
-grey = 0.7*ones(1,3);
-
-% change the color of the grid lines
-set(hg(:,1),'color',axis1)
-set(hg(:,2),'color',axis2)
-set(hg(:,3),'color',axis3)
-
-% modify the label size and color
-set(hlabels,'fontsize',12)
-set(hlabels(1),'color',axis1)
-set(hlabels(2),'color',axis2)
-set(hlabels(3),'color',axis3)
-
-% modify the tick label colors
-set(htick(:,1),'color',axis1,'linewidth',3)
-set(htick(:,2),'color',axis2,'linewidth',3)
-set(htick(:,3),'color',axis3,'linewidth',3)
+% load MLEs for participants
+switch model
+    case 'max_points'
+        load('fits/zuzanna/exp2/fits_model1.mat')
+    case 'min_error'
+        load('fits/zuzanna/exp2/fits_model2.mat')
+end
+nSubj = size(ML_parameters,1);
 
 % get probe probabilities that will be investigated
 x = 0:0.1:1;
@@ -696,22 +670,70 @@ X(idx) = [];
 Y(idx) = [];
 Z = 1-X-Y;
 
-hold on
 % get x and y of actual values
 x=0.5-X.*cos(pi/3)+Y./2;
 y=0.866-X.*sin(pi/3)-Y.*cot(pi/6)/2;
-
 nSamps = length(X);
-pVec_MP = nan(nSamps,3);
-for isamp = 1:nSamps;
-    exppriorityVec = [X(isamp) Y(isamp) Z(isamp)]
+
+figure;
+for isubj = 1:nSubj;
+    isubj
     
-    pVec_MP(isamp,:) = calc_pVec_maxpoints(theta,exppriorityVec);
+    % theta
+    theta = ML_parameters(isubj,:);
+    
+    % ------ SET UP TERNARY PLOT -----
+    colorMat = [1 0 0; 0 0 1; 0 0 0];
+    
+    % axis
+    subplot(3,4,isubj);
+    [h,hg,htick]=terplot;
+    c1 = [1 0.5 1/3];
+    c2 = [0 0.5 1/3];
+    c3 = [0 0 1/3];
+    hlabels=terlabel('high','medium','low');
+    set(h,'LineWidth',1)
+    
+    % define colors
+    axis1 = colorMat(2,:);
+    axis2 = colorMat(1,:);
+    axis3 = colorMat(3,:);
+    grey = 0.7*ones(1,3);
+    
+    % change the color of the grid lines
+    set(hg(:,1),'color',axis1)
+    set(hg(:,2),'color',axis2)
+    set(hg(:,3),'color',axis3)
+    
+    % modify the label size and color
+    set(hlabels,'fontsize',12)
+    set(hlabels(1),'color',axis1)
+    set(hlabels(2),'color',axis2)
+    set(hlabels(3),'color',axis3)
+    
+    % modify the tick label colors
+    set(htick(:,1),'color',axis1,'linewidth',3)
+    set(htick(:,2),'color',axis2,'linewidth',3)
+    set(htick(:,3),'color',axis3,'linewidth',3)
+    
+    
+    hold on
+    pVec_MP = nan(nSamps,3);
+    for isamp = 1:nSamps;
+        exppriorityVec = [X(isamp) Y(isamp) Z(isamp)];
+        switch model
+            case 'max_points'
+                pVec_MP(isamp,:) = calc_pVec_maxpoints(theta,exppriorityVec);
+            case 'min_error'
+                pVec_MP(isamp,:) = calc_pVec_minerror(theta,exppriorityVec);
+        end
+    end
+    
+    u = 0.5-pVec_MP(:,1).*cos(pi/3)+pVec_MP(:,2)./2;
+    v = 0.866-pVec_MP(:,1).*sin(pi/3)-pVec_MP(:,2).*cot(pi/6)/2;
+    
+    u = u-x;
+    v = v-y;
+    quiver(x,y,u,v,Scale(0),'k')
+    
 end
-
-u = 0.5-pVec_MP(:,1).*cos(pi/3)+pVec_MP(:,2)./2;
-v = 0.866-pVec_MP(:,1).*sin(pi/3)-pVec_MP(:,2).*cot(pi/6)/2;
-
-u = u-x;
-v = v-y;
-quiver(x,y,u,v,'k')
