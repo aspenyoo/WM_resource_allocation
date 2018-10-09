@@ -642,7 +642,7 @@ v = v-y;
 quiver(x,y,u,v,Scale(0),'k')
 
 %% how proportion allocation changes with probe probability
-% for MP model for each subject
+% for MP or ME model for each subject in experimet 2
 % (not actually in supplementary...yet)
 
 clear all

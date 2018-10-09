@@ -35,7 +35,7 @@ beq = 1;
 options = optimset('Display','none');
 lb = 1e-5.*ones(1,nPriorities); 
 ub = ones(1,nPriorities);
-nStartVals = 10; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
+nStartVals = 15; % tried with different parameters and lowest value showed up 3,5,7,8,10,10 of 10. 
 
 % get starting values
 plb = 0.1.*ones(1,nPriorities);
