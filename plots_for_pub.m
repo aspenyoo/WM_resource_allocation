@@ -155,7 +155,7 @@ clear all;
 colorMat = [1 0 0; 0 0 1; 0 0 0];
 
 % load data
-load('fits/zuzanna/exp1/fits_model2.mat')
+load('fits/priority/exp1/fits_model2.mat')
 nSubj = size(ML_parameters,1);
 pMat = ML_parameters(:,end-1:end);
 pMat(:,3) = 1-sum(pMat,2);
