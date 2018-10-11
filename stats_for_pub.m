@@ -11,7 +11,7 @@ makeDistanceFromCardinal = 0;
 
 switch expnumber
     case 1
-        load('exp1_zuzprocesseddata.mat')
+        load('exp1_data_trialinfo.mat')
         subjVec = [1:9 11:15];
         
         finalerror = group_data(:,8);
@@ -32,7 +32,7 @@ switch expnumber
 
         group_data = [group_data(:,1) anglee finalerror]; % subject number, angle location, final error
     case 2
-        load('exp2_zuzprocesseddata.mat')
+        load('exp2_data_trialinfo.mat')
         group_data = group_data(:,[1 6 7 13]);
         subjVec = 4:14;
         
@@ -102,7 +102,7 @@ clear all;
 subjVec = 4:14;
 priorityVec = [0.6 0.3 0.1];
 
-load('exp2_zuzprocesseddata.mat')
+load('exp2_data_trialinfo.mat')
 finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
     (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
 
@@ -169,7 +169,7 @@ rng(1) % random seed for reproduceability
 subjVec = 4:14;
 priorityVec = [0.6 0.3 0.1];
 
-load('exp2_zuzprocesseddata.mat')
+load('exp2_data_trialinfo.mat')
 finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
     (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
 
@@ -286,7 +286,7 @@ clear all; close all; clc
 subjVec = 4:14;
 priorityVec = [0.6 0.3 0.1];
 
-load('exp2_zuzprocesseddata.mat')
+load('exp2_data_trialinfo.mat')
 finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
     (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
 
@@ -349,7 +349,7 @@ rng(1) % random seed for reproduceability
 subjVec = 4:14;
 priorityVec = [0.6 0.3 0.1];
 
-load('exp2_zuzprocesseddata.mat')
+load('exp2_data_trialinfo.mat')
 finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
     (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
 
