@@ -654,9 +654,9 @@ model = 'max_points';
 % load MLEs for participants
 switch model
     case 'max_points'
-        load('fits/zuzanna/exp2/fits_model1.mat')
+        load('fits/priority/exp2/fits_model1.mat')
     case 'min_error'
-        load('fits/zuzanna/exp2/fits_model2.mat')
+        load('fits/priotiy/exp2/fits_model2.mat')
 end
 nSubj = size(ML_parameters,1);
 
