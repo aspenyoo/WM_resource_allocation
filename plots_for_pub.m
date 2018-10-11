@@ -6,11 +6,10 @@
 % fig 1b: exp 1 main behavioral results
 % fig 2b: exp 1 modeling results
 % fig 2c: exp 1 ternary plot
-% fig 2d: exp 1 model comparison
+% fig 2d & 4c: exp 1 and 2 model comparison
 % fig 3b: exp 2 main behavioral results
 % fig 4a: exp 2 modeling results
 % fig 4b: exp 2 ternary plot
-% fig 4c: exp 2 model comparison
 
 %% FIG 1B: EXP 1 MAIN BEHAVIORAL RESULTS
 
@@ -207,6 +206,89 @@ set(hter,'marker','o','markerfacecolor','k','markersize',8,'markeredgecolor','k'
 
 
 %% fig 2d: exp 1 model comparison
+
+clear all
+expnumber = 1;
+modVec = [2 3 4];
+nModels = length(modVec);
+modcompidx = 2; % relative to flexible model
+
+filename = ['exp' num2str(expnumber) '_cleandata.mat'];
+load(filename)
+
+nTrials = sum(nTrials,2);
+nSubj = length(data);
+
+filepath = ['fits/priority/exp' num2str(expnumber) '/'];
+
+nLLMat = nan(nModels,nSubj);
+for imodel = 1:nModels
+    imodel
+    modidx = modVec(imodel);
+    
+    load([filepath 'fits_model' num2str(modidx) '.mat'])
+    nLLMat(imodel,:) = nLLVec;
+    nParamVec(imodel) = size(ML_parameters,2);
+end
+
+% get AICc and BIC
+modelcomparisons = cell(1,2);
+[modelcomparisons{2}, modelcomparisons{1}]= modcomp(nLLMat',nParamVec,nTrials);
+
+% labels and index stuff
+modlabels = {'max points','flexible','prop','min error'};
+modcomplabel = modlabels{modcompidx};
+modlabels = modlabels(modVec(modVec ~= modcompidx));
+
+nSubj = length(nLLVec);
+subtractything = 2-expnumber;
+
+fillx = 0.4;
+titleVec = {'\Delta AICc','\Delta BIC'};
+
+figure;
+for iplot = 1:2;
+    subplot(1,2,iplot)
+    comparison = bsxfun(@minus,modelcomparisons{iplot},modelcomparisons{iplot}(:,modVec == modcompidx));
+    comparison(:,modVec == modcompidx) = [];
+    mediancomp = median(comparison);
+    
+    % bootstrap the confidence intervals
+    nBoots = 10000;
+    for imodel = 1:(nModels-1)
+        currVec = comparison(:,imodel);
+        sampless = currVec(randi(nSubj,nSubj,nBoots));
+        medsamps = sort(median(sampless));
+        medCI(imodel,1) = medsamps(.025*nBoots);
+        medCI(imodel,2) = medsamps(.975*nBoots);
+    end
+    
+    xthing = [];
+    if nModels == 2
+        fill([0 nSubj+1 nSubj+1 0],medCI([1 1 2 2]),...
+            0.8*ones(1,3),'EdgeColor','none'); hold on;
+        plot([0 nSubj+1],[mediancomp mediancomp],'Color',[0.1 0.1 0.1])
+        set(gca,'XTick',[],'XTickLabel',modlabels)
+    else
+        for imodel = 1:(nModels-1)
+            fill([imodel-fillx imodel+fillx imodel+fillx imodel-fillx],medCI([imodel imodel imodel+nModels-1 imodel+nModels-1]),...
+                0.7*ones(1,3),'EdgeColor','none'); hold on;
+            plot([imodel-fillx imodel+fillx],mediancomp(imodel)*ones(1,2),'Color',[0.1 0.1 0.1])
+            set(gca,'XTick',[],'XTick',1:3,'XTickLabel',modlabels)
+            xthing = [xthing imodel*ones(nSubj,1)];
+        end
+    end
+    
+    for isubj = 1:nSubj
+        plot(xthing(isubj,:),comparison(isubj,:),'k.','MarkerSize',24)
+    end
+    plot([0.5 nModels-0.5],[0 0],'k-') % 0 axis line
+    
+    title(titleVec{iplot})
+    defaultplot
+    
+end
+
 %% fig 3b: exp 2 main behavioral results
 %% fig 4a: exp 2 modeling results
 
