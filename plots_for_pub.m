@@ -1,15 +1,14 @@
 
 %% ====================================
-%            MAIN FIGURES
+%              MAIN FIGURES
 %  ====================================
 %
 % fig 1b: exp 1 main behavioral results
 % fig 2b: exp 1 modeling results
-% fig 2c: exp 1 ternary plot
-% fig 2d & 4c: exp 1 and 2 model comparison
+% fig 2c/4b: exp 1/2 ternary plot
+% fig 2d/4c: exp 1/2 model comparison
 % fig 3b: exp 2 main behavioral results
 % fig 4a: exp 2 modeling results
-% fig 4b: exp 2 ternary plot
 
 %% FIG 1B: EXP 1 MAIN BEHAVIORAL RESULTS
 
@@ -147,15 +146,13 @@ for imodel = 1:nModels
         end
     end
 end
-%% fig 2c: exp 1 ternary plot
-
+%% FIG 2C/4B: EXP 1/2 TERNARY PLOT
 
 clear all;
-colorMat = [1 0 0; 0 0 1; 0 0 0];
+expnumber = 2; % experiment number. change to toggle between experiments
 
 % load data
-load('fits/priority/exp1/fits_model2.mat')
-nSubj = size(ML_parameters,1);
+load(sprintf('fits/priority/exp%d/fits_model2.mat',expnumber))
 pMat = ML_parameters(:,end-1:end);
 pMat(:,3) = 1-sum(pMat,2);
 
@@ -164,9 +161,9 @@ figure;
 [h,hg,htick]=terplot;
 c1 = [1 0.5 1/3];
 c2 = [0 0.5 1/3];
-c3 = [0 0 1/3];
 hlabels=terlabel('high','medium','low');
 set(h,'LineWidth',1)
+colorMat = [1 0 0; 0 0 1; 0 0 0];
 
 % define colors
 axis1 = colorMat(2,:);
@@ -205,11 +202,17 @@ hter=ternaryc(pMat(:,1),pMat(:,2),pMat(:,3));
 set(hter,'marker','o','markerfacecolor','k','markersize',8,'markeredgecolor','k')
 
 
-%% fig 2d: exp 1 model comparison
+%% FIG 2D/4C: EXP 1/2 MODEL COMPARISON
 
 clear all
-expnumber = 1;
-modVec = [2 3 4];
+expnumber = 2; % experiment number. change to toggle between experiments
+
+switch expnumber
+    case 1
+        modVec = [2 3 4]; % [flex prop min_error]
+    case 2
+        modVec = [2 3 4 1]; % [flex prop min_error max_points]
+end
 nModels = length(modVec);
 modcompidx = 2; % relative to flexible model
 
@@ -289,8 +292,13 @@ for iplot = 1:2;
     
 end
 
-%% fig 3b: exp 2 main behavioral results
-%% fig 4a: exp 2 modeling results
+%% FIG 3B: EXP 2 MAIN BEHAVIORAL RESULTS
+
+
+
+
+
+%% FIG 4A: EXP 2 MODELING RESULTS
 
 clear all; close all
 fixedrisk = [];
@@ -305,7 +313,7 @@ nSubj = 11;
 nPriorities = 3;
 xlims = linspace(0,10,16); % for histograms
 xdiff = diff(xlims(1:2));
-filepath = 'fits/zuzanna/exp2/';
+filepath = 'fits/priority/exp2/';
 
 figure;
 % top down, left right, bottom and top margins, left and right margins
@@ -491,65 +499,6 @@ for imodel = 1:nModels
     xlabel('error (dva)');
 end
 
-%% fig 4b: exp 2 ternary plot
-
-clear all
-colorMat = [1 0 0; 0 0 1; 0 0 0];
-
-% load data
-load('fits/zuzanna/exp2/fits_model2.mat')
-nSubj = size(ML_parameters,1);
-pMat = ML_parameters(:,end-1:end);
-pMat(:,3) = 1-sum(pMat,2);
-
-% axis
-figure;
-[h,hg,htick]=terplot;
-c1 = [1 0.5 1/3];
-c2 = [0 0.5 1/3];
-c3 = [0 0 1/3];
-hlabels=terlabel('high','medium','low');
-set(h,'LineWidth',1)
-
-% define colors
-axis1 = colorMat(2,:);
-axis2 = colorMat(1,:);
-axis3 = colorMat(3,:);
-grey = 0.7*ones(1,3);
-
-% make patch showing monotonic area
-x=0.5-c1*cos(pi/3)+c2/2;
-y=0.866-c1*sin(pi/3)-c2*cot(pi/6)/2;
-patch('Faces',[1 2 3],'Vertices',[x' y'],'FaceColor',grey,'FaceAlpha',0.3,'EdgeColor','none');
-
-% change the color of the grid lines
-set(hg(:,1),'color',axis1)
-set(hg(:,2),'color',axis2)
-set(hg(:,3),'color',axis3)
-
-% make 0.6 0.3 0.1 lines noticeable
-set(hg(3,1),'LineStyle','--')
-set(hg(6,2),'LineStyle','--')
-set(hg(1,3),'LineStyle','--')
-
-% modify the label size and color
-set(hlabels,'fontsize',12)
-set(hlabels(1),'color',axis1)
-set(hlabels(2),'color',axis2)
-set(hlabels(3),'color',axis3)
-
-% modify the tick label colors
-set(htick(:,1),'color',axis1,'linewidth',3)
-set(htick(:,2),'color',axis2,'linewidth',3)
-set(htick(:,3),'color',axis3,'linewidth',3)
-
-% plot data
-hter=ternaryc(pMat(:,1),pMat(:,2),pMat(:,3));
-set(hter,'marker','o','markerfacecolor','k','markersize',8,'markeredgecolor','k')
-
-
-%% fig 4c: exp 2 model comparison
-
 
 %% ====================================
 %        SUPPLEMENTARY FIGURES
@@ -731,15 +680,7 @@ clear all
 close all
 clc
 
-model = 'max_points';
-
-% load MLEs for participants
-switch model
-    case 'max_points'
-        load('fits/priority/exp2/fits_model1.mat')
-    case 'min_error'
-        load('fits/priotiy/exp2/fits_model2.mat')
-end
+load('fits/priority/exp2/fits_model2.mat')
 nSubj = size(ML_parameters,1);
 
 % get probe probabilities that will be investigated
@@ -800,22 +741,20 @@ for isubj = 1:nSubj;
     
     
     hold on
-    pVec_MP = nan(nSamps,3);
+    pVec_ME = nan(nSamps,3);
     for isamp = 1:nSamps;
         exppriorityVec = [X(isamp) Y(isamp) Z(isamp)];
-        switch model
-            case 'max_points'
-                pVec_MP(isamp,:) = calc_pVec_maxpoints(theta,exppriorityVec);
-            case 'min_error'
-                pVec_MP(isamp,:) = calc_pVec_minerror(theta,exppriorityVec);
-        end
+
+        pVec_ME(isamp,:) = calc_pVec_minerror(theta,exppriorityVec);
     end
     
-    u = 0.5-pVec_MP(:,1).*cos(pi/3)+pVec_MP(:,2)./2;
-    v = 0.866-pVec_MP(:,1).*sin(pi/3)-pVec_MP(:,2).*cot(pi/6)/2;
+    u = 0.5-pVec_ME(:,1).*cos(pi/3)+pVec_ME(:,2)./2;
+    v = 0.866-pVec_ME(:,1).*sin(pi/3)-pVec_ME(:,2).*cot(pi/6)/2;
     
     u = u-x;
     v = v-y;
     quiver(x,y,u,v,Scale(0),'k')
     
 end
+
+

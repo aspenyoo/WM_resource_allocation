@@ -1,7 +1,92 @@
+%% ===========================================
+% ALL STATISTICAL ANALYSES DONE IN PAPER
+% ============================================
+
+% ANALYSES COMPLETED IN SPSS, SO NOT INCLUDED
+%    exp 1: main effect of priority on error (rm ANOVA)
+%    exp 2: main effect of priority on error (rm ANOVA)
+%    exp 2: main effect of priority on circle size (rm ANOVA)
+
+% EXP 2: CORRELATION BETWEEN ERROR AND CIRCLE SIZE
+
+% EFFECT OF STIMULUS LOCATION ON CORRELATION?
+%    does error depend on stimulus location?
+%    permutation test + test of significance
+
+% EFFECT OF DELAY ON CORRELATION?
+%    does error depend on delay time?
+%    permutation test + test of significance
 
 
-%% OBLIQUE EFFECT IN DATA?
-% checking if there is any obvious stimulus-dependent noise in data
+%% EXP 2: CORRELATION BETWEEN ERROR AND CIRCLE SIZE
+
+clear all;
+
+% load and preprocess data
+% ------------------------
+subjVec = 4:14;
+priorityVec = [0.6 0.3 0.1];
+
+load('exp2_data_trialinfo.mat')
+finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
+    (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
+
+% collapsing all data onto first quadrant
+collapsedangle = group_data(:,13);
+idx = (collapsedangle < 180) & (collapsedangle > 90); % second quadrant
+collapsedangle(idx) = 180 - collapsedangle(idx);
+idx = (collapsedangle < 270) & (collapsedangle > 180); % third quadrant
+collapsedangle(idx) = collapsedangle(idx) - 180;
+idx = (collapsedangle < 360) & (collapsedangle > 270); % second quadrant
+collapsedangle(idx) = 360 - collapsedangle(idx);
+
+% columns correspond to [subject, priority, angle, error, circle size]
+group_data = [group_data(:,1:2) collapsedangle finalerror group_data(:,4)];
+group_data(any(isnan(group_data), 2), :) = [];
+        
+nSubj = length(subjVec);
+nPriorities = length(priorityVec);
+
+% put each subject's data in terms of z-scores
+groupzscoredata = group_data;
+[rMat, pMat, nTrials,Mat] = deal(nan(nSubj,nPriorities));
+for isubj = 1:nSubj;
+    subjnum = subjVec(isubj);
+    
+    idx = group_data(:,1) == subjnum;
+    subjdata = group_data(idx,:);
+    
+    groupzscoredata(idx,4:5) = [zscore(subjdata(:,4)) zscore(subjdata(:,5))];
+
+    for ipriority = 1:nPriorities;
+        priority = priorityVec(ipriority);
+        
+        idxx = idx & (groupzscoredata(:,2) == priority);
+        nTrialsMat(isubj,ipriority) = sum(idxx);
+        [r,p] = corr(groupzscoredata(idxx,4:5),'Type','Spearman');
+        rMat(isubj,ipriority) = r(2);
+        pMat(isubj,ipriority) = p(2);
+    end
+end
+
+[rVec, pVec] = deal(nan(1,nPriorities));
+for ipriority = 1:nPriorities;
+    priority = priorityVec(ipriority);
+    idx = groupzscoredata(:,2) == priority;
+    
+    [r,p] = corr(groupzscoredata(idx,4:5),'Type','Spearman');
+    rVec(ipriority) = r(2);
+    pVec(ipriority) = p(2);
+end
+
+rMat
+pMat
+rVec
+pVec
+
+
+%% EFFECT OF STIMULUS LOCATION ON CORRELATION?
+% does error depend on stimulus location?
 
 clear all; close all
 
@@ -90,74 +175,7 @@ errorbar(angleVec,mean(mean_errors),std(mean_errors)./sqrt(nSubj),'k','LineStyle
 plot(angleVec,mean(mean_errors),'ko')
 ylim([0 2.5])
 defaultplot
-%%
 
-
-%% CORRELATION BETWEEN ERROR AND CIRCLE SIZE
-
-clear all;
-
-% load and preprocess data
-% ------------------------
-subjVec = 4:14;
-priorityVec = [0.6 0.3 0.1];
-
-load('exp2_data_trialinfo.mat')
-finalerror = sqrt((10.*cosd(group_data(:,13)) - group_data(:,6)).^2 +...
-    (10.*sind(group_data(:,13)) - group_data(:,7)).^2);
-
-% collapsing all data onto first quadrant
-collapsedangle = group_data(:,13);
-idx = (collapsedangle < 180) & (collapsedangle > 90); % second quadrant
-collapsedangle(idx) = 180 - collapsedangle(idx);
-idx = (collapsedangle < 270) & (collapsedangle > 180); % third quadrant
-collapsedangle(idx) = collapsedangle(idx) - 180;
-idx = (collapsedangle < 360) & (collapsedangle > 270); % second quadrant
-collapsedangle(idx) = 360 - collapsedangle(idx);
-
-% columns correspond to [subject, priority, angle, error, circle size]
-group_data = [group_data(:,1:2) collapsedangle finalerror group_data(:,4)];
-group_data(any(isnan(group_data), 2), :) = [];
-        
-nSubj = length(subjVec);
-nPriorities = length(priorityVec);
-
-% put each subject's data in terms of z-scores
-groupzscoredata = group_data;
-[rMat, pMat, nTrials,Mat] = deal(nan(nSubj,nPriorities));
-for isubj = 1:nSubj;
-    subjnum = subjVec(isubj);
-    
-    idx = group_data(:,1) == subjnum;
-    subjdata = group_data(idx,:);
-    
-    groupzscoredata(idx,4:5) = [zscore(subjdata(:,4)) zscore(subjdata(:,5))];
-
-    for ipriority = 1:nPriorities;
-        priority = priorityVec(ipriority);
-        
-        idxx = idx & (groupzscoredata(:,2) == priority);
-        nTrialsMat(isubj,ipriority) = sum(idxx);
-        [r,p] = corr(groupzscoredata(idxx,4:5),'Type','Spearman');
-        rMat(isubj,ipriority) = r(2);
-        pMat(isubj,ipriority) = p(2);
-    end
-end
-
-[rVec, pVec] = deal(nan(1,nPriorities));
-for ipriority = 1:nPriorities;
-    priority = priorityVec(ipriority);
-    idx = groupzscoredata(:,2) == priority;
-    
-    [r,p] = corr(groupzscoredata(idx,4:5),'Type','Spearman');
-    rVec(ipriority) = r(2);
-    pVec(ipriority) = p(2);
-end
-
-rMat
-pMat
-rVec
-pVec
 %% PERMUTATION TEST: STIMULUS LOCATION
 
 clear all; clc
@@ -277,7 +295,9 @@ perm_SEM = std(meds)/sqrt(length(meds))
 % -------------------------
 [p,h,stats] = signrank(meds,corrVec)
 
-%% MEAN EFFECT OF DELAY ON ERROR
+
+%% EFFECT OF DELAY ON CORRELATION?
+% does error depend on delay time?
 
 clear all; close all; clc
 
@@ -437,7 +457,7 @@ for isubj = 1:nSubj; % for each subject
     end
 end
 
-% print M \pm SEM real and permuated correlations
+% print M \pm SEM real and permuted correlations
 % -----------------------------------------------
 
 % actual values
@@ -455,3 +475,4 @@ perm_SEM = std(meds)/sqrt(length(meds))
 % wilcoxon signed-rank test
 % -------------------------
 [p,h,stats] = signrank(meds,corrVec)
+
