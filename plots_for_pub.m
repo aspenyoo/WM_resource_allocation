@@ -294,8 +294,94 @@ end
 
 %% FIG 3B: EXP 2 MAIN BEHAVIORAL RESULTS
 
+clear all
+
+exppriorityVec = [0.6 0.3 0.1];
+nPriorities = length(exppriorityVec);
+colorMat = [0 0 0; 0 0 1; 1 0 0];
+
+expnumber = 2;
+load('exp2_cleandata.mat','data')
+nSubj = 11;
+
+[dataerrorVec, datadiscsizeVec] = deal(nan(nSubj,nPriorities));
+for ipriority = 1:nPriorities
+    
+    for isubj = 1:nSubj
+        dataerrorVec(isubj,ipriority) = mean(data{isubj}{ipriority}(:,1));
+        datadiscsizeVec(isubj,ipriority) = mean(data{isubj}{ipriority}(:,2));
+    end
+    
+end
+
+%  ========= calculate M, SEM across subjects ========
+dataMerror = mean(dataerrorVec);
+dataSEMerror = std(dataerrorVec)./sqrt(nSubj);
+
+dataMdiscsize = mean(datadiscsizeVec);
+dataSEMdiscsize = std(datadiscsizeVec)/sqrt(nSubj);
 
 
+% ===== plot main effect: error =======
+dx = 0.2;
+subplot(1,3,1);hold on;
+axis([0.5 3.5 0 2.4])
+xlabel('probe probability'); ylabel('error (dva)');
+set(gca,'YTick',0:0.4:2.4, 'YTickLabel', {0,'','',1.2,'','' 2.4},...
+    'XTick',1:3,'XTickLabel',{'0.1','0.3','0.6'})
+for ipriority = 1:nPriorities
+    errorb(ipriority+dx,dataMerror(nPriorities+1-ipriority),dataSEMerror(nPriorities+1-ipriority),...
+        'Color',colorMat(ipriority,:),'LineWidth',1); 
+end
+defaultplot;
+
+% ===== plot main effect: radius of circle wager ======
+subplot(1,3,2); hold on;
+axis([0.5 3.5 0 4])
+for ipriority = 1:nPriorities
+    errorb(ipriority+dx,dataMdiscsize(nPriorities+1-ipriority),dataSEMdiscsize(nPriorities+1-ipriority),...
+        'Color',colorMat(ipriority,:),'LineWidth',1); 
+end
+xlabel('probe probability'); ylabel('circle radius, r')
+set(gca,'YTick',0:4,'YTickLabel',{0 '', 2,'', 4},...
+    'XTick',1:3,'XTickLabel',{'0.1','0.3','0.6'})
+defaultplot;
+
+% ========== plot correlation between error and circle radius ===========
+
+% group data into quantiles
+nQuants = 6;
+[meanquanterror, meanquantdiscsize] = deal(cell(1,nPriorities));
+for isubj = 1:11
+    for ipriority = 1:nPriorities
+        currdata = data{isubj}{ipriority}(:,1);
+        [currdata,idx] = sort(currdata);
+        quantVec = round(linspace(0,length(currdata),nQuants+1));
+        for iquant = 1:nQuants
+            meanquanterror{ipriority}(isubj,iquant) = mean(currdata(quantVec(iquant)+1:quantVec(iquant+1)));
+            meanquantdiscsize{ipriority}(isubj,iquant) = mean(data{isubj}{ipriority}(idx(quantVec(iquant)+1:quantVec(iquant+1)),2));
+        end
+    end
+end
+
+% plot means \pm SEMs of quantiles
+meanmeanquanterror = cellfun(@mean,meanquanterror,'UniformOutput',false);
+meanmeanquantdiscsize = cellfun(@mean,meanquantdiscsize,'UniformOutput',false);
+semmeanquantdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantdiscsize,'UniformOutput',false);
+
+subplot(1,3,3); hold on
+axis([0 6 0 4])
+for ipriority = 1:nPriorities
+    errorbar(meanmeanquanterror{nPriorities+1-ipriority},meanmeanquantdiscsize{nPriorities+1-ipriority},...
+        semmeanquantdiscsize{nPriorities+1-ipriority},'Color',colorMat(ipriority,:),'LineWidth',1); 
+    errorb(meanmeanquanterror{nPriorities+1-ipriority},meanmeanquantdiscsize{nPriorities+1-ipriority},...
+        semmeanquantdiscsize{nPriorities+1-ipriority},'Color',colorMat(ipriority,:),'LineWidth',1); 
+end
+ylabel('circle radius, r');
+set(gca,'XTick',[0 3 6],'XTickLabel',[0,3,6],...
+    'YTick',0:4,'YTickLabel',{0,'',2,'',4});
+xlabel('error (dva)');
+defaultplot
 
 
 %% FIG 4A: EXP 2 MODELING RESULTS
