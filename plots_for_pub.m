@@ -15,17 +15,14 @@
 clear all; close all
 
 load('exp1_cleandata.mat','data')
-filepath = 'fits/exp1/';
 nSubj = length(data);
 
 priorityVec = [0.1 0.3 0.6];
 nPriorities = 3;
 colorMat = [0 0 0; 0 0 1; 1 0 0];
-markerMat = {'.','x','s'};
 
-modelnameVec = {'optimal','free','fixed'}';
-
-figure; hold on
+figure('pos',[500 500 300 400])
+hold on
 
 % get error data
 dataerrorVec = nan(nSubj,nPriorities);
@@ -48,17 +45,15 @@ for ipriority = 1:nPriorities
         'LineWidth',1,'Color',colorMat(ipriority,:));
 end
 xlabel('probe probability'); ylabel('error (dva)');
-set(gca,'XTick',1:3,'XTickLabel',{'0.1','0.3','0.6'})
-title('error')
+set(gca,'XTick',1:3,'XTickLabel',priorityVec,...
+    'YTick',0:0.2:2.2,'YTickLabel',{0,'','','','',1,'','','','',2,''})
 
 %% FIG 2B: EXP 1 MODELING RESULTS
 
 clear all; close all
 
-expnumber = 1;
 fixedrisk = [];
 colorMat = [1 0 0; 0 0 1; 0 0 0; 0 1 0];
-nModelsPossible = 4; % how many total models there are
 modelorderVec = [3 2 4]; % the order the models should be plotted
 nModels = length(modelorderVec); % how many models you want to plot now
 modelnameVec = {'max points','flexible','proportional','min error'};
@@ -67,7 +62,7 @@ nSubj = 14;
 nPriorities = 3;
 xlims = linspace(0,10,16); % for histograms
 xdiff = diff(xlims(1:2));
-filepath = 'fits/zuzanna/exp1/';
+filepath = 'fits/priority/exp1/';
 
 figure;
 ha = tight_subplot(1,nModels,[.03 .03],[.2 .07],[.06 .01]);
@@ -146,9 +141,11 @@ for imodel = 1:nModels
         end
     end
 end
+
+
 %% FIG 2C/4B: EXP 1/2 TERNARY PLOT
 
-clear all;
+clear all; close all
 expnumber = 2; % experiment number. change to toggle between experiments
 
 % load data
@@ -182,9 +179,9 @@ set(hg(:,2),'color',axis2)
 set(hg(:,3),'color',axis3)
 
 % make 0.6 0.3 0.1 lines noticeable
-set(hg(3,1),'LineStyle','--')
-set(hg(6,2),'LineStyle','--')
-set(hg(1,3),'LineStyle','--')
+set(hg(3,1),'LineStyle','-')
+set(hg(6,2),'LineStyle','-')
+set(hg(1,3),'LineStyle','-')
 
 % modify the label size and color
 set(hlabels,'fontsize',12)
@@ -323,6 +320,7 @@ dataSEMdiscsize = std(datadiscsizeVec)/sqrt(nSubj);
 
 
 % ===== plot main effect: error =======
+figure('pos',[500 500 1000 300])
 dx = 0.2;
 subplot(1,3,1);hold on;
 axis([0.5 3.5 0 2.4])
@@ -387,19 +385,16 @@ defaultplot
 %% FIG 4A: EXP 2 MODELING RESULTS
 
 clear all; close all
-fixedrisk = [];
 colorMat = [1 0 0; 0 0 1; 0 0 0; 0 1 0];
-nModelsPossible = 4; % how many total models there are
 modelorderVec = [3 2 4 1]; % the order the models should be plotted
 nModels = length(modelorderVec); % how many models you want to plot now
-modelnameVec = {'max points','flexible','proportional','min error'};
+modelnameVec = {'Max Points','Flexible','Proportional','Min Error'};
 
 nSubj = 11;
 
 nPriorities = 3;
 xlims = linspace(0,10,16); % for histograms
 xdiff = diff(xlims(1:2));
-filepath = 'fits/priority/exp2/';
 
 figure;
 % top down, left right, bottom and top margins, left and right margins
@@ -407,12 +402,13 @@ ha = tight_subplot(3,nModels,{[.1 .1],[.03 .03 .03]},[.08 .03],[.05 .03]);
 set(gcf,'Position',[28 504 800 500])
 
 
-% load and plot predicted data for each model
+% =========== PLOT MODEL PREDICTIONS =============
+
 for imodel = 1:nModels
     model = modelorderVec(imodel);
     
     % load data
-    load([filepath 'modelpred_exp2_model' num2str(model) fixedrisk '.mat'],'preddata')
+    load(sprintf('fits/priority/exp2/modelpred_exp2_model%d.mat',model),'preddata')
     
     % get model predictions
     for isubj = 1:nSubj
@@ -423,7 +419,7 @@ for imodel = 1:nModels
             
             % histogram of circle size
             simdatacounts = hist(preddata{isubj}{ipriority}(:,2),xlims);
-            simdiscsize{ipriority}(isubj,:)  = simdatacounts./sum(simdatacounts);
+            simcirclesize{ipriority}(isubj,:)  = simdatacounts./sum(simdatacounts);
         end
     end
     
@@ -431,13 +427,14 @@ for imodel = 1:nModels
     semsimerror = cellfun(@(x) std(x)./sqrt(size(x,1)),simerror,'UniformOutput',false);
     
     
-    meansimdiscsize = cellfun(@mean,simdiscsize,'UniformOutput',false);
-    semsimdiscsize = cellfun(@(x) std(x)./sqrt(size(x,1)),simdiscsize,'UniformOutput',false);
+    meansimcirclesize = cellfun(@mean,simcirclesize,'UniformOutput',false);
+    semsimcirclesize = cellfun(@(x) std(x)./sqrt(size(x,1)),simcirclesize,'UniformOutput',false);
     
     
     % plot error (and circle size) model predictions
     for ipriority = 1:nPriorities
         
+        % error
         axes(ha(imodel))
         fill( [0 xlims+xdiff fliplr(xlims)+xdiff 0],[0 meansimerror{ipriority}-semsimerror{ipriority}...
             fliplr(meansimerror{ipriority}+semsimerror{ipriority}) 0],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
@@ -446,12 +443,12 @@ for imodel = 1:nModels
         
         % circle size
         axes(ha(nModels+imodel))
-        fill([0 xlims fliplr(xlims) 0]+xdiff,[0 meansimdiscsize{ipriority}-semsimdiscsize{ipriority}...
-            fliplr(meansimdiscsize{ipriority}+semsimdiscsize{ipriority}) 0],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
+        fill([0 xlims fliplr(xlims) 0]+xdiff,[0 meansimcirclesize{ipriority}-semsimcirclesize{ipriority}...
+            fliplr(meansimcirclesize{ipriority}+semsimcirclesize{ipriority}) 0],colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
         hold on;
     end
     
-    % ========== quantile correlation plot per subject ===========
+    % get quantile information per subject
     nQuants = 6;
     for isubj = 1:nSubj
         
@@ -467,26 +464,27 @@ for imodel = 1:nModels
         end
     end
     
-    % ================ group correlation plot ====================
-    
+    % plot correlation     
     meanmeanquantsimerror = cellfun(@nanmean,meanquantsimerror,'UniformOutput',false);
     meanmeanquantsimdiscsize = cellfun(@mean,meanquantsimdiscsize,'UniformOutput',false);
     semmeanquantsimdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantsimdiscsize,'UniformOutput',false);
     
     axes(ha(2*nModels+imodel)); hold on
     for ipriority = 1:nPriorities
-        plot_summaryfit(meanmeanquantsimerror{ipriority},[],[],meanmeanquantsimdiscsize{ipriority},...
-            semmeanquantsimdiscsize{ipriority},[],colorMat(ipriority,:))
+        x = meanmeanquantsimerror{ipriority};
+        meanRadius = meanmeanquantsimdiscsize{ipriority};
+        semRadius = semmeanquantsimdiscsize{ipriority};
+        
+        fill( [x fliplr(x)],[meanRadius-semRadius fliplr(meanRadius+semRadius)],...
+            colorMat(ipriority,:),'EdgeColor','none','FaceAlpha',0.4);
     end
     
 end
 
-% ============= PLOT REAL DATA ======================
+% ================= PLOT REAL DATA ======================
 
 % load data
 load('exp2_cleandata.mat','data')
-% load([filepath 'fits_model' num2str(model) '.mat'])
-
 
 % histograms per subjects
 for isubj = 1:nSubj
@@ -503,8 +501,6 @@ for isubj = 1:nSubj
     
 end
 
-% =========== group plot =====================
-
 for imodel = 1:nModels
     
     meanerror = cellfun(@mean,error,'UniformOutput',false);
@@ -517,7 +513,6 @@ for imodel = 1:nModels
         
         
         % =========== error ============
-        
         axes(ha(imodel))
         hold on;
         errorbar(xlims+xdiff,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineStyle', 'none','LineWidth',1);
@@ -547,7 +542,7 @@ for imodel = 1:nModels
         end
     end
     
-    % ========== quantile correlation plot per subject ===========
+    % quantile binning data
     nQuants = 6;
     for isubj = 1:nSubj
         
@@ -564,11 +559,9 @@ for imodel = 1:nModels
     end
     
     % ================ correlation plot ====================
-    
     meanmeanquanterror = cellfun(@mean,meanquanterror,'UniformOutput',false);
     meanmeanquantdiscsize = cellfun(@mean,meanquantdiscsize,'UniformOutput',false);
     semmeanquantdiscsize= cellfun(@(x) std(x)./sqrt(size(x,1)),meanquantdiscsize,'UniformOutput',false);
-    
     
     axes(ha(2*nModels+imodel))
     axis([0 6 0 6])
@@ -593,13 +586,14 @@ end
 % fig 1: how optimal allocation changes with Jbar for each model
 % fig 2: how optimal allocation changes with experimental probe probability
 
-%% fig 1:  how optimal allocation changes with Jbar for each model
+%% FIG 1:  how optimal allocation changes with Jbar for each model
+% note that the colors come out wrong in this plot, but the locations are
+% correct
 
-clear all
-% close all
+clear all, close all
 exppriorityVec = [0.6 0.3 0.1];
 
-% SET UP TERNARY PLOT
+% ====== SET UP TERNARY PLOT ======= 
 colorMat = [1 0 0; 0 0 1; 0 0 0];
 
 % axis
@@ -640,52 +634,134 @@ set(h,'marker','.','markerfacecolor',propcolor,'markersize',24,'markeredgecolor'
 hold on
 
 % CALCULATE AND PLOT MIN-ERROR AND MAX-PTS MODEL PREDICTIONS
-nSamps = 10;
-
-Jbar = 2;
 tau = 0.4;
 alpha = 1;
 beta = 1;
 gamma = 1;
 
-% Vec1 = linspace(0.01,3,nSamps); % tau
-Vec2 = linspace(3,25,nSamps); % multiplier to use for Jbar
-
+nSamps = 10;
+JbarVec = linspace(3,25,nSamps); % multiplier to use for Jbar
 
 [pVec_MP, pVec_ME] = deal(nan(nSamps,3));
 for isamp2 = 1:nSamps
-    Jbar = Vec2(isamp2)*tau + 0.01
+    Jbar = JbarVec(isamp2)*tau + 0.01
     
     MPtheta = [Jbar tau alpha beta];
     MEtheta = [MPtheta gamma];
     
-    % maximizing points
+    % optimal allocation for maximizing points model
     pVec_MP(isamp2,:) = calc_pVec_maxpoints(MPtheta,exppriorityVec);
     
-    % minimizing error
+    % optimal allocation for minimizing error model
     pVec_ME(isamp2,:) = calc_pVec_minerror(MEtheta,exppriorityVec);
 end
 
-
 sz = 40;
 c = linspace(1,nSamps,nSamps);
-% PLOT MAX POINTS MODEL
+
+% plot max points model
 x=0.5-pVec_MP(:,1).*cos(pi/3)+pVec_MP(:,2)./2;
 y=0.866-pVec_MP(:,1).*sin(pi/3)-pVec_MP(:,2).*cot(pi/6)/2;
 plot(x,y,'k-')
 colormap('autumn')
 s = scatter(x,y,sz,c,'filled')
 
-% PLOT MIN ERROR MODEL
+% plot min error model
 x=0.5-pVec_ME(:,1).*cos(pi/3)+pVec_ME(:,2)./2;
 y=0.866-pVec_ME(:,1).*sin(pi/3)-pVec_ME(:,2).*cot(pi/6)/2;
 plot(x,y,'k-')
-colormap('winter')
 s2 = scatter(x,y,sz,c,'filled')
 
 
-%% fig 2: how optimal allocation changes with experimental probe probability
-% for minimizing error model
+%% FIG 2: how optimal allocation changes with experimental probe probability
+% for Minimizing Error model for each subject in Exp 2
+
+clear all, close all, clc
+
+load('fits/priority/exp2/fits_model2.mat')
+nSubj = size(ML_parameters,1);
+
+% get probe probabilities that will be investigated
+x = 0:0.1:1;
+[X,Y] = meshgrid(x,x);
+X = X(:);
+Y = Y(:);
+idx = (X+Y) > 1;
+X(idx) = [];
+Y(idx) = [];
+Z = 1-X-Y;
+
+% get x- and y-coordinates of actual values (in ternary space)
+x=0.5-X.*cos(pi/3)+Y./2;
+y=0.866-X.*sin(pi/3)-Y.*cot(pi/6)/2;
+nSamps = length(X);
+
+figure;
+for isubj = 1:nSubj;
+    isubj
+    
+    % parameters
+    theta = ML_parameters(isubj,:);
+    
+    % ------ SET UP TERNARY PLOT -----
+    colorMat = [1 0 0; 0 0 1; 0 0 0];
+    
+    % axis
+    subplot(3,4,isubj);
+    [h,hg,htick]=terplot;
+    c1 = [1 0.5 1/3];
+    c2 = [0 0.5 1/3];
+    c3 = [0 0 1/3];
+    hlabels=terlabel('high','medium','low');
+    set(h,'LineWidth',1)
+    
+    % define colors
+    axis1 = colorMat(2,:);
+    axis2 = colorMat(1,:);
+    axis3 = colorMat(3,:);
+    grey = 0.7*ones(1,3);
+    
+    % change the color of the grid lines
+    set(hg(:,1),'color',axis1)
+    set(hg(:,2),'color',axis2)
+    set(hg(:,3),'color',axis3)
+    
+    % modify the label size and color
+    set(hlabels,'fontsize',12)
+    set(hlabels(1),'color',axis1)
+    set(hlabels(2),'color',axis2)
+    set(hlabels(3),'color',axis3)
+    
+    % modify the tick label colors
+    set(htick(:,1),'color',axis1,'linewidth',3)
+    set(htick(:,2),'color',axis2,'linewidth',3)
+    set(htick(:,3),'color',axis3,'linewidth',3)
+    
+    
+    hold on
+    % get optimal resource allocation for each probe probability combination
+    pVec_ME = nan(nSamps,3);
+    for isamp = 1:nSamps;
+        exppriorityVec = [X(isamp) Y(isamp) Z(isamp)];
+        pVec_ME(isamp,:) = calc_pVec_minerror(theta,exppriorityVec);
+    end
+    
+    % get x- and y-coordinates in ternary space
+    u = 0.5-pVec_ME(:,1).*cos(pi/3)+pVec_ME(:,2)./2;
+    v = 0.866-pVec_ME(:,1).*sin(pi/3)-pVec_ME(:,2).*cot(pi/6)/2;
+    
+    % get amount of difference between optimal allocation and probe prob.
+    u = u-x; 
+    v = v-y;
+    
+    % plot
+    quiver(x,y,u,v,Scale(0),'k')
+    
+end
+
+
+%% how optimal allocation changes with experimental probe probability
+% for arbitrary parameter combination for Minimizing Error model
 
 clear all
 close all
@@ -729,7 +805,7 @@ set(htick(:,2),'color',axis2,'linewidth',3)
 set(htick(:,3),'color',axis3,'linewidth',3)
 
 % get probe probabilities that will be investigated
-x = 0:0.2:1;
+x = 0:0.1:1;
 [X,Y] = meshgrid(x,x);
 X = X(:);
 Y = Y(:);
@@ -746,8 +822,7 @@ y=0.866-X.*sin(pi/3)-Y.*cot(pi/6)/2;
 nSamps = length(X);
 pVec_ME = nan(nSamps,3);
 for isamp = 1:nSamps;
-    exppriorityVec = [X(isamp) Y(isamp) Z(isamp)]
-    
+    exppriorityVec = [X(isamp) Y(isamp) Z(isamp)];
     pVec_ME(isamp,:) = calc_pVec_minerror(theta,exppriorityVec);
 end
 
@@ -757,90 +832,4 @@ v = 0.866-pVec_ME(:,1).*sin(pi/3)-pVec_ME(:,2).*cot(pi/6)/2;
 u = u-x;
 v = v-y;
 quiver(x,y,u,v,Scale(0),'k')
-
-%% how proportion allocation changes with probe probability
-% for MP or ME model for each subject in experimet 2
-% (not actually in supplementary...yet)
-
-clear all
-close all
-clc
-
-load('fits/priority/exp2/fits_model2.mat')
-nSubj = size(ML_parameters,1);
-
-% get probe probabilities that will be investigated
-x = 0:0.1:1;
-[X,Y] = meshgrid(x,x);
-X = X(:);
-Y = Y(:);
-idx = (X+Y) > 1;
-X(idx) = [];
-Y(idx) = [];
-Z = 1-X-Y;
-
-% get x and y of actual values
-x=0.5-X.*cos(pi/3)+Y./2;
-y=0.866-X.*sin(pi/3)-Y.*cot(pi/6)/2;
-nSamps = length(X);
-
-figure;
-for isubj = 1:nSubj;
-    isubj
-    
-    % theta
-    theta = ML_parameters(isubj,:);
-    
-    % ------ SET UP TERNARY PLOT -----
-    colorMat = [1 0 0; 0 0 1; 0 0 0];
-    
-    % axis
-    subplot(3,4,isubj);
-    [h,hg,htick]=terplot;
-    c1 = [1 0.5 1/3];
-    c2 = [0 0.5 1/3];
-    c3 = [0 0 1/3];
-    hlabels=terlabel('high','medium','low');
-    set(h,'LineWidth',1)
-    
-    % define colors
-    axis1 = colorMat(2,:);
-    axis2 = colorMat(1,:);
-    axis3 = colorMat(3,:);
-    grey = 0.7*ones(1,3);
-    
-    % change the color of the grid lines
-    set(hg(:,1),'color',axis1)
-    set(hg(:,2),'color',axis2)
-    set(hg(:,3),'color',axis3)
-    
-    % modify the label size and color
-    set(hlabels,'fontsize',12)
-    set(hlabels(1),'color',axis1)
-    set(hlabels(2),'color',axis2)
-    set(hlabels(3),'color',axis3)
-    
-    % modify the tick label colors
-    set(htick(:,1),'color',axis1,'linewidth',3)
-    set(htick(:,2),'color',axis2,'linewidth',3)
-    set(htick(:,3),'color',axis3,'linewidth',3)
-    
-    
-    hold on
-    pVec_ME = nan(nSamps,3);
-    for isamp = 1:nSamps;
-        exppriorityVec = [X(isamp) Y(isamp) Z(isamp)];
-
-        pVec_ME(isamp,:) = calc_pVec_minerror(theta,exppriorityVec);
-    end
-    
-    u = 0.5-pVec_ME(:,1).*cos(pi/3)+pVec_ME(:,2)./2;
-    v = 0.866-pVec_ME(:,1).*sin(pi/3)-pVec_ME(:,2).*cot(pi/6)/2;
-    
-    u = u-x;
-    v = v-y;
-    quiver(x,y,u,v,Scale(0),'k')
-    
-end
-
 
