@@ -15,9 +15,9 @@ exppriorityVec = [2/3 1/3];
 error_f = all_data.s_all.f_sacc_err;
 
 % indicate which subject, condition, and hemifield to use
-subjnum = 9; % 1-9
-TMScond = 2; % 1 = no tms, 2 = ips2, 3 = spcs
-hemifield = 1; % 1: left hemi. 2: right hemi. 0: both hemi
+subjnum = 2; % 1-9
+TMScond = 1; % 1 = no tms, 2 = ips2, 3 = spcs
+hemifield = 0; % 1: left hemi. 2: right hemi. 0: both hemi
 
 % get data from a particular subject and condition (and hemifield?)
 idx = all_data.use_trial;
@@ -112,9 +112,9 @@ clear all; close all
 expnumber = 1;
 model = 'flexible';
 TMScond = 1; % 1 = no tms, 2 = ips2, 3 = spcs
-hemifield = 2; % 1: left hemi. 2: right hemi. 0: both hemi
+hemifield = 1; % 1: left hemi. 2: right hemi. 0: both hemi
 
-loadpreddata = 1;
+loadpreddata = 0;
 indvlplot = 1;
 % nTrials = [100 50];
 expPriorityVec = [2/3 1/3];
@@ -150,7 +150,7 @@ for isubj = 1:nSubj;
 end
 
 % ====== get ML parameter estimate for isubj =======
-filepath = 'fits/grace/';
+filepath = 'fits/tms/';
 load([filepath 'fits_model_' model '_TMScond_' num2str(TMScond)...
     '_hemi' num2str(hemifield) '.mat'])
 
