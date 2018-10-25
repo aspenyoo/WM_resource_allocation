@@ -1,12 +1,11 @@
-function expectederror = calc_expectederror(Theta,allocatedpriorityVec)
+function expectederror = calc_expectederror(Theta,allocatedpriorityVec,exppriorityVec)
 
 % getting parameters
 Jbar_total = Theta(1);
 tau = Theta(2);
 gamma = Theta(end);
 
-priorityVec = [0.6 0.3 0.1];
-nPriorities = length(allocatedpriorityVec);
+nPriorities = length(exppriorityVec);
 
 % E[d^gamma] = \int d^blah \int p(d|J)p(J) dd dJ
 % E[d^gamma] = \int d^blah \int rayleigh(d|1/J) gamma(J|Jbar,tau) dd dJ
@@ -31,6 +30,6 @@ for ipriority = 1:nPriorities
     dpdf = dpdf./sum(dpdf);
     
     % \int d^blah p(d) dd
-    expectederror = expectederror + priorityVec(ipriority).*sum((dVec.^gamma) .* dpdf);
-    
+    expectederror = expectederror + exppriorityVec(ipriority).*sum((dVec.^gamma) .* dpdf);
+    expectederror
 end
