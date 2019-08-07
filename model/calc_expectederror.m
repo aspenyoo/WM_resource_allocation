@@ -30,7 +30,7 @@ for ipriority = 1:nPriorities
     dpdf = bsxfunandsum(@times,d_given_J,Jpdf);
     dpdf = dpdf./sum(dpdf);
     
-    % \int d^blah p(d) dd
+    % \int d^gamma p(d) dd
     expectederror = expectederror + priorityVec(ipriority).*sum((dVec.^gamma) .* dpdf);
     
 end

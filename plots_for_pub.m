@@ -32,8 +32,8 @@ for ipriority = 1:nPriorities
     end
 end
 % M and SEM
-dataMerror = mean(dataerrorVec);
-dataSEMerror = std(dataerrorVec)./sqrt(nSubj);
+dataMerror = mean(dataerrorVec)
+dataSEMerror = std(dataerrorVec)./sqrt(nSubj)
 
 % plot
 dx = 0.2;
@@ -47,6 +47,47 @@ end
 xlabel('probe probability'); ylabel('error (dva)');
 set(gca,'XTick',1:3,'XTickLabel',priorityVec,...
     'YTick',0:0.2:2.2,'YTickLabel',{0,'','','','',1,'','','','',2,''})
+
+
+%% plot primary and final saccade
+
+
+M_pri = fliplr([1.8482 2.1755 2.5740]);
+sem_pri = fliplr([0.0942 0.1409 0.1930]);
+
+M_final = fliplr([1.2835    1.5830    1.8749]);
+sem_final = fliplr([0.0703    0.1170    0.1711]);
+
+% is this as a function of primary or final saccade?
+M_rt = fliplr([463.7298  469.4223  478.5309]);
+sem_rt = fliplr([14.6151  16.6736  17.6714]);
+
+priorityVec = fliplr(priorityVec);
+
+figure;
+subplot(1,3,1)
+defaultplot;
+axis([0.5 3.5 0 3])
+errorb(M_pri,sem_pri);
+xlabel('probe probability'); ylabel('error (dva)');
+set(gca,'XTick',1:3,'XTickLabel',priorityVec,...
+    'YTick',0:0.5:3)
+
+subplot(1,3,2)
+defaultplot;
+axis([0.5 3.5 0 3])
+errorb(M_final,sem_final);
+xlabel('probe probability'); ylabel('error (dva)');
+set(gca,'XTick',1:3,'XTickLabel',priorityVec,...
+    'YTick',0:0.5:3)
+
+subplot(1,3,3)
+defaultplot;
+axis([0.5 3.5 0 600])
+errorb(M_rt,sem_rt);
+xlabel('probe probability'); ylabel('RT (msec)');
+set(gca,'XTick',1:3,'XTickLabel',priorityVec)
+
 
 %% FIG 2B: EXP 1 MODELING RESULTS
 
@@ -145,8 +186,8 @@ end
 
 %% FIG 2C/4B: EXP 1/2 TERNARY PLOT
 
-clear all; close all
-expnumber = 2; % experiment number. change to toggle between experiments
+% clear all; close all
+expnumber = 1; % experiment number. change to toggle between experiments
 
 % load data
 load(sprintf('fits/priority/exp%d/fits_model2.mat',expnumber))
@@ -195,9 +236,26 @@ set(htick(:,2),'color',axis2,'linewidth',3)
 set(htick(:,3),'color',axis3,'linewidth',3)
 
 % plot data
+indigo = [90 90 190]./255;
 hter=ternaryc(pMat(:,1),pMat(:,2),pMat(:,3));
-set(hter,'marker','o','markerfacecolor','k','markersize',8,'markeredgecolor','k')
+set(hter,'marker','o','markerfacecolor',indigo,'markersize',8,'markeredgecolor',indigo)
 
+% plot me points
+redish = [221 116 88]./255;
+hter=ternaryc(pMat_me(:,1),pMat_me(:,2),pMat_me(:,3));
+set(hter,'marker','o','markerfacecolor',redish,'markersize',8,'markeredgecolor',redish)
+
+% plot connecting lines
+c1 = pMat(:,1);
+c2 = pMat(:,2);
+x1=0.5-c1*cos(pi/3)+c2/2;
+y1=0.866-c1*sin(pi/3)-c2*cot(pi/6)/2;
+c1 = pMat_me(:,1);
+c2 = pMat_me(:,2);
+x2=0.5-c1*cos(pi/3)+c2/2;
+y2=0.866-c1*sin(pi/3)-c2*cot(pi/6)/2;
+hold on;
+plot([x1 x2]',[y1 y2]','--k')
 
 %% FIG 2D/4C: EXP 1/2 MODEL COMPARISON
 

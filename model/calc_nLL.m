@@ -1,21 +1,23 @@
-function nLL = calc_nLL(model,Theta,data,fixparams,exppriorityVec)
+function nLL = calc_nLL(model,Theta,data,exppriorityVec,fixparams)
 %CALC_NLL calculates negative log-likelihood of parameters given data and
 %model.
 % 
-%   NLL = CALC_NLL(MODEL, THETA, DATA) calculates the negative
-%     likelihood of DATA given MODEL and THETA.
+%   NLL = CALC_NLL(MODEL, THETA, DATA, EXPPRIORITYVEC) calculates the 
+%     negative likelihood of DATA given MODEL and THETA, for experimental
+%     probe probabilities EXPPRIORITYVEC.
 % 
-%   NLL = CALC_NLL(MODEL, THETA, DATA, FIXPARAMS) calculates the negative
-%     likelihood, where THETA are free parameters and FIXPARAMS indicates
-%     which parameters are fixed and what value they are fixed to. 
+%   NLL = CALC_NLL(MODEL, THETA, DATA, EXPPRIORITYVEC, FIXPARAMS) 
+%     calculates the negative likelihood, where THETA are free parameters 
+%     and FIXPARAMS indicates which parameters are fixed and what value 
+%     they are fixed to. 
 %
 %   ================= INPUT VARIABLES ======================
 % 
 %   MODEL / THETA: 
-%         'max_points', MAXIMIZING POINTS / [Jbar_total tau alpha beta]
-%         'flexible', FLEXIBLE / [Jbar_total tau alpha beta p_high p_med]
-%         'proportional', PROPORTIONAL / [Jbar_total tau alpha beta]
-%         'min_error', MINIMIZING ERROR / [Jbar_total tau alpha beta gamma]
+%         'max_points', MAXIMIZING POINTS / [Jbar_total tau (alpha beta)]
+%         'flexible', FLEXIBLE / [Jbar_total tau (alpha beta) p_high p_med]
+%         'proportional', PROPORTIONAL / [Jbar_total tau (alpha beta)]
+%         'min_error', MINIMIZING ERROR / [Jbar_total tau (alpha beta) gamma]
 % 
 %       parameter descriptions: 
 %           JBAR_TOTAL: mean total amount of resources across priorities
@@ -45,7 +47,7 @@ function nLL = calc_nLL(model,Theta,data,fixparams,exppriorityVec)
 %   aspen.yoo@nyu.edu
 % ---------------------
 
-if nargin < 4; fixparams = []; end
+if nargin < 5; fixparams = []; end
 
 expnumber = size(data{1},2); % experiment number
 
