@@ -50,6 +50,5 @@ for ipriority = 1:nPriorities
     end
     
     expectederror = expectederror + exppriorityVec(ipriority).*bleh;
-    expectederror
 end
 

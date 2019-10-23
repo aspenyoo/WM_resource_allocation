@@ -7,7 +7,7 @@ clear, close all
 Jbar = 3;           % mean precision
 tau = 0.5;          % shape parameters (related to spread)
 
-%% gamma distribution
+% gamma distribution
 % this is the distribution from which memory precision is drawn
 
 nSamps = 5000;       % number of samples
@@ -99,7 +99,7 @@ for iitem = 1:nItems;
     
     % generate memories
     % 00000000000000 !! YOU GOTTA MAKE THIS FUNCTION !! 00000000000
-    memories{iitem} = simulate_memories(Jbar,tau,item_loc,nTrials);
+    memories{iitem} = simulate_memories_ahy(Jbar,tau,item_loc,nTrials);
     % 00000000000000000000000000000000000000000000000000000000000000
 end
 
@@ -131,7 +131,8 @@ figure; hold on
 for ipriority = 1:length(allocationVec)
     Jbar = Jbar_total*allocationVec(ipriority);
     
-    plot(xx,gampdf(xx,Jbar/tau,tau),'Color',colorMat(ipriority,:))
+    blah = gampdf(xx,Jbar/tau,tau);
+    plot(xx,blah./sum(blah),'Color',colorMat(ipriority,:))
 end
 xlabel('precision (J)')
 ylabel('proportion')
