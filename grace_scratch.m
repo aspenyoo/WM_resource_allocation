@@ -1,46 +1,96 @@
-%% load data for grace's experiment
 
-clear all; clc
 
-load('data/grace_data/n_9_all_data.mat');
-% load('data/grace_data/raw/noTMS/cleandata.mat')
+%% set up and save data in minimal useable format
 
-exppriorityVec = [2/3 1/3];
+clear all
 
+% all_TMS_cond: 1: no tms, 2: ips2 3: l_spcs
+
+subjnumVec = [1:9 11 12 16 17];
+exclVec = [13 20 21 22];
+nSubj = length(subjnumVec);
+
+condition = 'l_spcs';
+
+data = cell(1,nSubj);
+nTrials = nan(nSubj,2);
+
+for isubj = 1:nSubj
+    subjnum = subjnumVec(isubj)
+    
+    load(sprintf('/data/TMS_Priority/TMS_Priority_behav_73019/subj%02d_%s_behav.mat',subjnum,condition))
+    
+    subjid = sprintf('S%02d',subjnum);
+    
+    % EXCLUDE TRIALS
+    % based on preset exclusion criteria
+    blah = cell2mat(cellfun(@(x) ~any(ismember(x,exclVec)),s_all.excl_trial,'UniformOutput',false));
+    
+    blah(s_all.i_sacc_rt<0.1 | s_all.i_sacc_rt>0.7) = 0; % reaction time exclusion
+    blah(s_all.f_sacc_err>10) = 0;      % final saccade error
+    blah(s_all.i_sacc_err>10) = 0;      % initial saccade error exclusion
+    
+    % additional subject/run/trial specific dropping (ask grace if need more clarification here)
+    % r_num: run number. t_num: trial number
+    switch condition
+        case 'l_ips2'
+            blah((s_all.r_num==2) & (subjnum==3) & ismember(s_all.t_num, [26 27 28 29 30 31  32  33  34 35 36])) = 0; %exclude run01 trials 26-36 due daq err (ips2 run02,sess1)
+            blah((s_all.r_num==7) & (subjnum==6)) = 0;
+        case 'l_spcs'
+            blah((s_all.r_num==7) & (subjnum==2)) = 0;
+            blah((s_all.r_num==1) & (subjnum==9)) = 0;  % exclude run01 due to coil slip (spcs sess 1)
+            blah((s_all.r_num==1) & (subjnum==3) & ismember(s_all.t_num, [27 28 29 30 31  32  33  34  35 36])) = 0; % exclude run02 trials 27-36 due daq err (spcs run01,sess1)
+            blah((s_all.r_num==1) & (subjnum==5)) = 0;  % exclude run01 due to coil "light" (spcs sess 1)
+            blah((s_all.r_num==1) & (subjnum==6) & ismember(s_all.t_num, [33 34 35 36])) = 0;
+    end
+        
+    % indices of high and low priority trials
+    highpri_trials = (s_all.trialinfo(:,1) == 31) & blah;
+    lowpri_trials = (s_all.trialinfo(:,1) == 32) & blah;
+    nTrials(isubj,1) = sum(highpri_trials);
+    nTrials(isubj,2) = sum(lowpri_trials);
+    
+    data{isubj}.subjid = subjid;
+    data{isubj}.use_trial = blah;
+    data{isubj}.i_sacc_err = {s_all.i_sacc_err(highpri_trials) s_all.i_sacc_err(lowpri_trials)};
+    data{isubj}.f_sacc_err = {s_all.f_sacc_err(highpri_trials) s_all.f_sacc_err(lowpri_trials)};
+end
+
+save(sprintf('data/tms/data_allsubj_%s.mat',condition),'data','nTrials')
 
 %% GET DATA IN CORRECT FORMAT FOR FITTING
 
-% error
-% error_i = all_data.s_all.i_sacc_err;
-error_f = all_data.s_all.f_sacc_err;
-
-% indicate which subject, condition, and hemifield to use
-subjnum = 2; % 1-9
-TMScond = 1; % 1 = no tms, 2 = ips2, 3 = spcs
-hemifield = 0; % 1: left hemi. 2: right hemi. 0: both hemi
-
-% get data from a particular subject and condition (and hemifield?)
-idx = all_data.use_trial;
-idx = idx & (all_data.subj_all == subjnum);
-idx = idx & (all_data.TMS_cond_all == TMScond);
-if (hemifield); idx = idx & (all_data.s_all.trialinfo(:,2) == hemifield); end
-
-data = cell(1,2);
-idxx = idx & (all_data.s_all.trialinfo(:,1) == 31); % high priority
-data{1} = error_f(idxx,:);
-idxx = idx & (all_data.s_all.trialinfo(:,1) == 32); % low priority
-data{2} = error_f(idxx,:);
-
-% delete any nans
-data{1}(isnan(data{1})) = [];
-data{2}(isnan(data{2})) = [];
-
-data
+% % error
+% % error_i = all_data.s_all.i_sacc_err;
+% error_f = all_data.s_all.f_sacc_err;
+% 
+% % indicate which subject, condition, and hemifield to use
+% subjnum = 2; % 1-9
+% TMScond = 1; % 1 = no tms, 2 = ips2, 3 = spcs
+% hemifield = 0; % 1: left hemi. 2: right hemi. 0: both hemi
+% 
+% % get data from a particular subject and condition (and hemifield?)
+% idx = all_data.use_trial;
+% idx = idx & (all_data.subj_all == subjnum);
+% idx = idx & (all_data.TMS_cond_all == TMScond);
+% if (hemifield); idx = idx & (all_data.s_all.trialinfo(:,2) == hemifield); end
+% 
+% data = cell(1,2);
+% idxx = idx & (all_data.s_all.trialinfo(:,1) == 31); % high priority
+% data{1} = error_f(idxx,:);
+% idxx = idx & (all_data.s_all.trialinfo(:,1) == 32); % low priority
+% data{2} = error_f(idxx,:);
+% 
+% % delete any nans
+% data{1}(isnan(data{1})) = [];
+% data{2}(isnan(data{2})) = [];
+% 
+% data
 
 
 %% FIT MODEL
 
-filepath = 'fits/grace/';
+filepath = 'fits/tms/';
 model = 'flexible';
 runlist = 1:50;
 runmax = 50;
@@ -68,7 +118,7 @@ end
 
 %% GET ML PARAMETER ESTIMATES FOR EACH SUBJECT
 clear all
-filepath = 'fits/grace/';
+filepath = 'fits/tms/';
 
 subjVec = 1:9;
 model = 'flexible';
@@ -120,7 +170,7 @@ indvlplot = 1;
 expPriorityVec = [2/3 1/3];
 
 % load data and get in correct format
-load('data/grace_data/n_9_all_data.mat')
+load('data/tms/n_9_all_data.mat')
 error_f = all_data.s_all.f_sacc_err; % final saccade error
 
 nSubj = 9;
