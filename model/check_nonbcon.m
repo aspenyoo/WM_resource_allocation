@@ -1,5 +1,14 @@
 function isviolated = check_nonbcon(model,x)
-%CHECK_NONBCON checks for any violations in non-bound constraints
+%CHECK_NONBCON checks for non-bound constraints
+%
+%   CHECK_NONBCON checks if X violates any of the non-bound constraints for
+%     MODEL. 
+%
+%   ========== INPUT VARIABLES ==========
+% 
+%   MODEL: 'proportional', 'min_error', 'flexible', 'max_points'
+%
+%   X: parameter vector
 
 isviolated = 0; 
 switch model

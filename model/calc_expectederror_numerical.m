@@ -1,4 +1,4 @@
-function expectederror = calc_expectederror(Theta,allocatedpriorityVec,exppriorityVec)
+function expectederror = calc_expectederror_numerical(Theta,allocatedpriorityVec,exppriorityVec)
 
 % getting parameters
 Jbar_total = Theta(1);
@@ -31,5 +31,4 @@ for ipriority = 1:nPriorities
     
     % \int d^blah p(d) dd
     expectederror = expectederror + exppriorityVec(ipriority).*sum((dVec.^gamma) .* dpdf);
-    expectederror
 end

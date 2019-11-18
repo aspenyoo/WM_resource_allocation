@@ -1,7 +1,11 @@
 function [logflag, lb, ub, plb, pub, nonbcon] = loadconstraints(model,exppriorityVec,is_wagerdata)
-%loadconstraints loads optimization constraints for each model
+%LOADCONSTRAINTS loads optimization constraints for each model
 % 
-% LOADCONSTRAINTS(MODEL,EXPPRIORITYVEC) loads optimization constraint for 
+% LOADCONSTRAINTS(MODEL,EXPPRIORITYVEC) loads optimization constraint for a
+% particular model
+%
+% LOADCONSTRAINTS(MODEL,EXPPRIORITYVEC,IS_WAGERDATA) loads optimization
+% constraint for wager data, if IS_WAGERDATA = 1
 % 
 % ===== INPUT VARIABLES =====
 % 
@@ -9,6 +13,8 @@ function [logflag, lb, ub, plb, pub, nonbcon] = loadconstraints(model,exppriorit
 % 
 % EXPPRIORITYVEC: row vector of experimental priority.
 %   sum(exppriorityVec) = 1
+%
+% IS_WAGERDATA: 0: just error data. 1: error and wager data
 
 if nargin < 3; is_wagerdata = 0; end
 

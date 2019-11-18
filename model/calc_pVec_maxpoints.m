@@ -1,9 +1,13 @@
 function pVec = calc_pVec_maxpoints(Theta,exppriorityVec)
-%calc_pVec_maxpoints calculates the proportion allocation that maximizes
+%CALC_PVEC_MAXPOINTS calculates the proportion allocation that maximizes
 %points
 % 
-%   PVEC = CALC_PVEC_MAXPOINTS(THETA) returns the optimal proportion
-%   allocation for THETA = [Jbar_total, tau, alpha, beta], where
+%   PVEC = CALC_PVEC_MAXPOINTS(THETA, EXPPRIORITYVEC) returns the optimal 
+%     proportion allocation for THETA and EXPPRIORITYVEC. 
+% 
+%   ========== INPUT VARIABLES ==========
+%   
+%   THETA: parameter vector [Jbar_total,tau,alpha,beta], where
 %       Jbar_total: mean total amount of resources available
 %       tau: scale parameter of memory precision gamma distribution
 %       alpha: risk preferences for post-decision wager
@@ -16,8 +20,6 @@ function pVec = calc_pVec_maxpoints(Theta,exppriorityVec)
 %      Aspen H. Yoo
 %   aspen.yoo@nyu.edu
 % ---------------------
-
-%if nargin < 2; exppriorityVec = [0.6 0.3 0.1]; end
 
 % data stuff
 nPriorities = length(exppriorityVec);

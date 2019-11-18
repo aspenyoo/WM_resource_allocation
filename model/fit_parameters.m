@@ -101,7 +101,7 @@ for irun = 1:length(runlist)
     rng(runlist(irun));
     
     x0 = x0_list(runlist(irun),:);
-    fun = @(x) calc_nLL(model,x,data,fixparams,exppriorityVec);
+    fun = @(x) calc_nLL(model,x,data,exppriorityVec,fixparams);
     
     x = bads(fun,x0,lb,ub,plb,pub,@(y) check_nonbcon(model,y));
     fval = fun(x);

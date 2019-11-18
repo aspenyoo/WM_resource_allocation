@@ -1,14 +1,13 @@
 function [pVec, fval] = calc_pVec_minerror(Theta,exppriorityVec)
-%calc_pVec_optimalerror calculates the proportion allocated to each priority 
+%CALC_PVEC_MINERROR calculates the proportion allocated to each priority 
 %condition that minimizes loss
 %
-%   PVEC = CALC_PVEC_MAXPOINTS(THETA) returns the optimal proportion
-%   allocation for THETA = [Jbar_total, tau, [alpha, beta,] gamma]. 
+%   =========== INPUT VARIABLES =========
+% 
+%   THETA: [Jbar_total, tau, [alpha, beta,] gamma]. 
 % 
 %   EXPPRIORITYVEC: 1 x 3 vector of experimental priority.
 %   sum(exppriorityVec) = 1
-
-%if nargin < 2; exppriorityVec = [0.6 0.3 0.1]; end
 
 nPriorities = length(exppriorityVec);
 
