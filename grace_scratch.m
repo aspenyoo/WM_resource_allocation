@@ -10,7 +10,8 @@ subjnumVec = [1:9 11 12 16 17];
 exclVec = [13 20 21 22];
 nSubj = length(subjnumVec);
 
-condition = 'l_spcs';
+condition = 'noTMS';
+hemifield = 2; % 1: left, 2: right
 
 data = cell(1,nSubj);
 nTrials = nan(nSubj,2);
@@ -47,6 +48,14 @@ for isubj = 1:nSubj
     % indices of high and low priority trials
     highpri_trials = (s_all.trialinfo(:,1) == 31) & blah;
     lowpri_trials = (s_all.trialinfo(:,1) == 32) & blah;
+    
+    % additional indexing for hemifield presentation
+    if (hemifield)
+        highpri_trials = highpri_trials & (s_all.trialinfo(:,2) == hemifield);
+        lowpri_trials = lowpri_trials & (s_all.trialinfo(:,2) == hemifield);
+    end
+    
+    % number of trials
     nTrials(isubj,1) = sum(highpri_trials);
     nTrials(isubj,2) = sum(lowpri_trials);
     
@@ -56,7 +65,11 @@ for isubj = 1:nSubj
     data{isubj}.f_sacc_err = {s_all.f_sacc_err(highpri_trials) s_all.f_sacc_err(lowpri_trials)};
 end
 
-save(sprintf('data/tms/data_allsubj_%s.mat',condition),'data','nTrials')
+if (hemifield)
+    save(sprintf('data/tms/data_allsubj_%s_hemifield%d.mat',condition,hemifield),'data','nTrials')
+else
+    save(sprintf('data/tms/data_allsubj_%s.mat',condition),'data','nTrials')  
+end
 
 %% GET DATA IN CORRECT FORMAT FOR FITTING
 
@@ -87,14 +100,81 @@ save(sprintf('data/tms/data_allsubj_%s.mat',condition),'data','nTrials')
 % 
 % data
 
-
-%% FIT MODEL
+%% PLOT DATA
 
 clear all
 
 condition = 'noTMS';
 errortype = 'f_sacc_err';
-model = 'proportional';
+hemifield = 0;
+
+
+
+% load data
+if (hemifield)
+    load(sprintf('data/tms/data_allsubj_%s_hemifield%d.mat',condition,hemifield))
+else
+    load(sprintf('data/tms/data_allsubj_%s.mat',condition))
+end
+
+nPriorities = 2;
+nSubj = length(data);
+
+
+% histograms per subjects
+xlims = linspace(0,10,16);
+
+colorMat = [1 0 0; 0 0 1];
+
+error = cell(1,nPriorities);
+error_M = nan(nSubj,nPriorities);
+for isubj = 1:nSubj    
+    
+    for ipriority = 1:nPriorities
+        
+        % histogram of euclidean error
+        datacounts = hist(data{isubj}.f_sacc_err{ipriority},xlims);
+        error{ipriority}(isubj,:) = datacounts./sum(datacounts);
+        error_M(isubj,ipriority) = mean(data{isubj}.f_sacc_err{ipriority});
+    end
+end
+
+mean(error_M)
+
+% =========== group plot =====================
+meanerror = cellfun(@mean,error,'UniformOutput',false);
+semerror = cellfun(@(x) std(x)./sqrt(size(x,1)),error,'UniformOutput',false);
+figure; hold on
+set(gcf,'Position',[28 504 500 350])
+
+for ipriority = 1:nPriorities
+    
+    errorbar(xlims,meanerror{ipriority},semerror{ipriority},'Color',colorMat(ipriority,:),'LineStyle','none','LineWidth',1);
+    
+end
+defaultplot
+axis([0 10 0 0.5])
+xlabel('error','FontSize',16)
+set(gca,'YTick',[0:0.1:0.5],'FontSize',12);
+ylabel('proportion','FontSize',16)
+
+
+%% =====================================================================
+%               MODELING
+% ======================================================================
+
+% - fit model
+% - get bfp
+% - plot fits
+
+%% FIT MODEL
+
+clear all
+
+condition = 'l_spcs';
+errortype = 'f_sacc_err';
+model = 'flexible';
+hemifield = 2;
 
 subjnumVec = [1:9 11 12 16 17];
 nSubj = length(subjnumVec);
@@ -103,17 +183,25 @@ runmax = 20;
 exppriorityVec = [2/3 1/3];
 fixparams = [];
 
+% load data
+if (hemifield)
+    load(sprintf('data/tms/data_allsubj_%s_hemifield%d.mat',condition,hemifield))
+else
+    load(sprintf('data/tms/data_allsubj_%s.mat',condition))
+end
+    
 for isubj = 1:nSubj
     
-    % load data
-    load(sprintf('data_allsubj_%s.mat',condition))
-    data = data{isubj}.(errortype);
+    % define current data
+    datt = data{isubj}.(errortype);
     
     % file saving name
     subjnum = subjnumVec(isubj);
-    filename = sprintf('fits/tms/fits_model%s_%s_subjS%02d.mat',model,condition,subjnum)
-    % filename = [filepath 'fits_model_' num2str(model) '_TMScond_' num2str(TMScond) ...
-    %      '_hemi' num2str(hemifield) '_subj' num2str(subjnum) '.mat'];
+    if (hemifield)
+        filename = sprintf('fits/tms/fits_model_%s_%s_hemifield%d_subjS%02d.mat',model,condition,hemifield,subjnum)
+    else
+        filename = sprintf('fits/tms/fits_model_%s_%s_subjS%02d.mat',model,condition,subjnum)
+    end
     
     try load(filename); catch; ML_parameters = []; nLLVec = []; end
     try runlist_completed*2; catch; runlist_completed = []; end % seeing if runlist_completed exists yet
@@ -123,7 +211,7 @@ for isubj = 1:nSubj
         runlistt = runlist(irun);
         rng(runlistt)
         try
-            [bfp,fval,rlc] = fit_parameters(model,data,exppriorityVec,runlistt,runmax,fixparams);
+            [bfp,fval,rlc] = fit_parameters(model,datt,exppriorityVec,runlistt,runmax,fixparams);
             
             ML_parameters = [ML_parameters; bfp];
             nLLVec = [nLLVec fval];
@@ -139,7 +227,8 @@ clear all
 subjnumVec = [1:9 11 12 16 17];
 nSubj = length(subjnumVec);
 model = 'flexible';
-condition = 'noTMS';
+condition = 'l_ips2';
+hemifield = 2;
 
 switch model
     case 'proportional'
@@ -148,15 +237,17 @@ switch model
         nParams = 3;
 end
 
+if (hemifield)
+    filemod = sprintf('fits/tms/fits_model_%s_%s_hemifield%d',model,condition,hemifield);
+else
+    filemod = sprintf('fits/tms/fits_model_%s_%s',model,condition);
+end
 nll = nan(1,nSubj);
 bfp = nan(nSubj,nParams);
 for isubj = 1:nSubj;
     subjnum = subjnumVec(isubj);
     
-    filename = sprintf('fits/tms/fits_model%s_%s_subjS%02d.mat',model,condition,subjnum);
-%     filename = [filepath 'fits_model_' num2str(model) '_TMScond_' num2str(TMScond) ...
-%         '_hemi' num2str(hemifield) '_subj' num2str(isubj) '.mat'];
-    load(filename)
+    load(sprintf('%s_subjS%02d.mat',filemod,subjnum))
     
     blah = min(nLLVec);
     if length(blah) > 1; blah = blah(1); end
@@ -167,7 +258,8 @@ end
 
 ML_parameters = bfp;
 nLLVec = nll;
-save(sprintf('fits/tms/fits_model_%s_%s.mat',model,condition),'ML_parameters','nLLVec','condition','subjnumVec','model')
+
+save(sprintf('%s.mat',filemod),'ML_parameters','nLLVec','condition','subjnumVec','model')
 
 
 %% PLOTS OF PARAMETER FITS!
@@ -177,8 +269,8 @@ clear all; close all
 % ======== LOAD DATA =======
 
 model = 'flexible';
-condition = 'noTMS';
-hemifield = 0; % 1: left hemi. 2: right hemi. 0: both hemi
+condition = 'l_spcs';
+hemifield = 2; % 1: left hemi. 2: right hemi. 0: both hemi
 
 loadpreddata = 0;
 indvlplot = 1;
@@ -186,7 +278,11 @@ indvlplot = 1;
 exppriorityVec = [2/3 1/3];
 
 % load data and get in correct format
-load(sprintf('data_allsubj_%s.mat',condition))
+if (hemifield)
+    load(sprintf('data/tms/data_allsubj_%s_hemifield%d.mat',condition,hemifield))
+else
+    load(sprintf('data/tms/data_allsubj_%s.mat',condition))
+end
 nSubj = length(data);
 
 % error_f = all_data.s_all.f_sacc_err; % final saccade error
@@ -195,7 +291,11 @@ nPriorities = length(exppriorityVec);
 nTrials = 1e3*ones(1,nPriorities); % how many trials to simulate per priority
 
 % ====== get ML parameter estimate for isubj =======
-load(sprintf('fits/tms/fits_model_%s_%s.mat',model,condition))
+if (hemifield)
+    load(sprintf('fits/tms/fits_model_%s_%s_hemifield%d.mat',model,condition,hemifield))
+else
+    load(sprintf('fits/tms/fits_model_%s_%s.mat',model,condition))
+end
 
 % ====== SIMULATE DATA FOR PARTICIPANTS ====== 
 filename = sprintf('fits/tms/modelpred_model_%s_%s.mat',model,condition);
