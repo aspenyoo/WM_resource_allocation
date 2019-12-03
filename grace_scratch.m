@@ -11,7 +11,7 @@ exclVec = [13 20 21 22];
 nSubj = length(subjnumVec);
 
 condition = 'noTMS';
-hemifield = 2; % 1: left, 2: right
+hemifield = 1; % 1: left, 2: right
 
 data = cell(1,nSubj);
 nTrials = nan(nSubj,2);
