@@ -59,10 +59,14 @@ if nargin < 4; runlist = 1; end
 if nargin < 5; runmax = 50; end
 if nargin < 6; fixparams = []; end
 
-expnumber = size(data{1},2);
-assert(length(data) == length(exppriorityVec));
-if strcmp(model,'max_points')
-    assert(expnumber == 2, 'maximizing points model only works with wager data')
+if ~(strcmp(model(1:3),'all'))
+    expnumber = size(data{1},2);
+    assert(length(data) == length(exppriorityVec));
+    if strcmp(model,'max_points')
+        assert(expnumber == 2, 'maximizing points model only works with wager data')
+    end
+else
+    expnumber = 1;
 end
 [logflag, lb, ub, plb, pub] = loadconstraints(model,exppriorityVec,expnumber-1);
 
@@ -86,7 +90,7 @@ constantt = 0;
 while size(x0_list,1) < runmax
     rng(0);
     x0_list = lhs(runmax + constantt,nParams,plb,pub,[],1e3);
-    isviolated = check_nonbcon(model,x0_list);
+    isviolated = check_nonbcon(model,x0_list,exppriorityVec);
     x0_list(logical(isviolated),:) =[];
     constantt = constantt + sum(isviolated);
 end
@@ -101,9 +105,17 @@ for irun = 1:length(runlist)
     rng(runlist(irun));
     
     x0 = x0_list(runlist(irun),:);
-    fun = @(x) calc_nLL(model,x,data,exppriorityVec,fixparams);
+    if strcmp(model(1:3),'all') % if fitting all conditions together
+        fun = @(x) calc_nLL_allcond(model,x,data,exppriorityVec,fixparams);
+        x = fmincon(fun,x0,[],[],[],[],lb,ub,[],optimset('Display','iter'));
+%         x = bads(fun,x0,lb,ub,plb,pub,@(y) check_nonbcon_allcond(model,y,exppriorityVec));
+    else
+        fun = @(x) calc_nLL(model,x,data,exppriorityVec,fixparams);
+        x = bads(fun,x0,lb,ub,plb,pub,@(y) check_nonbcon(model,y,exppriorityVec));
+%         x = fmincon(fun,x0,[],[],[],[],lb,ub,[],optimset('Display','iter'));
+    end
     
-    x = bads(fun,x0,lb,ub,plb,pub,@(y) check_nonbcon(model,y));
+    % ASPEN: DETERMINISTIC. WHY NOT USE BADS OUTPUT?
     fval = fun(x);
     
     x(logflag) = exp(x(logflag));

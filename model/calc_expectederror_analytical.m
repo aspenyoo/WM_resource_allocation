@@ -2,7 +2,7 @@ function expectederror = calc_expectederror_analytical(Theta,allocatedpriorityVe
 %CALC_EXPECTEDERROR_ANALYTICAL analytically computes the expected cost
 %
 %   CALC_EXPECTEDERROR_ANALYTICAL(THETA,ALLOCATEDPRIORITYVEC) calculates the
-%     expected cost (euclidean error ^ psi) for a given parameter vector THETA
+%     expected cost (euclidean error ^ gamma) for a given parameter vector THETA
 %     and resource allocation across consitions ALLOCATEDPRIORITYVEC.
 % 
 %   ===== INPUT VARIABLES =====
