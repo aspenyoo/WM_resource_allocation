@@ -36,11 +36,11 @@ if (is_wagerdata) % alpha beta
 end
 
 switch model
-    case 'flexible' % define p_high p_med for Flexible model
+    case {'flexible','stronghyp'} % define p_high p_med for Flexible model
         lb = [lb 1e-10.*ones(1,nPriorities-1)];
-        ub = [ub ones(1,nPriorities-1)];
+        ub = [ub ones(1,nPriorities-1)-eps];
         plb = [plb max([1e-10.*ones(1,nPriorities-1); exppriorityVec(1:end-1).*0.5])];
-        pub = [pub min([ones(1,nPriorities-1); exppriorityVec(1:end-1).*1.5])];
+        pub = [pub min([ones(1,nPriorities-1)-eps; exppriorityVec(1:end-1).*1.5])];
         logflag = [logflag zeros(1,nPriorities-1)];
     case 'min_error' % gamma for Minimizing Error model
         lb = [lb 1e-10];
@@ -51,6 +51,15 @@ switch model
         nonbcon = @model4nonbcon; % violates if Jbar/tau - gamma/2 <= 0 
     otherwise
         nonbcon = [];
+end
+
+switch model
+    case 'stronghyp' % adds another jbar and p's to fit
+        lb = [lb 1e-5 1e-10.*ones(1,nPriorities-1)];
+        ub = [ub 50 ones(1,nPriorities-1)-eps];
+        plb = [plb 0.5 max([1e-10.*ones(1,nPriorities-1); exppriorityVec(1:end-1).*0.5])];
+        pub = [pub 10 min([ones(1,nPriorities-1)-eps; exppriorityVec(1:end-1).*1.5])];
+        logflag = [logflag 1 zeros(1,nPriorities-1)];
 end
 
 logflag = logical(logflag); 
